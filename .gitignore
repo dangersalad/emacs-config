@@ -1,0 +1,6 @@
+/custom.el
+*.elc
+/elpa
+/tmp
+*~
+/init.el
