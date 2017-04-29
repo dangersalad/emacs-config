@@ -714,6 +714,23 @@
 
 
 
+* Applications
+
+  Packages that are sort of "apps" on their own
+
+** ZNC
+
+   Connects to a ZNC server, used for persistant IRC presence and
+   history playback.
+
+   Config is done through the main config interface, saves it into
+   ~custom.el~, which is not tracked.
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package znc
+       :ensure t)
+   #+END_SRC
+
 * Bootstrap
 
   ;; Local Variables:
