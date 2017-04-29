@@ -260,67 +260,6 @@
 
 ** Basic Packages
 
-*** Autorevert
-
-    #+BEGIN_SRC emacs-lisp
-      (use-package autorevert
-        :diminish auto-revert-mode
-        :config
-        (global-auto-revert-mode))
-    #+END_SRC
-
-*** Subword
-
-    #+BEGIN_SRC emacs-lisp
-      (use-package subword
-        :diminish subword-mode
-        :config
-        (global-subword-mode))
-    #+END_SRC
-
-*** Adaptive Wrap
-    
-    #+BEGIN_SRC emacs-lisp
-      (use-package adaptive-wrap
-        :init
-        (defvar adaptive-wrap-extra-indent 2)
-        :config
-        (add-hook 'visual-line-mode-hook
-                  '(lambda ()
-                     (adaptive-wrap-prefix-mode (if visual-line-mode 1 -1)))))
-
-    #+END_SRC
-    
-*** Relative Line Numbers
-
-    #+BEGIN_SRC emacs-lisp
-      (use-package linum-relative
-        :ensure t
-        :pin melpa-stable
-        :bind (("C-x l" . linum-relative-toggle))
-        :init
-        (defvar linum-relative-current-symbol "")
-        (defvar linum-relative-format "%3s ")
-        :config
-        (add-hook 'prog-mode-hook #'linum-relative-mode))
-
-    #+END_SRC
-*** Dired
-
-    #+BEGIN_SRC emacs-lisp
-      (use-package dired
-        :config
-        (setq dired-listing-switches "-lha --group-directories-first"))
-    #+END_SRC
-
-*** Uniquify
-
-    #+BEGIN_SRC emacs-lisp
-      (use-package uniquify
-        :config
-        (customize-set-variable 'uniquify-buffer-name-style 'forward))
-    #+END_SRC
-
 *** Zenburn
 
     Set the alist first so that we can override some color they use in
@@ -448,6 +387,67 @@
             (set-face-attribute 'avy-lead-face-1 nil :foreground zenburn-fg+1 :background zenburn-bg-2)
             (set-face-attribute 'avy-lead-face-2 nil :foreground zenburn-fg+1 :background zenburn-blue-4)
             (set-face-attribute 'avy-lead-face nil :foreground zenburn-fg+1 :background zenburn-red-4))))
+    #+END_SRC
+
+*** Autorevert
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package autorevert
+        :diminish auto-revert-mode
+        :config
+        (global-auto-revert-mode))
+    #+END_SRC
+
+*** Subword
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package subword
+        :diminish subword-mode
+        :config
+        (global-subword-mode))
+    #+END_SRC
+
+*** Adaptive Wrap
+    
+    #+BEGIN_SRC emacs-lisp
+      (use-package adaptive-wrap
+        :init
+        (defvar adaptive-wrap-extra-indent 2)
+        :config
+        (add-hook 'visual-line-mode-hook
+                  '(lambda ()
+                     (adaptive-wrap-prefix-mode (if visual-line-mode 1 -1)))))
+
+    #+END_SRC
+    
+*** Relative Line Numbers
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package linum-relative
+        :ensure t
+        :pin melpa-stable
+        :bind (("C-x l" . linum-relative-toggle))
+        :init
+        (defvar linum-relative-current-symbol "")
+        (defvar linum-relative-format "%3s ")
+        :config
+        (add-hook 'prog-mode-hook #'linum-relative-mode))
+
+    #+END_SRC
+*** Dired
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package dired
+        :config
+        (setq dired-listing-switches "-lha --group-directories-first"))
+    #+END_SRC
+
+*** Uniquify
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package uniquify
+        :config
+        (customize-set-variable 'uniquify-buffer-name-style 'forward))
     #+END_SRC
 
 *** Magit
