@@ -714,6 +714,57 @@
 
 
 
+* Programming Packages
+
+** Flycheck
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package flycheck
+       :ensure t
+       :pin melpa-stable
+       :diminish flycheck-mode
+       :init
+       (setq-default flycheck-emacs-lisp-load-path 'inherit)
+       :config
+       ;; enable flycheck everywhere
+       (add-hook 'after-init-hook #'global-flycheck-mode))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package flycheck-pos-tip
+       :ensure t
+       :pin melpa-stable
+       :config
+       (with-eval-after-load 'flycheck
+       (flycheck-pos-tip-mode)))
+   #+END_SRC
+
+   The mode line coloring is disabled for now
+
+   #+BEGIN_SRC emacs-lisp :tangle no
+     (use-package flycheck-color-mode-line
+       :ensure t
+       :pin melpa-stable
+       :init
+       (defface flycheck-color-mode-line-error-face
+         '((t))
+         "Face for the modeline in buffers with Flycheck errors."
+         :group 'flycheck-faces)
+
+       (defface flycheck-color-mode-line-warning-face
+         '((t))
+         "Face for the modeline in buffers with only Flycheck warnings."
+         :group 'flycheck-faces)
+
+       (defface flycheck-color-mode-line-info-face
+         '((t))
+         "Face for the modeline in buffers with only Flycheck info."
+         :group 'flycheck-faces)
+       :config
+       (eval-after-load 'flycheck
+         '(add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)))
+   #+END_SRC
+
 * Applications
 
   Packages that are sort of "apps" on their own
