@@ -7,6 +7,7 @@
 #+PROPERTY: header-args :tangle yes
 
 
+
 * Configuration
 
 ** Init
@@ -43,6 +44,7 @@
      (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
      (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
      (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
+     (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
      (package-initialize)
 
      (unless (package-installed-p 'use-package)
@@ -494,3 +496,87 @@
 ;; eval: (add-hook 'after-save-hook (lambda ()(org-babel-tangle)) nil t)
 ;; End:
 
+*** Org
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package org
+        :ensure org-plus-contrib
+        :mode (("\\.org$" . org-mode))
+        :pin org
+        :init
+        (defvar org-directory "~/org" "Directory for org files.")
+        (defvar org-agenda-directory "~/org/agenda" "Directory for org files.")
+        (defvar org-mobile-directory "~/.org-mobile" "Directory for mobile org files.")
+        (defvar org-time-clocksum-format "%d:%.02d")
+        (setq org-journal-dir (concat org-directory "/journal/"))
+        :config
+        (condition-case nil
+            (make-directory org-journal-dir t) ; make the org and journal dirs if they are not there already
+          (error nil))
+        (condition-case nil
+            (make-directory org-mobile-directory t) ; make the org and journal dirs if they are not there already
+          (error nil))
+
+        (defun org-agenda-reload ()
+          "Reset org agenda files by rescanning the org directory."
+          (interactive)
+          (setq org-agenda-files (directory-files-recursive org-agenda-directory "\\.org\\|[0-9]\\{8\\}"))
+          (setq org-refile-targets '((org-agenda-files . (:level . 1)))))
+
+        (org-agenda-reload)
+        (setq org-agenda-file-regexp "\\([^.].*\\.org\\)\\|\\([0-9]+\\)")
+
+        (setq org-log-done 'time)
+        (setq org-enforce-todo-dependencies t)
+        (setq org-agenda-dim-blocked-tasks t)
+        (setq org-catch-invisible-edits t)
+
+        (setq org-clock-idle-time 15)
+        (setq org-clock-mode-line-total 'current)
+        (setq org-log-into-drawer "LOGBOOK")
+        (setq org-clock-into-drawer "LOGBOOK")
+        (setq org-time-clocksum-use-fractional t)
+
+        (setq org-todo-keywords
+              '((sequence "TODO(t)" "IN-PROGRESS(i!)" "WAITING(w@)" "|" "WILL-NOT-IMPLEMENT(k@)" "DONE(d)")
+                (sequence "BUG(b)" "RESOLVING(r!)" "|" "NON-ISSUE(n@)" "PATCHED(p)")))
+
+        ;; defaut capture file
+        (setq org-default-notes-file (concat org-directory "/todo.org"))
+
+        (setq org-capture-templates
+              '(("t" "Todo" entry (file+headline (concat org-directory "/todo.org") "Todo") "* TODO %?\n  SCHEDULED: %^{Schedule}t\n  %A")
+                ("n" "Note" entry (file+headline (concat org-directory "/notes.org") "Notes") "* %? %U\n  %i")))
+
+        (add-hook 'org-mode-hook
+                  (lambda ()
+                    (add-hook 'after-save-hook 'org-babel-tangle nil 'local-please)))
+
+        (setq org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0_10.jar")
+        (org-babel-do-load-languages
+         'org-babel-load-languages
+         '((sh . t)
+           (ditaa . t)))
+
+        ;; expand logbook on org all expand
+        (defun ds/expand-logbook-drawer ()
+          "Expand the closest logbook drawer."
+          (interactive)
+          (search-forward ":LOGBOOK:")
+          (org-cycle))
+
+        (defun ds/org-logbook-cycle-hook (my/var/curr-state)
+          "When the MY/VAR/CURR-STATE is \"all\", open up logbooks."
+          (interactive)
+          (message "State changed")
+          (when ( my/var/curr-state "all")   ;This comparison doesn't work, error: wrong argument, number-or-marker-p
+            (ds/expand-logbook-drawer)))
+
+        (add-hook 'org-cycle-hook 'ds/org-logbook-cycle-hook)
+
+
+
+        )
+
+
+    #+END_SRC
