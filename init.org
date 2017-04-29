@@ -97,12 +97,6 @@
      (add-to-list 'default-frame-alist '(font . "Ubuntu Mono-10"))
    #+END_SRC
 
-   Auto revert when file on disk changes
-
-   #+BEGIN_SRC emacs-lisp
-     (global-auto-revert-mode)
-   #+END_SRC
-
    Setup custom file
 
    #+BEGIN_SRC emacs-lisp
@@ -116,17 +110,100 @@
            (load custom-file)))
    #+END_SRC
 
+** Basic Customizations
 
-   Change the garbage collector thresholds
+*** Indentation
 
-   Activate sub word mode
+    Fuck tabs
 
-   #+BEGIN_SRC emacs-lisp
-     (global-subword-mode)
-     (diminish 'global-subword-mode)
-   #+END_SRC
+    #+BEGIN_SRC emacs-lisp
+      (setq-default indent-tabs-mode nil)
+      (setq-default tab-width 4)
+      (setq-default tab-stop-list (number-sequence 4 120 4))
+    #+END_SRC
+
+    Setup electric indent
+
+    #+BEGIN_SRC emacs-lisp
+      (electric-indent-mode 1)
+
+      ;; ignore for python
+      (defun electric-indent-ignore-python (char)
+        "Ignore Electric Indent for Python, CHAR is ignored."
+        (if (or
+             (equal major-mode 'python-mode)
+             (equal major-mode 'markdown-mode)
+             (equal major-mode 'makefile-gmake-mode)
+             (equal major-mode 'org-mode)
+             (equal major-mode 'org-journal-mode))
+            `no-indent'
+          t))
+      (add-to-list 'electric-indent-functions 'electric-indent-ignore-python)
+    #+END_SRC
+
+    For python and markdown, indent when entering new line
+
+    #+BEGIN_SRC emacs-lisp
+      (defun set-newline-and-indent ()
+        "Map RET key to `newline-and-indent'."
+        (local-set-key (kbd "RET") 'newline-and-indent))
+      (add-hook 'python-mode-hook 'set-newline-and-indent)
+      (add-hook 'markdown-mode-hook 'set-newline-and-indent)
+    #+END_SRC
+
+*** Line opening
+
+    Set up line opening shorcuts, one for opening above, another for
+    below
+
+
+    #+BEGIN_SRC emacs-lisp
+      (defvar newline-and-indent t "Make line openings use auto indent.")
+
+      (defun open-next-line (count)
+              "Open COUNT lines after the current one.
+
+      See also `newline-and-indent'."
+              (interactive "p")
+              (end-of-line)
+              (open-line count)
+              (forward-line count)
+              (when newline-and-indent
+                (indent-according-to-mode)))
+      ;; Behave like vi's O command
+      (defun open-previous-line (count)
+              "Open COUNT new line before the current one.
+
+      See also `newline-and-indent'."
+              (interactive "p")
+              (beginning-of-line)
+              (open-line count)
+              (when newline-and-indent
+                (indent-according-to-mode)))
+
+      (global-set-key (kbd "C-o") 'open-next-line)
+      (global-set-key (kbd "M-o") 'open-previous-line)
+    #+END_SRC
 
 ** Basic Packages
+
+*** Autorevert
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package autorevert
+        :diminish auto-revert-mode
+        :config
+        (global-auto-revert-mode))
+    #+END_SRC
+
+*** Subword
+    
+    #+BEGIN_SRC emacs-lisp
+      (use-package subword
+        :diminish subword-mode
+        :config
+        (global-subword-mode))
+    #+END_SRC
 
 *** Dired
 
