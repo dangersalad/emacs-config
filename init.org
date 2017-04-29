@@ -6,7 +6,20 @@
 #+LATEX_HEADER: \usepackage[utf8]{inputenc}
 #+PROPERTY: header-args :tangle yes
 
+* Setup
 
+  To get this configuration working, clone the repr to
+  ~$HOME/.emacs.d~ and open emacs. It will be the default
+  configuration. Open up the file at ~$HOME/.emacs.d/init.org~.
+
+  You will be prompted to execute the lisp in the file. Select the ~Y~
+  option to run it once. This will tangle all of the blocks into the
+  ~init.el~ file. After this is completed, exit emacs and reopen it.
+
+  Open the ~init.org~ file again, and this time choose the ~!~ option
+  to save the preference to run the embedded elisp. From now on, when
+  you save the ~init.org~ file, the ~init.el~ file will be tangled and
+  compiled.
 
 * Configuration
 
@@ -67,18 +80,18 @@
    Adjust backup file settings to be in a separate directory
 
    #+BEGIN_SRC emacs-lisp
-     (defvar backup-directory
+     (defvar ds/backup-directory
        (expand-file-name "tmp/backups" user-emacs-directory)
        "Where backups go.")
-     (defvar autosave-directory
+     (defvar ds/autosave-directory
        (expand-file-name "tmp/autosave" user-emacs-directory)
        "Where autosaves go.")
-     (make-directory backup-directory t)
-     (make-directory autosave-directory  t)
+     (make-directory ds/backup-directory t)
+     (make-directory ds/autosave-directory  t)
      (setq backup-by-copying t
-           backup-directory-alist `((".*" .  ,backup-directory))
-           auto-save-file-name-transforms `((".*"  ,autosave-directory t))
-           auto-save-list-file-prefix  autosave-directory
+           backup-directory-alist `((".*" .  ,ds/backup-directory))
+           auto-save-file-name-transforms `((".*"  ,ds/autosave-directory t))
+           auto-save-list-file-prefix  ds/autosave-directory
            delete-old-versions t
            kept-new-versions 6
            kept-old-versions 2
@@ -265,6 +278,33 @@
         (global-subword-mode))
     #+END_SRC
 
+*** Adaptive Wrap
+    
+    #+BEGIN_SRC emacs-lisp
+      (use-package adaptive-wrap
+        :init
+        (defvar adaptive-wrap-extra-indent 2)
+        :config
+        (add-hook 'visual-line-mode-hook
+                  '(lambda ()
+                     (adaptive-wrap-prefix-mode (if visual-line-mode 1 -1)))))
+
+    #+END_SRC
+    
+*** Relative Line Numbers
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package linum-relative
+        :ensure t
+        :pin melpa-stable
+        :bind (("C-x l" . linum-relative-toggle))
+        :init
+        (defvar linum-relative-current-symbol "")
+        (defvar linum-relative-format "%3s ")
+        :config
+        (add-hook 'prog-mode-hook #'linum-relative-mode))
+
+    #+END_SRC
 *** Dired
 
     #+BEGIN_SRC emacs-lisp
@@ -490,11 +530,41 @@
 
 
 
+    Add in ~flx~ for fuzzy matching
 
+    #+BEGIN_SRC emacs-lisp
+      (use-package flx
+        :ensure t
+        :pin melpa-stable
+        :config
+        (with-eval-after-load 'helm
+          ;; this is a bit hackish, ATM, redefining functions I don't own
+          (defvar helm-flx-cache (flx-make-string-cache #'flx-get-heatmap-str))
 
-;; Local Variables:
-;; eval: (add-hook 'after-save-hook (lambda ()(org-babel-tangle)) nil t)
-;; End:
+          (defun helm-score-candidate-for-pattern (candidate pattern)
+            (or (car (flx-score candidate pattern helm-flx-cache)) 0))
+
+          (defun helm-fuzzy-default-highlight-match (candidate)
+            (let* ((pair (and (consp candidate) candidate))
+                   (display (if pair (car pair) candidate))
+                   (real (cdr pair)))
+              (with-temp-buffer
+                (insert display)
+                (goto-char (point-min))
+                (if (string-match-p " " helm-pattern)
+                    (cl-loop with pattern = (split-string helm-pattern)
+                             for p in pattern
+                             do (when (search-forward p nil t)
+                                  (add-text-properties
+                                   (match-beginning 0) (match-end 0) '(face helm-match))))
+                  (cl-loop with pattern = (cdr (flx-score display
+                                                          helm-pattern helm-flx-cache))
+                           for index in pattern
+                           do (add-text-properties
+                               (1+ index) (+ 2 index) '(face helm-match))))
+                (setq display (buffer-string)))
+              (if real (cons display real) display)))))
+    #+END_SRC
 
 *** Org
 
@@ -565,18 +635,85 @@
           (search-forward ":LOGBOOK:")
           (org-cycle))
 
-        (defun ds/org-logbook-cycle-hook (my/var/curr-state)
+        (defun ds/org-logbook-cycle-hook (ds/drawer-curr-state)
           "When the MY/VAR/CURR-STATE is \"all\", open up logbooks."
           (interactive)
           (message "State changed")
-          (when ( my/var/curr-state "all")   ;This comparison doesn't work, error: wrong argument, number-or-marker-p
+          (when (eq ds/drawer-curr-state "all")
             (ds/expand-logbook-drawer)))
 
-        (add-hook 'org-cycle-hook 'ds/org-logbook-cycle-hook)
-
-
-
-        )
+        (add-hook 'org-cycle-hook 'ds/org-logbook-cycle-hook))
 
 
     #+END_SRC
+
+*** Projectile
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package projectile
+        :ensure t
+        :pin melpa-stable
+        :bind (:map projectile-command-map
+                    ("s s" . helm-projectile-ag))
+        :init
+        (defvar projectile-remember-window-configs t)
+        :config
+        (projectile-mode))
+    #+END_SRC
+
+    Add the extension to use helm
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package helm-projectile
+        :ensure t 
+        :pin melpa-stable
+        :config
+        (helm-projectile-toggle 1)
+        (setq helm-projectile-fuzzy-match t))
+
+    #+END_SRC
+    
+    Then add ~helm-ag~ so you can use ~the_silver_searcher~ across all
+    the project files
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package helm-ag
+        :ensure t
+        :pin melpa-stable)
+    #+END_SRC
+    
+*** Multiple Cursors
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package multiple-cursors
+        :ensure t
+        :pin melpa-stable
+        :bind (("C->" . mc/mark-next-like-this)
+               ("C-<" . mc/mark-previous-like-this)))
+    #+END_SRC
+
+*** Undo Tree
+
+    More "sane" undo/redo system
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package undo-tree
+        :ensure t
+        :pin gnu
+        :diminish undo-tree-mode
+        :config
+        (global-undo-tree-mode))
+    #+END_SRC
+
+
+
+
+
+
+
+* Bootstrap
+
+;; Local Variables:
+;; eval: (add-hook 'after-save-hook (lambda ()(org-babel-tangle)) nil t)
+;; End:
+
