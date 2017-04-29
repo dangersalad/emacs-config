@@ -185,6 +185,64 @@
       (global-set-key (kbd "M-o") 'open-previous-line)
     #+END_SRC
 
+
+** Utility Functions
+
+   A function to get files in a directory recursively, this is used in
+   the ~org-agenda~ config to add all the files in ~$HOME/org/agenda~
+   and it's subfolders
+
+   #+BEGIN_SRC emacs-lisp
+     (defun directory-files-recursive(directory &optional match)
+       "Get all files in DIRECTORY recursivley.
+     There are three optional arguments:
+     If FULL is non-nil, return absolute file names.  Otherwise return names
+      that are relative to the specified directory.
+     If MATCH is non-nil, mention only file names that match the regexp MATCH.
+     If NOSORT is non-nil, the list is not sorted--its order is unpredictable.
+      Otherwise, the list returned is sorted with `string-lessp'.
+      NOSORT is useful if you plan to sort the result yourself."
+       (interactive)
+       (let (file-list
+             (current-dir-list (directory-files-and-attributes directory t))
+             (match (if match match "^[^.].*"))) ; ignore hidden files by default
+         (while current-dir-list
+           (let ((file-name (car (car current-dir-list)))
+                 (is-dir (equal t (car (cdr (car current-dir-list))))))
+             (cond
+              ;; if the filename matches the match string
+              (is-dir
+               ;; make sure it is not a hidden dir
+               (if (or
+                    (equal "." (substring file-name -1))
+                    (equal "." (substring (file-name-nondirectory file-name) 0 1)))
+                   ()
+                 ;; recurse it adding the result to the list
+                 (setq file-list
+                       (append
+                        (directory-files-recursive file-name match)
+                        file-list))))
+              ((string-match match (file-name-nondirectory file-name))
+               (setq file-list (cons file-name file-list)))))
+           (setq current-dir-list (cdr current-dir-list)))
+         file-list))
+   #+END_SRC
+
+
+   A function to indent the entire buffer, bound to ~C-\~
+
+   #+BEGIN_SRC emacs-lisp
+     (defun indent-buffer ()
+       "Indent entire buffer using `indent-according-to-mode'."
+       (interactive)
+       (save-excursion
+         (push-mark (point))
+         (push-mark (point-max) nil t)
+         (goto-char (point-min))
+         (indent-region (region-beginning) (region-end))))
+     (global-set-key (kbd "C-c \\") 'indent-buffer)
+   #+END_SRC
+
 ** Basic Packages
 
 *** Autorevert
@@ -197,7 +255,7 @@
     #+END_SRC
 
 *** Subword
-    
+
     #+BEGIN_SRC emacs-lisp
       (use-package subword
         :diminish subword-mode
@@ -401,7 +459,7 @@
         :config
         (when (executable-find "curl")
           (setq helm-net-prefer-curl t))
-        
+
         (setq helm-quick-update                     t ; do not display invisible candidates
               helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
               helm-buffers-fuzzy-matching           t ; fuzzy matching buffer names when non--nil
@@ -419,11 +477,11 @@
               helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
               helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
               helm-ff-file-name-history-use-recentf t)
-        
+
         (setq helm-split-window-in-side-p t)
         (setq helm-autoresize-max-height 25)
         (setq helm-autoresize-min-height 25)
-        
+
         (helm-mode 1))
 
     #+END_SRC
