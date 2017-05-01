@@ -663,7 +663,7 @@
        :init
        (defvar projectile-remember-window-configs t)
        :config
-       (projectile-global-mode))
+       (projectile-mode))
    #+END_SRC
 
    Add the extension to use helm
@@ -817,6 +817,7 @@
      (use-package rust-playground
        :ensure t)
    #+END_SRC
+
 * Applications
 
   Packages that are sort of "apps" on their own
