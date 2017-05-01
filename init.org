@@ -795,7 +795,8 @@
 
    #+BEGIN_SRC emacs-lisp
      (use-package znc
-       :ensure t)
+       :ensure t
+       :defer t)
    #+END_SRC
 
 
