@@ -201,6 +201,16 @@
       (global-set-key (kbd "M-o") 'open-previous-line)
     #+END_SRC
 
+*** Show Matching Brackets
+
+    Show matching brackets (and parentheses, but these get more later
+    on)
+
+
+    #+BEGIN_SRC emacs-lisp
+      (show-paren-mode)
+    #+END_SRC
+
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
@@ -321,7 +331,7 @@
 
      This overrides the colors provided by the `zenburn-theme' package.")
 
-  
+
        :config
        (load-theme 'zenburn t)
 
@@ -663,7 +673,7 @@
        :init
        (defvar projectile-remember-window-configs t)
        :config
-       (projectile-mode))
+       (projectile-global-mode))
    #+END_SRC
 
    Add the extension to use helm
