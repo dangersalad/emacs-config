@@ -388,6 +388,16 @@
          (zenburn-with-color-variables
            (set-face-attribute 'helm-selection-line nil :background zenburn-bg+2)))
 
+       ;; company faces
+       (with-eval-after-load 'company
+         (zenburn-with-color-variables
+           (set-face-attribute 'company-preview nil :background zenburn-green+2 :foreground zenburn-bg)
+           (set-face-attribute 'company-preview-search nil :background zenburn-blue :foreground zenburn-bg)))
+
+       (with-eval-after-load 'company-template
+         (zenburn-with-color-variables
+           (set-face-attribute 'company-template-field nil :background zenburn-yellow-1 :foreground zenburn-bg)))
+
        ;; faces for ledger mode
        (with-eval-after-load 'ledger-mode
          (zenburn-with-color-variables
