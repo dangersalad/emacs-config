@@ -806,6 +806,20 @@
        (setq company-echo-delay 0))    ; remove annoying blinking
    #+END_SRC
    
+** Commenter
+
+   Originally for evil, but works great for vanilla
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package evil-nerd-commenter
+       :ensure t
+       :pin melpa-stable
+       :bind (("C-c C-/ C-/" . evilnc-comment-or-uncomment-lines)
+              ("C-c C-/ C-l" . evilnc-comment-or-uncomment-to-the-line)
+              ("C-c C-/ C-c" . evilnc-copy-and-comment-lines)
+              ("C-c C-/ C-p" . evilnc-comment-or-uncomment-paragraphs)))
+   #+END_SRC
+
 ** Rust
 
    #+BEGIN_SRC emacs-lisp
