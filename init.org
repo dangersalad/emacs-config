@@ -935,7 +935,18 @@
                                  (company-mode))))
    #+END_SRC
 
-   
+** YAML
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package yaml-mode
+       :ensure t
+       :pin melpa-stable
+       :config
+       (add-to-list 'auto-mode-alist '("\\.yaml\\'" . yaml-mode))
+       (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
+   #+END_SRC
+
+
 * Applications
 
   Packages that are sort of "apps" on their own or interact with other
