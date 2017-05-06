@@ -770,7 +770,6 @@
 
 
 
-
 ** Powerline
 
    #+BEGIN_SRC emacs-lisp
@@ -919,9 +918,6 @@
          (setq powerline-height (+ 2 (frame-char-height)))
          (ds/powerline-theme))
 
-       (pl/memoize (pl/nothing right))
-       (pl/memoize (pl/nothing left))
-       (setq powerline-default-separator 'nothing)
 
        (adjust-powerline-to-font)
 
@@ -931,7 +927,7 @@
        )
    #+END_SRC
 
-
+   
 * Programming Packages
 
 ** Flycheck
