@@ -211,6 +211,12 @@
       (show-paren-mode)
     #+END_SRC
 
+*** Enable Commands
+
+    #+BEGIN_SRC emacs-lisp
+      (put 'narrow-to-region 'disabled nil)
+    #+END_SRC
+
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
