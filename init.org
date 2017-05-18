@@ -1107,6 +1107,58 @@
        (add-to-list 'auto-mode-alist '("\\.yml\\'" . yaml-mode)))
    #+END_SRC
 
+** Javascript
+   
+   #+BEGIN_SRC emacs-lisp
+     (use-package js2-mode
+       :ensure t
+       :pin melpa-stable
+       :diminish js2-minor-mode
+       :config
+       (add-to-list 'auto-mode-alist '("\\.json$" . js-mode))
+       (add-hook 'js-mode-hook 'js2-minor-mode)
+       (add-hook 'js2-minor-mode-hook 'js2-mode-hide-warnings-and-errors)
+       (setq-default js2-show-parse-errors nil)
+       (setq-default js2-strict-missing-semi-warning nil))
+   #+END_SRC
+** Web Mode (php+html+javascript)
+   
+   #+BEGIN_SRC emacs-lisp
+     (use-package web-mode
+       :ensure t
+       :pin melpa-stable)
+   #+END_SRC
+** Typescript
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package typescript-mode
+       :ensure t
+       :pin melpa-stable)
+
+     (use-package tide
+       :ensure t
+       :pin melpa-stable
+       :config
+       (defun setup-tide-mode ()
+         (interactive)
+         (tide-setup)
+         (flycheck-mode +1)
+         (setq flycheck-check-syntax-automatically '(save mode-enabled))
+         (eldoc-mode +1)
+         (tide-hl-identifier-mode +1)
+         (company-mode +1))
+
+       ;; aligns annotation to the right hand side
+       (setq company-tooltip-align-annotations t)
+
+       ;; formats the buffer before saving
+       (add-hook 'before-save-hook 'tide-format-before-save)
+
+       (add-hook 'typescript-mode-hook #'setup-tide-mode)
+
+       ;; format options
+       (setq tide-format-options '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
+   #+END_SRC
 
 * Applications
 
