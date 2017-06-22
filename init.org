@@ -217,6 +217,10 @@
       (put 'narrow-to-region 'disabled nil)
     #+END_SRC
 
+*** ERC
+    #+BEGIN_SRC emacs-lisp
+      (setq erc-hide-list '("JOIN" "PART" "QUIT"))
+    #+END_SRC
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
@@ -497,9 +501,7 @@
        :demand
        :init
        (defvar linum-relative-current-symbol "")
-       (defvar linum-relative-format "%3s ")
-       :config
-       (add-hook 'prog-mode-hook #'linum-relative-mode))
+       (defvar linum-relative-format "%3s "))
 
    #+END_SRC
 ** Dired
@@ -1025,7 +1027,21 @@
                  '(lambda ()
                     (rust-enable-format-on-save))))
    #+END_SRC
-   
+
+   #+BEGIN_SRC emacs-lisp
+     ;; (use-package lsp-rust
+     ;;   :ensure t)
+
+     ;; (use-package lsp-mode
+     ;;   :ensure t
+     ;;   :init
+     ;;   (with-eval-after-load 'lsp-mode
+     ;;     (require 'lsp-flycheck))
+     ;;   :config
+     ;;   (add-hook 'prog-major-mode #'lsp-mode))
+
+   #+END_SRC
+
    #+BEGIN_SRC emacs-lisp
      (use-package racer
        :ensure t
@@ -1159,6 +1175,7 @@
        ;; format options
        (setq tide-format-options '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
    #+END_SRC
+
 
 * Applications
 
