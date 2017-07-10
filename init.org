@@ -219,7 +219,7 @@
 
 *** ERC
     #+BEGIN_SRC emacs-lisp
-      (setq erc-hide-list '("JOIN" "PART" "QUIT"))
+      (defvar erc-hide-list '("JOIN" "PART" "QUIT"))
     #+END_SRC
 ** Utility Functions
 
@@ -293,7 +293,7 @@
            (set-variable varname number))))
    #+END_SRC
 
-
+   
 * Basic Packages
 
 ** Zenburn
@@ -549,7 +549,12 @@
          "Keymap of commands to load magit.")
 
        (define-key global-map (kbd "C-c g") my-git-command-map)
-       (define-key global-map (kbd "C-c C-g") my-git-command-map))
+       (define-key global-map (kbd "C-c C-g") my-git-command-map)
+
+       (add-hook 'magit-popup-mode-hook
+                 (lambda()
+                   (fit-window-to-buffer))))
+                                     
    #+END_SRC
 
 ** Helm
@@ -591,8 +596,8 @@
              helm-ff-file-name-history-use-recentf t)
 
        (setq helm-split-window-in-side-p t)
-       (setq helm-autoresize-max-height 25)
-       (setq helm-autoresize-min-height 25)
+       ;; (setq helm-autoresize-max-height 25)
+       ;; (setq helm-autoresize-min-height 25)
 
        (helm-mode 1))
 
@@ -728,7 +733,7 @@
        :init
        (defvar projectile-remember-window-configs t)
        :config
-       (projectile-global-mode))
+       (projectile-mode))
    #+END_SRC
 
    Add the extension to use helm
@@ -782,6 +787,7 @@
 
    #+BEGIN_SRC emacs-lisp
      (use-package powerline
+       :disabled
        :ensure t
        :pin melpa-stable
        :demand
@@ -944,7 +950,6 @@
      (use-package flycheck
        :ensure t
        :pin melpa-stable
-       :diminish flycheck-mode
        :init
        (setq-default flycheck-emacs-lisp-load-path 'inherit)
        :config
