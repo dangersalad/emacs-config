@@ -8,7 +8,7 @@
 
 * Setup
 
-  To get this configuration working, clone the repr to
+  To get this configuration working, clone the repo to
   ~$HOME/.emacs.d~ and open emacs. It will be the default
   configuration. Open up the file at ~$HOME/.emacs.d/init.org~.
 
@@ -221,6 +221,7 @@
     #+BEGIN_SRC emacs-lisp
       (defvar erc-hide-list '("JOIN" "PART" "QUIT"))
     #+END_SRC
+
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
@@ -293,7 +294,80 @@
            (set-variable varname number))))
    #+END_SRC
 
+   A function to toggle a serif font for a buffer, but still keep
+   "code" in that buffer monospaced
    
+   #+BEGIN_SRC emacs-lisp
+     (defvar ds/serif-preserve-default-list nil
+       "A list holding the faces that preserve the default family and height when TOGGLE-SERIF is used.")
+     (defvar ds/preserve-default-cookies-list nil
+       "A list holding the faces that preserve the default family and height when TOGGLE-SERIF is used.")
+     (defvar ds/default-cookie nil
+       "A list holding the faces that preserve the default family and height when TOGGLE-SERIF is used.")
+
+     (setq ds/serif-preserve-default-list
+           '(;; LaTeX markup
+             font-latex-math-face
+             font-latex-sedate-face
+             font-latex-warning-face
+             ;; org markup
+             org-latex-and-related
+             org-meta-line
+             org-verbatim
+             org-block-begin-line
+             org-block
+             org-code
+             ;; syntax highlighting using font-lock
+             font-lock-builtin-face
+             font-lock-comment-delimiter-face
+             font-lock-comment-face
+             font-lock-constant-face
+             font-lock-doc-face
+             font-lock-function-name-face
+             font-lock-keyword-face
+             font-lock-negation-char-face
+             font-lock-preprocessor-face
+             font-lock-regexp-grouping-backslash
+             font-lock-regexp-grouping-construct
+             font-lock-string-face
+             font-lock-type-face
+             font-lock-variable-name-face
+             font-lock-warning-face))
+
+
+     (defun ds/toggle-serif ()
+       "Change the default face of the current buffer to use a serif family."
+       (interactive)
+       (when (display-graphic-p)  ;; this is only for graphical emacs
+         ;; the serif font familiy and height, save the default attributes
+         (let ((serif-fam "Ubuntu")
+               (serif-height 105)
+               (default-fam (face-attribute 'default :family))
+               (default-height (face-attribute 'default :height)))
+           (if (not (bound-and-true-p ds/default-cookie))
+               (progn (make-local-variable 'ds/default-cookie)
+                      (make-local-variable 'ds/preserve-default-cookies-list)
+                      (setq ds/preserve-default-cookies-list nil)
+                      ;; remap default face to serif
+                      (setq ds/default-cookie
+                            (face-remap-add-relative
+                             'default :family serif-fam :height serif-height))
+                      ;; keep previously defined monospace fonts the same
+                      (dolist (face ds/serif-preserve-default-list)
+                        (add-to-list 'ds/preserve-default-cookies-list
+                                     (face-remap-add-relative
+                                      face :family default-fam :height default-height)))
+                      (message "Turned on serif writing font."))
+             ;; undo changes
+             (progn (face-remap-remove-relative ds/default-cookie)
+                    (dolist (cookie ds/preserve-default-cookies-list)
+                      (face-remap-remove-relative cookie))
+                    (setq ds/default-cookie nil)
+                    (setq ds/preserve-default-cookies-list nil)
+                    (message "Restored default fonts."))))))
+   #+END_SRC
+
+
 * Basic Packages
 
 ** Zenburn
@@ -782,7 +856,6 @@
 
 
 
-
 ** Powerline
 
    #+BEGIN_SRC emacs-lisp
@@ -968,25 +1041,11 @@
 
    The mode line coloring is disabled for now
 
-   #+BEGIN_SRC emacs-lisp :tangle no
+   #+BEGIN_SRC emacs-lisp
      (use-package flycheck-color-mode-line
+       :disabled
        :ensure t
        :pin melpa-stable
-       :init
-       (defface flycheck-color-mode-line-error-face
-         '((t))
-         "Face for the modeline in buffers with Flycheck errors."
-         :group 'flycheck-faces)
-
-       (defface flycheck-color-mode-line-warning-face
-         '((t))
-         "Face for the modeline in buffers with only Flycheck warnings."
-         :group 'flycheck-faces)
-
-       (defface flycheck-color-mode-line-info-face
-         '((t))
-         "Face for the modeline in buffers with only Flycheck info."
-         :group 'flycheck-faces)
        :config
        (eval-after-load 'flycheck
          '(add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)))
@@ -1279,5 +1338,6 @@
 
   ;; Local Variables:
   ;; eval: (add-hook 'after-save-hook (lambda ()(org-babel-tangle)) nil t)
+  ;; eval:(when (fboundp 'ds/toggle-serif) (ds/toggle-serif))
   ;; End:
 
