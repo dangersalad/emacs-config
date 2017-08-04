@@ -31,7 +31,7 @@
    this and replace itself in the process
 
    #+BEGIN_SRC emacs-lisp
-     (defun tangle-init ()
+     (defun ds/tangle-init ()
        "If the current buffer is 'init.org' the code-blocks are
      tangled, and the tangled file is compiled."
        (when (equal (buffer-file-name)
@@ -41,7 +41,7 @@
            (org-babel-tangle)
            (byte-compile-file (concat user-emacs-directory "init.el")))))
 
-     (add-hook 'after-save-hook 'tangle-init)
+     (add-hook 'after-save-hook 'ds/tangle-init)
    #+END_SRC
 
    Inhibit the startup message
@@ -582,6 +582,8 @@
 
    #+BEGIN_SRC emacs-lisp
      (use-package dired
+       :bind (:map dired-mode-map
+                   ("RET" . dired-maybe-insert-subdir))
        :config
        (setq dired-listing-switches "-lha --group-directories-first"))
    #+END_SRC
@@ -1137,7 +1139,7 @@
        :ensure t
        :pin melpa-stable
        :config
-       (defun my-go-hook ()
+       (defun ds/go-hook ()
          "Hook for go-mode."
          ;; call gofmt for every save
          (add-hook 'before-save-hook 'gofmt-before-save)
@@ -1146,7 +1148,7 @@
              (set (make-local-variable 'compile-command)
                   "go build -v && go test && go vet")))
 
-       (add-hook 'go-mode-hook 'my-go-hook))
+       (add-hook 'go-mode-hook 'ds/go-hook))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
@@ -1201,6 +1203,7 @@
        (setq-default js2-show-parse-errors nil)
        (setq-default js2-strict-missing-semi-warning nil))
    #+END_SRC
+
 ** Web Mode (php+html+javascript)
    
    #+BEGIN_SRC emacs-lisp
@@ -1238,6 +1241,40 @@
 
        ;; format options
        (setq tide-format-options '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
+   #+END_SRC
+
+** Protobuf
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package protobuf-mode
+       :ensure t
+       :config
+       (flycheck-define-checker protobuf-protoc
+         "A protobuf syntax checker using the protoc compiler.
+
+     See URL `https://developers.google.com/protocol-buffers/'."
+         :command ("protoc" "--error_format" "gcc"
+                   (eval (concat "--java_out=" (flycheck-temp-dir-system)))
+                   ;; Add the file directory of protobuf path to resolve import directives
+                   (eval (concat "--proto_path=" (file-name-directory (buffer-file-name))))
+                   "--proto_path=/usr/local/include"
+                   (eval (concat "--proto_path=" (getenv "GOPATH") "/src"))
+                   (eval (concat "--proto_path=" (getenv "GOPATH") "/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis"))
+                   source-inplace)
+         :error-patterns
+         ((info line-start (file-name) ":" line ":" column
+                ": note: " (message) line-end)
+          (error line-start (file-name) ":" line ":" column
+                 ": " (message) line-end)
+          (error line-start
+                 (message "In file included from") " " (file-name) ":" line ":"
+                 column ":" line-end))
+         :modes protobuf-mode
+         :predicate (lambda () (buffer-file-name)))
+
+       )
+
+
    #+END_SRC
 
 
@@ -1337,7 +1374,7 @@
 * Bootstrap
 
   ;; Local Variables:
-  ;; eval: (add-hook 'after-save-hook (lambda ()(org-babel-tangle)) nil t)
-  ;; eval:(when (fboundp 'ds/toggle-serif) (ds/toggle-serif))
+  ;; eval: (when (not (fboundp 'ds/tangle-init)) (add-hook 'after-save-hook (lambda ()(org-babel-tangle)) nil t))
+  ;; eval: (when (fboundp 'ds/toggle-serif) (ds/toggle-serif))
   ;; End:
 
