@@ -222,12 +222,6 @@
       (defvar erc-hide-list '("JOIN" "PART" "QUIT"))
     #+END_SRC
 
-***  Winner Mode
-
-    #+BEGIN_SRC emacs-lisp
-      (winner-mode)
-    #+END_SRC
-
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
@@ -555,6 +549,15 @@
        (global-subword-mode))
    #+END_SRC
 
+** Winner
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package winner
+       :diminish winner-mode
+       :config
+       (winner-mode))
+   #+END_SRC
+
 ** Adaptive Wrap
     
    #+BEGIN_SRC emacs-lisp
@@ -831,7 +834,7 @@
        :init
        (defvar projectile-remember-window-configs t)
        :config
-       (projectile-global-mode))
+       (projectile-mode))
    #+END_SRC
 
    Add the extension to use helm
