@@ -222,6 +222,12 @@
       (defvar erc-hide-list '("JOIN" "PART" "QUIT"))
     #+END_SRC
 
+***  Winner Mode
+
+    #+BEGIN_SRC emacs-lisp
+      (winner-mode)
+    #+END_SRC
+
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
