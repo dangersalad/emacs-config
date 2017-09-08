@@ -550,6 +550,15 @@
        (global-subword-mode))
    #+END_SRC
 
+** Winner
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package winner
+       :diminish winner-mode
+       :config
+       (winner-mode))
+   #+END_SRC
+
 ** Adaptive Wrap
     
    #+BEGIN_SRC emacs-lisp
@@ -583,10 +592,26 @@
 
    #+BEGIN_SRC emacs-lisp
      (use-package dired
-       :bind (:map dired-mode-map
-                   ("RET" . dired-maybe-insert-subdir))
        :config
        (setq dired-listing-switches "-lha --group-directories-first"))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package dired-subtree
+       :ensure t
+       :commands (dired-subtree-toggle dired-subtree-cycle)
+       :config
+       (setq dired-subtree-use-backgrounds nil))
+
+     (use-package dired-sidebar
+       :bind (("C-x C-n" . dired-sidebar-toggle-sidebar))
+       :ensure t
+       :commands (dired-sidebar-toggle-sidebar)
+       :config
+       (use-package all-the-icons-dired
+         ;; M-x all-the-icons-install-fonts
+         :ensure t
+         :commands (all-the-icons-dired-mode)))
    #+END_SRC
 
 ** Uniquify
@@ -1210,8 +1235,11 @@
    #+BEGIN_SRC emacs-lisp
      (use-package web-mode
        :ensure t
-       :pin melpa-stable)
+       :pin melpa-stable
+       :config
+       (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode)))
    #+END_SRC
+
 ** Typescript
 
    #+BEGIN_SRC emacs-lisp
