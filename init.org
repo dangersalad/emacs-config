@@ -600,6 +600,8 @@
      (use-package dired-subtree
        :ensure t
        :commands (dired-subtree-toggle dired-subtree-cycle)
+       :bind (:map dired-mode-map
+                   ("i" . dired-subtree-insert))
        :config
        (setq dired-subtree-use-backgrounds nil))
 
