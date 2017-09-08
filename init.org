@@ -317,6 +317,7 @@
              org-block-begin-line
              org-block
              org-code
+             org-date
              ;; syntax highlighting using font-lock
              font-lock-builtin-face
              font-lock-comment-delimiter-face
