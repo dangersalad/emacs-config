@@ -761,6 +761,25 @@
              (if real (cons display real) display)))))
    #+END_SRC
 
+** Window Purpose
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package window-purpose
+       :ensure t
+       :pin melpa-stable
+       :config
+       (define-key purpose-mode-map (kbd "C-x b") nil)
+       (define-key purpose-mode-map (kbd "C-x C-f") nil))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package helm-purpose
+       :ensure t
+       :pin melpa-stable
+       :config
+       (helm-purpose-setup))
+   #+END_SRC
+
 ** Org
 
    #+BEGIN_SRC emacs-lisp
