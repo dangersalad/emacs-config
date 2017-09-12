@@ -1352,6 +1352,7 @@
                    (eval (concat "--java_out=" (flycheck-temp-dir-system)))
                    ;; Add the file directory of protobuf path to resolve import directives
                    (eval (concat "--proto_path=" (file-name-directory (buffer-file-name))))
+                   (eval (concat "--proto_path=" (concat (file-name-directory (buffer-file-name)) "../lib")))
                    "--proto_path=/usr/local/include"
                    (eval (concat "--proto_path=" (getenv "GOPATH") "/src"))
                    (eval (concat "--proto_path=" (getenv "GOPATH") "/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis"))
