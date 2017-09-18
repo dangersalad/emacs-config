@@ -222,6 +222,7 @@
       (defvar erc-hide-list '("JOIN" "PART" "QUIT"))
     #+END_SRC
 
+
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
@@ -769,16 +770,14 @@
        :pin melpa-stable
        :config
        (define-key purpose-mode-map (kbd "C-x b") nil)
-       (define-key purpose-mode-map (kbd "C-x C-f") nil))
+       (define-key purpose-mode-map (kbd "C-x C-f") nil)
+       (use-package helm-purpose
+         :ensure t
+         :pin melpa-stable
+         :config
+         (helm-purpose-setup)))
    #+END_SRC
 
-   #+BEGIN_SRC emacs-lisp
-     (use-package helm-purpose
-       :ensure t
-       :pin melpa-stable
-       :config
-       (helm-purpose-setup))
-   #+END_SRC
 
 ** Org
 
@@ -919,7 +918,15 @@
        (global-undo-tree-mode))
    #+END_SRC
 
-
+** Ace Window
+   
+   #+BEGIN_SRC emacs-lisp
+     (use-package ace-window
+       :ensure t
+       :pin melpa-stable
+       :bind (("C-x o" . ace-window)))
+   #+END_SRC
+   
 ** Exec Path from Shell
 
    #+BEGIN_SRC emacs-lisp
