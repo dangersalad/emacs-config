@@ -222,7 +222,6 @@
       (defvar erc-hide-list '("JOIN" "PART" "QUIT"))
     #+END_SRC
 
-
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
@@ -1580,7 +1579,8 @@
        :ensure t
        :pin melpa-stable
        :config
-       (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode)))
+       (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode))
+       (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode)))
    #+END_SRC
 
 ** Typescript
