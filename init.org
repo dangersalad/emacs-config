@@ -472,6 +472,7 @@
          (define-key map (kbd "C-c C-c") 'fence-edit-exit)
          (define-key map (kbd "C-c '")   'fence-edit-exit)
          (define-key map (kbd "C-c C-k") 'fence-edit-abort)
+         (define-key map (kbd "C-x C-s") 'fence-edit-save)
          map)
        "The keymap used in ‘fence-edit-mode’.")
 
@@ -578,7 +579,6 @@
                (setq first-line (car (split-string code "\n")))
                (string-match "^[[:blank:]]*" first-line)
                (setq block-indent (match-string 0 first-line))
-               (message "indent: '%s'" block-indent)
                (setq code (replace-regexp-in-string (concat "^" block-indent) "" code))
                (overlay-put ovl 'edit-buffer edit-buffer)
                (overlay-put ovl 'face 'secondary-selection)
@@ -598,7 +598,8 @@
                (fence-edit-set-local 'fence-edit-block-indent block-indent)
                (fence-edit-set-local 'fence-edit-overlay ovl)
                (fence-edit-set-local 'header-line-format "Press C-c ' (C-c apostrophe) to save, C-c C-k to abort.")
-               (goto-char edit-point)))))
+               (goto-char edit-point)
+               (set-buffer-modified-p nil)))))
 
      (defun fence-edit--guard-edit-buffer ()
        "Throw an error if current buffer doesn't look like an edit buffer."
@@ -618,8 +619,32 @@
            (set-buffer-modified-p nil))
          (kill-buffer buffer)))
 
+     (defun fence-edit-save () 
+       "Save the original buffer with the new text."
+       (interactive)
+       (fence-edit--guard-edit-buffer)
+       (let ((beg fence-edit-mark-beg))
+         (fence-edit-replace)
+         (set-buffer-modified-p nil)
+         (with-current-buffer (marker-buffer beg)
+           (save-buffer))))
+
      (defun fence-edit-exit ()
        "Conclude editing, replacing the original text."
+       (interactive)
+       (fence-edit--guard-edit-buffer)
+       (let ((code (buffer-string))
+             (edit-point (point))
+             (beg fence-edit-mark-beg)
+             (end fence-edit-mark-end))
+         (fence-edit-replace)
+         (fence-edit--abandon-edit-buffer (marker-buffer beg))
+         (goto-char (1- (+ beg edit-point)))
+         (set-marker beg nil)
+         (set-marker end nil)))
+
+     (defun fence-edit-replace ()
+       "Continue editing, replacing the original text."
        (interactive)
        (fence-edit--guard-edit-buffer)
        (let ((buffer (current-buffer))
@@ -634,24 +659,21 @@
          (setq code (replace-regexp-in-string "\n" (concat "\n" block-indent) code))
          (setq code (concat block-indent code))
          (setq code (replace-regexp-in-string (concat "\n" block-indent "$") "\n" code))
-         (fence-edit--abandon-edit-buffer (marker-buffer beg))
-         (goto-char beg)
-         (undo-boundary)
-         (delete-region beg end)
-         (insert code)
-         (goto-char (1- (+ beg edit-point)))
-         (set-marker beg nil)
-         (set-marker end nil)))
+         (with-current-buffer (marker-buffer beg)
+           (goto-char beg)
+           (undo-boundary)
+           (delete-region beg end)
+           (insert code))))
 
-     (defun fence-edit-abort ()
-       "Conclude editing, discarding the edited text."
-       (interactive)
-       (fence-edit--guard-edit-buffer)
-       (let ((dest-buffer (marker-buffer fence-edit-mark-beg)))
-         (fence-edit--abandon-edit-buffer dest-buffer)))
+       (defun fence-edit-abort ()
+         "Conclude editing, discarding the edited text."
+         (interactive)
+         (fence-edit--guard-edit-buffer)
+         (let ((dest-buffer (marker-buffer fence-edit-mark-beg)))
+           (fence-edit--abandon-edit-buffer dest-buffer)))
 
 
-     (global-set-key (kbd "C-c '") 'fence-edit-code-at-point)
+       (global-set-key (kbd "C-c '") 'fence-edit-code-at-point)
    #+END_SRC
 
 
