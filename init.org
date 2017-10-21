@@ -411,6 +411,7 @@
          ("^<template>$" "^</template>$" web)
          ("^<script>$" "^</script>$" js)
          ("^<style[ ]?\\(scoped\\)?>" "^</style>$" css)
+         ("^<style lang=\"stylus\"[ ]?\\(scoped\\)?>" "^</style>$" stylus)
          ("^<style lang=\"scss\"[ ]?\\(scoped\\)?>" "^</style>$" scss)
          ("^<style lang=\"sass\"[ ]?\\(scoped\\)?>" "^</style>$" sass))
        "Alist of regexps matching editable blocks.
@@ -665,15 +666,15 @@
            (delete-region beg end)
            (insert code))))
 
-       (defun fence-edit-abort ()
-         "Conclude editing, discarding the edited text."
-         (interactive)
-         (fence-edit--guard-edit-buffer)
-         (let ((dest-buffer (marker-buffer fence-edit-mark-beg)))
-           (fence-edit--abandon-edit-buffer dest-buffer)))
+     (defun fence-edit-abort ()
+       "Conclude editing, discarding the edited text."
+       (interactive)
+       (fence-edit--guard-edit-buffer)
+       (let ((dest-buffer (marker-buffer fence-edit-mark-beg)))
+         (fence-edit--abandon-edit-buffer dest-buffer)))
 
 
-       (global-set-key (kbd "C-c '") 'fence-edit-code-at-point)
+     (global-set-key (kbd "C-c '") 'fence-edit-code-at-point)
    #+END_SRC
 
 ** ChordPro Mode
