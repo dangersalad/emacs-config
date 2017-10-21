@@ -1014,7 +1014,7 @@
          (setq helm-net-prefer-curl t))
 
        (setq helm-quick-update                     t ; do not display invisible candidates
-             helm-split-window-in-side-p           t ; open helm buffer inside current window, not occupy whole other window
+             helm-split-window-inside-p            t ; open helm buffer inside current window, not occupy whole other window
              helm-buffers-fuzzy-matching           t ; fuzzy matching buffer names when non--nil
              helm-M-x-fuzzy-match                  t ; fuzzy match M-x
              helm-recentf-fuzzy-match              t ; fuzzy match recent files
@@ -1030,10 +1030,6 @@
              helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
              helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
              helm-ff-file-name-history-use-recentf t)
-
-       (setq helm-split-window-in-side-p t)
-       ;; (setq helm-autoresize-max-height 25)
-       ;; (setq helm-autoresize-min-height 25)
 
        (helm-mode 1))
 
@@ -1434,7 +1430,29 @@
        (setq-default flycheck-disabled-checkers
                      (append flycheck-disabled-checkers
                              '(javascript-jshint)))
-       (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules))
+       (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules)
+       (flycheck-define-checker protobuf-protoc
+         "A protobuf syntax checker using the protoc compiler.
+
+     See URL `https://developers.google.com/protocol-buffers/'."
+         :command ("protoc" "--error_format" "gcc"
+                   (eval (concat "--java_out=" (flycheck-temp-dir-system)))
+                   ;; Add the file directory of protobuf path to resolve import directives
+                   (eval (concat "--proto_path=" (file-name-directory (buffer-file-name))))
+                   "--proto_path=/usr/local/include"
+                   (eval (concat "--proto_path=" (getenv "GOPATH") "/src"))
+                   (eval (concat "--proto_path=" (getenv "GOPATH") "/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis"))
+                   source-inplace)
+         :error-patterns
+         ((info line-start (file-name) ":" line ":" column
+                ": note: " (message) line-end)
+          (error line-start (file-name) ":" line ":" column
+                 ": " (message) line-end)
+          (error line-start
+                 (message "In file included from") " " (file-name) ":" line ":"
+                 column ":" line-end))
+         :modes protobuf-mode
+         :predicate (lambda () (buffer-file-name))))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
@@ -1679,34 +1697,7 @@
 
    #+BEGIN_SRC emacs-lisp
      (use-package protobuf-mode
-       :ensure t
-       :config
-       (flycheck-define-checker protobuf-protoc
-         "A protobuf syntax checker using the protoc compiler.
-
-     See URL `https://developers.google.com/protocol-buffers/'."
-         :command ("protoc" "--error_format" "gcc"
-                   (eval (concat "--java_out=" (flycheck-temp-dir-system)))
-                   ;; Add the file directory of protobuf path to resolve import directives
-                   (eval (concat "--proto_path=" (file-name-directory (buffer-file-name))))
-                   "--proto_path=/usr/local/include"
-                   (eval (concat "--proto_path=" (getenv "GOPATH") "/src"))
-                   (eval (concat "--proto_path=" (getenv "GOPATH") "/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis"))
-                   source-inplace)
-         :error-patterns
-         ((info line-start (file-name) ":" line ":" column
-                ": note: " (message) line-end)
-          (error line-start (file-name) ":" line ":" column
-                 ": " (message) line-end)
-          (error line-start
-                 (message "In file included from") " " (file-name) ":" line ":"
-                 column ":" line-end))
-         :modes protobuf-mode
-         :predicate (lambda () (buffer-file-name)))
-
-       )
-
-
+       :ensure t)
    #+END_SRC
 
 
