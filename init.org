@@ -850,6 +850,14 @@
            (set-face-attribute 'avy-lead-face nil :foreground zenburn-fg+1 :background zenburn-red-4))))
    #+END_SRC
 
+** Try
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package try
+       :ensure t
+       :pin melpa-stable)
+   #+END_SRC
+
 ** Autorevert
 
    #+BEGIN_SRC emacs-lisp
