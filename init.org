@@ -411,7 +411,7 @@
          ("^<template>$" "^</template>$" web)
          ("^<script>$" "^</script>$" js)
          ("^<style[ ]?\\(scoped\\)?>" "^</style>$" css)
-         ("^<style lang=\"stylus\"[ ]?\\(scoped\\)?>" "^</style>$" stylus)
+         ("^<style lang=\"stylus\"[ ]?\\(scoped\\)?>" "^</style>$" )
          ("^<style lang=\"scss\"[ ]?\\(scoped\\)?>" "^</style>$" scss)
          ("^<style lang=\"sass\"[ ]?\\(scoped\\)?>" "^</style>$" sass))
        "Alist of regexps matching editable blocks.
@@ -1172,6 +1172,14 @@
        (add-hook 'org-cycle-hook 'ds/org-logbook-cycle-hook))
 
 
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package org-bullets
+       :ensure t
+       :pin melpa-stable
+       :config
+       (add-hook 'org-mode-hook (lambda () (org-bullets-mode 1))))
    #+END_SRC
 
 ** Projectile
