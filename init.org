@@ -1411,6 +1411,27 @@
        )
    #+END_SRC
 
+** Hydra
+   #+BEGIN_SRC emacs-lisp
+     (use-package hydra
+       :ensure t
+       :pin melpa-stable
+       :config
+       (defhydra hydra-zoom (global-map "C-c z")
+         "zoom"
+         ("g" text-scale-increase "in")
+         ("l" text-scale-decrease "out"))
+       (defhydra hydra-muti-cursor (global-map "C-c n" :hint nil)
+       "
+     ^Mark^
+     ^^^^^^^^-----------------------------------------------------------------
+     _n_: next    
+     _p_: previous
+     "
+         ("n" mc/mark-next-like-this)
+         ("p" mc/mark-previous-like-this)))
+   #+END_SRC
+
    
 * Programming Packages
 
