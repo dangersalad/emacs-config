@@ -1190,6 +1190,17 @@
          ("p" mc/mark-previous-like-this)))
    #+END_SRC
 
+** Avy
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package avy
+       :ensure t
+       :pin melpa-stable
+       :bind (("C-c j j" . avy-goto-line)
+              ("C-c j w" . avy-goto-word-or-subword-1)
+              ("C-c j c" . avy-goto-char)))
+   #+END_SRC
+
 ** Ivy
    
    #+BEGIN_SRC emacs-lisp
