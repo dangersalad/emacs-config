@@ -1187,7 +1187,7 @@
        :init
        (defvar projectile-remember-window-configs t)
        :config
-       (projectile-mode))
+       (projectile-global-mode))
    #+END_SRC
 
    Add the extension to use helm
