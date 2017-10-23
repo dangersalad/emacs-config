@@ -796,15 +796,6 @@
            (set-face-attribute 'flycheck-warning nil :underline `(:style line :color ,zenburn-yellow-2))
            (set-face-attribute 'flycheck-info nil :underline `(:style line :color ,zenburn-blue-2))))
 
-       ;; helm faces
-       (with-eval-after-load 'helm
-         (zenburn-with-color-variables
-           (set-face-attribute 'helm-source-header nil :background zenburn-bg+2 :height 1.3 :box '(:style nil))
-           (set-face-attribute 'helm-selection nil :background zenburn-bg+2 :weight 'bold)))
-       (with-eval-after-load 'helm-utils
-         (zenburn-with-color-variables
-           (set-face-attribute 'helm-selection-line nil :background zenburn-bg+2)))
-
        ;; company faces
        (with-eval-after-load 'company
          (zenburn-with-color-variables
@@ -848,6 +839,15 @@
            (set-face-attribute 'avy-lead-face-1 nil :foreground zenburn-fg+1 :background zenburn-bg-2)
            (set-face-attribute 'avy-lead-face-2 nil :foreground zenburn-fg+1 :background zenburn-blue-4)
            (set-face-attribute 'avy-lead-face nil :foreground zenburn-fg+1 :background zenburn-red-4))))
+
+       ;; flycheck use straight underline instead of wave
+     (with-eval-after-load 'ivy
+         (zenburn-with-color-variables
+           (set-face-attribute 'ivy-current-match nil :foreground zenburn-bg-2 :background zenburn-bg+3 :box zenburn-blue :underline nil)
+           (set-face-attribute 'ivy-minibuffer-match-face-2 nil :background nil :box zenburn-green-1 :underline nil)
+           (set-face-attribute 'ivy-minibuffer-match-face-3 nil :background nil :box zenburn-red-1 :underline nil)
+           (set-face-attribute 'ivy-minibuffer-match-face-4 nil :background nil :box zenburn-yellow-1 :underline nil)))
+
    #+END_SRC
 
 ** Try
@@ -969,7 +969,6 @@
            (define-key map (kbd "C-g") 'magit-status)
            (define-key map "l" 'magit-log)
            (define-key map "f" 'magit-fetch-current)
-           (define-key map "h" 'helm-git-files)
            (define-key map "!" 'magit-blame-mode)
            (define-key map "c" 'magit-checkout)
            (define-key map (kbd "C-r") 'magit-rebase-step)
@@ -991,86 +990,6 @@
                                      
    #+END_SRC
 
-** Helm
-
-   #+BEGIN_SRC emacs-lisp
-     (use-package helm
-       :ensure t
-       :pin melpa-stable
-       :diminish helm-mode
-       :bind (("C-c h" . helm-command-prefix)
-              ("M-x" . helm-M-x)
-              ("M-y" . helm-show-kill-ring)
-              ("C-x b" . helm-mini)
-              ("C-x C-b" . helm-mini)
-              ("C-x C-f" . helm-find-files)
-              :map helm-map
-              (([tab] . helm-execute-persistent-action)
-               "C-z" . helm-select-action))
-       :config
-       (when (executable-find "curl")
-         (setq helm-net-prefer-curl t))
-
-       (setq helm-quick-update                     t ; do not display invisible candidates
-             helm-split-window-inside-p            t ; open helm buffer inside current window, not occupy whole other window
-             helm-buffers-fuzzy-matching           t ; fuzzy matching buffer names when non--nil
-             helm-M-x-fuzzy-match                  t ; fuzzy match M-x
-             helm-recentf-fuzzy-match              t ; fuzzy match recent files
-             helm-bookmark-show-location           t
-             helm-completion-in-region-fuzzy-match t
-             helm-file-cache-fuzzy-match           t
-             helm-imenu-fuzzy-match                t
-             helm-mode-fuzzy-match                 t
-             helm-locate-fuzzy-match               t
-             helm-quick-update                     t
-             helm-semantic-fuzzy-match             t
-             helm-move-to-line-cycle-in-source     t ; move to end or beginning of source when reaching top or bottom of source.
-             helm-ff-search-library-in-sexp        t ; search for library in `require' and `declare-function' sexp.
-             helm-scroll-amount                    8 ; scroll 8 lines other window using M-<next>/M-<prior>
-             helm-ff-file-name-history-use-recentf t)
-
-       (helm-mode 1))
-
-   #+END_SRC
-
-
-
-   Add in ~flx~ for fuzzy matching
-
-   #+BEGIN_SRC emacs-lisp
-     (use-package flx
-       :ensure t
-       :pin melpa-stable
-       :config
-       (with-eval-after-load 'helm
-         ;; this is a bit hackish, ATM, redefining functions I don't own
-         (defvar helm-flx-cache (flx-make-string-cache #'flx-get-heatmap-str))
-
-         (defun helm-score-candidate-for-pattern (candidate pattern)
-           (or (car (flx-score candidate pattern helm-flx-cache)) 0))
-
-         (defun helm-fuzzy-default-highlight-match (candidate)
-           (let* ((pair (and (consp candidate) candidate))
-                  (display (if pair (car pair) candidate))
-                  (real (cdr pair)))
-             (with-temp-buffer
-               (insert display)
-               (goto-char (point-min))
-               (if (string-match-p " " helm-pattern)
-                   (cl-loop with pattern = (split-string helm-pattern)
-                            for p in pattern
-                            do (when (search-forward p nil t)
-                                 (add-text-properties
-                                  (match-beginning 0) (match-end 0) '(face helm-match))))
-                 (cl-loop with pattern = (cdr (flx-score display
-                                                         helm-pattern helm-flx-cache))
-                          for index in pattern
-                          do (add-text-properties
-                              (1+ index) (+ 2 index) '(face helm-match))))
-               (setq display (buffer-string)))
-             (if real (cons display real) display)))))
-   #+END_SRC
-
 ** Window Purpose
 
    #+BEGIN_SRC emacs-lisp
@@ -1079,12 +998,7 @@
        :pin melpa-stable
        :config
        (define-key purpose-mode-map (kbd "C-x b") nil)
-       (define-key purpose-mode-map (kbd "C-x C-f") nil)
-       (use-package helm-purpose
-         :ensure t
-         :pin melpa-stable
-         :config
-         (helm-purpose-setup)))
+       (define-key purpose-mode-map (kbd "C-x C-f") nil))
    #+END_SRC
 
 ** Org
@@ -1182,35 +1096,12 @@
      (use-package projectile
        :ensure t
        :pin melpa-stable
-       :bind (:map projectile-command-map
-                   ("s s" . helm-projectile-ag))
        :init
        (defvar projectile-remember-window-configs t)
        :config
        (projectile-global-mode))
    #+END_SRC
 
-   Add the extension to use helm
-
-   #+BEGIN_SRC emacs-lisp
-     (use-package helm-projectile
-       :ensure t 
-       :pin melpa-stable
-       :config
-       (helm-projectile-toggle 1)
-       (setq helm-projectile-fuzzy-match t))
-
-   #+END_SRC
-    
-   Then add ~helm-ag~ so you can use ~the_silver_searcher~ across all
-   the project files
-
-   #+BEGIN_SRC emacs-lisp
-     (use-package helm-ag
-       :ensure t
-       :pin melpa-stable)
-   #+END_SRC
-    
 ** Multiple Cursors
 
    #+BEGIN_SRC emacs-lisp
@@ -1411,6 +1302,13 @@
        )
    #+END_SRC
 
+** Flx
+   #+BEGIN_SRC emacs-lisp
+     (use-package flx
+       :ensure t
+       :pin melpa-stable)
+   #+END_SRC
+   
 ** Hydra
    #+BEGIN_SRC emacs-lisp
      (use-package hydra
@@ -1432,7 +1330,71 @@
          ("p" mc/mark-previous-like-this)))
    #+END_SRC
 
+** Ivy
    
+   #+BEGIN_SRC emacs-lisp
+     (use-package ivy
+       :ensure t
+       :pin melpa-stable
+       :diminish (ivy-mode . "")
+       :bind (("C-x C-b" . ivy-switch-buffer)
+              :map ivy-mode-map
+              ("C-'" . ivy-avy))
+       :config
+       (ivy-mode 1)
+       ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
+       (setq ivy-use-virtual-buffers t)
+       ;; recursive minibuffer
+       (setq enable-recursive-minibuffers t)
+       ;; count display
+       (setq ivy-count-format "(%d/%d) ")
+       ;; wrap
+       (setq ivy-wrap t)
+       ;; number of result lines to display
+       (setq ivy-height 10)
+       ;; no regexp by default
+       (setq ivy-initial-inputs-alist nil)
+       ;; configure regexp engine.
+       (setq ivy-re-builders-alist
+             ;; allow input not in order
+             '((t . ivy--regex-fuzzy))))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package ivy-hydra
+       :ensure t
+       :pin melpa-stable)
+   #+END_SRC
+
+** Counsel
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package counsel
+       :ensure t
+       :pin melpa-stable
+       :bind (("M-x" . counsel-M-x)
+              ("C-x C-f" . counsel-find-file)
+              :map read-expression-map
+              ("C-r" . counsel-expression-history)))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package counsel-projectile
+       :ensure t
+       :config
+       (counsel-projectile-on))
+   #+END_SRC
+
+** Swiper
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package swiper
+       :ensure t
+       :pin melpa-stable
+       :bind (("C-s" . swiper)))
+   #+END_SRC
+
+
 * Programming Packages
 
 ** Flycheck
