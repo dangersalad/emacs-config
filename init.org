@@ -127,7 +127,6 @@
    #+END_SRC
 
 ** Basic Customizations
-
 *** Indentation
 
     Fuck tabs
@@ -858,6 +857,20 @@
        :pin melpa-stable)
    #+END_SRC
 
+** Fontawesome
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package fontawesome
+       :ensure t
+       :config
+       (defun ds/vc-git-mode-line-string (orig-fn &rest args)
+         "Replace Git in modeline with font-awesome git icon via ORIG-FN and ARGS."
+         (let ((str (apply orig-fn args)))
+           (concat [#xf126] ":" (substring-no-properties str 4))))
+
+       (advice-add #'vc-git-mode-line-string :around #'ds/vc-git-mode-line-string))
+   #+END_SRC
+
 ** Autorevert
 
    #+BEGIN_SRC emacs-lisp
@@ -1099,6 +1112,11 @@
        :init
        (defvar projectile-remember-window-configs t)
        :config
+       (setq projectile-mode-line '(:eval
+        (if (file-remote-p default-directory)
+            " NoProj"
+          (format " Proj[%s]"
+                  (projectile-project-name)))))
        (projectile-global-mode))
    #+END_SRC
 
