@@ -1580,6 +1580,14 @@
                ("account" "ledger -f %(ledger-file) reg %(account)"))))
    #+END_SRC
 
+** Kubernetes
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package kubernetes
+       :ensure t
+       :commands (kubernetes-overview))
+   #+END_SRC
+
 
 * Bootstrap
 
