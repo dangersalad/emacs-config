@@ -1452,7 +1452,7 @@
                    (message "In file included from") " " (file-name) ":" line ":"
                    column ":" line-end))
            :modes protobuf-mode
-           :predicate (lambda () (buffer-file-name)))))
+           :predicate buffer-file-name)))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
