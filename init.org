@@ -1450,28 +1450,29 @@
                      (append flycheck-disabled-checkers
                              '(javascript-jshint)))
        (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules)
-       (flycheck-define-checker protobuf-protoc
-         "A protobuf syntax checker using the protoc compiler.
+       (with-eval-after-load 'protobuf-mode
+         (flycheck-define-checker protobuf-protoc
+           "A protobuf syntax checker using the protoc compiler.
 
      See URL `https://developers.google.com/protocol-buffers/'."
-         :command ("protoc" "--error_format" "gcc"
-                   (eval (concat "--java_out=" (flycheck-temp-dir-system)))
-                   ;; Add the file directory of protobuf path to resolve import directives
-                   (eval (concat "--proto_path=" (file-name-directory (buffer-file-name))))
-                   "--proto_path=/usr/local/include"
-                   (eval (concat "--proto_path=" (getenv "GOPATH") "/src"))
-                   (eval (concat "--proto_path=" (getenv "GOPATH") "/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis"))
-                   source-inplace)
-         :error-patterns
-         ((info line-start (file-name) ":" line ":" column
-                ": note: " (message) line-end)
-          (error line-start (file-name) ":" line ":" column
-                 ": " (message) line-end)
-          (error line-start
-                 (message "In file included from") " " (file-name) ":" line ":"
-                 column ":" line-end))
-         :modes protobuf-mode
-         :predicate (lambda () (buffer-file-name))))
+           :command ("protoc" "--error_format" "gcc"
+                     (eval (concat "--java_out=" (flycheck-temp-dir-system)))
+                     ;; Add the file directory of protobuf path to resolve import directives
+                     (eval (concat "--proto_path=" (file-name-directory (buffer-file-name))))
+                     "--proto_path=/usr/local/include"
+                     (eval (concat "--proto_path=" (getenv "GOPATH") "/src"))
+                     (eval (concat "--proto_path=" (getenv "GOPATH") "/src/github.com/grpc-ecosystem/grpc-gateway/third_party/googleapis"))
+                     source-inplace)
+           :error-patterns
+           ((info line-start (file-name) ":" line ":" column
+                  ": note: " (message) line-end)
+            (error line-start (file-name) ":" line ":" column
+                   ": " (message) line-end)
+            (error line-start
+                   (message "In file included from") " " (file-name) ":" line ":"
+                   column ":" line-end))
+           :modes protobuf-mode
+           :predicate (lambda () (buffer-file-name)))))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
