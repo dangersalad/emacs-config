@@ -1582,6 +1582,12 @@
    #+END_SRC
 
 ** Javascript
+
+   Succumb to the 2 space indent cartel
+
+   #+BEGIN_SRC emacs-lisp
+     (setq js-indent-level 2)
+   #+END_SRC
    
    #+BEGIN_SRC emacs-lisp
      (use-package js2-mode
