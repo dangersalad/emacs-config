@@ -1630,38 +1630,6 @@
        (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode)))
    #+END_SRC
 
-** Typescript
-
-   #+BEGIN_SRC emacs-lisp
-     (use-package typescript-mode
-       :ensure t
-       :pin melpa-stable)
-
-     (use-package tide
-       :ensure t
-       :pin melpa-stable
-       :config
-       (defun setup-tide-mode ()
-         (interactive)
-         (tide-setup)
-         (flycheck-mode +1)
-         (setq flycheck-check-syntax-automatically '(save mode-enabled))
-         (eldoc-mode +1)
-         (tide-hl-identifier-mode +1)
-         (company-mode +1))
-
-       ;; aligns annotation to the right hand side
-       (setq company-tooltip-align-annotations t)
-
-       ;; formats the buffer before saving
-       (add-hook 'before-save-hook 'tide-format-before-save)
-
-       (add-hook 'typescript-mode-hook #'setup-tide-mode)
-
-       ;; format options
-       (setq tide-format-options '(:insertSpaceAfterFunctionKeywordForAnonymousFunctions t :placeOpenBraceOnNewLineForFunctions nil)))
-   #+END_SRC
-
 ** Protobuf
 
    #+BEGIN_SRC emacs-lisp
@@ -1669,7 +1637,7 @@
        :ensure t)
    #+END_SRC
 
-
+   
 * Applications
 
   Packages that are sort of "apps" on their own or interact with other
