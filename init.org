@@ -1201,6 +1201,14 @@
               ("C-c j c" . avy-goto-char)))
    #+END_SRC
 
+** Smex
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package smex
+       :ensure t
+       :pin melpa-stable)
+   #+END_SRC
+
 ** Ivy
    
    #+BEGIN_SRC emacs-lisp
