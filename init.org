@@ -856,23 +856,12 @@
            (set-face-attribute 'ivy-minibuffer-match-face-4 nil :background nil :box zenburn-yellow-1 :underline nil)))
    #+END_SRC
 
-** Try (Try packages without installing)
+** Try
 
    #+BEGIN_SRC emacs-lisp
      (use-package try
        :ensure t
        :pin melpa-stable)
-   #+END_SRC
-
-** Paradox (Package Manager Replacement)
-
-   #+BEGIN_SRC emacs-lisp
-     (use-package paradox
-       :ensure t
-       :pin melpa-stable
-       :config
-       (setq paradox-spinner-type 'random)
-       (paradox-enable))
    #+END_SRC
 
 ** Fontawesome
@@ -1181,7 +1170,7 @@
        (exec-path-from-shell-initialize))
    #+END_SRC
 
-** Flx (Fuzzy Matching)
+** Flx
    #+BEGIN_SRC emacs-lisp
      (use-package flx
        :ensure t
@@ -1220,7 +1209,7 @@
               ("C-c j c" . avy-goto-char)))
    #+END_SRC
 
-** Smex (Enhanced ~M-x~)
+** Smex
 
    #+BEGIN_SRC emacs-lisp
      (use-package smex
