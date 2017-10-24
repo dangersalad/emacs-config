@@ -66,6 +66,8 @@
              ("gnu"          . 10)
              ("melpa"        . 0)))
 
+     (setq package-pinned-packages '((use-package . "melpa")))
+
      (package-initialize)
 
      (unless (package-installed-p 'use-package)
@@ -1412,7 +1414,9 @@
    Succumb to the 2 space indent cartel
 
    #+BEGIN_SRC emacs-lisp
-     (setq js-indent-level 2)
+     (use-package js
+       :config
+       (setq js-indent-level 2))
    #+END_SRC
    
    #+BEGIN_SRC emacs-lisp
