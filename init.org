@@ -21,7 +21,7 @@
   you save the ~init.org~ file, the ~init.el~ file will be tangled and
   compiled.
 
-
+  
 * Configuration
 
 ** Init
@@ -55,10 +55,17 @@
    #+BEGIN_SRC emacs-lisp
      (require 'package)
      (setq package-enable-at-startup nil)
-     (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/"))
-     (add-to-list 'package-archives '("melpa-stable" . "http://stable.melpa.org/packages/"))
-     (add-to-list 'package-archives '("gnu" . "http://elpa.gnu.org/packages/"))
-     (add-to-list 'package-archives '("org" . "http://orgmode.org/elpa/"))
+     (setq package-archives
+           '(("melpa"        . "http://melpa.org/packages/")
+             ("melpa-stable" . "http://stable.melpa.org/packages/")
+             ("gnu"          . "http://elpa.gnu.org/packages/")
+             ("org"          . "http://orgmode.org/elpa/"))
+           package-archive-priorities
+           '(("org"          . 20)
+             ("melpa-stable" . 15)
+             ("gnu"          . 10)
+             ("melpa"        . 0)))
+
      (package-initialize)
 
      (unless (package-installed-p 'use-package)
@@ -862,6 +869,7 @@
    #+BEGIN_SRC emacs-lisp
      (use-package fontawesome
        :ensure t
+       :pin melpa
        :config
        (defun ds/vc-git-mode-line-string (orig-fn &rest args)
          "Replace Git in modeline with font-awesome git icon via ORIG-FN and ARGS."
