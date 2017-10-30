@@ -1610,6 +1610,5 @@
 
   ;; Local Variables:
   ;; eval: (when (not (fboundp 'ds/tangle-init)) (add-hook 'after-save-hook (lambda ()(org-babel-tangle)) nil t))
-  ;; eval: (when (fboundp 'ds/toggle-serif) (ds/toggle-serif))
   ;; End:
 
