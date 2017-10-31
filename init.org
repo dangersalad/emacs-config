@@ -343,6 +343,7 @@
              font-lock-variable-name-face
              font-lock-warning-face))
 
+     (require 'face-remap)
 
      (defun ds/toggle-serif ()
        "Change the default face of the current buffer to use a serif family."
@@ -1007,10 +1008,11 @@
        (define-key global-map (kbd "C-c g") my-git-command-map)
        (define-key global-map (kbd "C-c C-g") my-git-command-map)
 
+       (setq global-magit-file-mode t)
        (add-hook 'magit-popup-mode-hook
                  (lambda()
                    (fit-window-to-buffer))))
-                                     
+
    #+END_SRC
 
 ** Window Purpose
@@ -1396,6 +1398,7 @@
        :ensure t
        :config
        (setq company-go-insert-arguments nil)
+       (setq company-go-show-annotation t)
        (add-hook 'go-mode-hook (lambda ()
                                  (set (make-local-variable 'company-backends) '(company-go))
                                  (company-mode))))
@@ -1469,6 +1472,7 @@
        :ensure t
        :pin melpa-stable
        :config
+       (setq web-mode-code-indent-offset 2)
        (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode)))
    #+END_SRC
 
