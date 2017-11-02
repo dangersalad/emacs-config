@@ -1062,10 +1062,32 @@
        (setq org-catch-invisible-edits t)
 
        (setq org-clock-idle-time 15)
-       (setq org-clock-mode-line-total 'current)
+       (setq org-clock-mode-line-total 'today)
        (setq org-log-into-drawer "LOGBOOK")
        (setq org-clock-into-drawer "LOGBOOK")
        (setq org-duration-format '(("h" . t) (special . 2)))
+
+
+
+       ;; Resume clocking task when emacs is restarted
+       (org-clock-persistence-insinuate)
+       ;; Save the running clock and all clock history when exiting Emacs, load it on startup
+       (setq org-clock-persist t)
+       ;; Resume clocking task on clock-in if the clock is open
+       (setq org-clock-in-resume t)
+       ;; Do not prompt to resume an active clock, just resume it
+       (setq org-clock-persist-query-resume nil)
+       ;; Sometimes I change tasks I'm clocking quickly - this removes clocked tasks
+       ;; with 0:00 duration
+       (setq org-clock-out-remove-zero-time-clocks t)
+       ;; Clock out when moving task to a done state
+       (setq org-clock-out-when-done t)
+       ;; Enable auto clock resolution for finding open clocks
+       (setq org-clock-auto-clock-resolution (quote when-no-clock-is-running))
+       ;; Include current clocking task in clock reports
+       (setq org-clock-report-include-clocking-task t)
+       ;; use pretty things for the clocktable
+       (setq org-pretty-entities t)
 
        (setq org-todo-keywords
              '((sequence "TODO(t)" "IN-PROGRESS(i!)" "WAITING(w@)" "|" "WILL-NOT-IMPLEMENT(k@)" "DONE(d)")
