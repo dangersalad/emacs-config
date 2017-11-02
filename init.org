@@ -1015,6 +1015,14 @@
 
    #+END_SRC
 
+   Add ~git-timemachine~ for the ~C-c g C-t~ binding
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package git-timemachine
+       :ensure t
+       :pin melpa-stable)
+   #+END_SRC
+
 ** Window Purpose
 
    #+BEGIN_SRC emacs-lisp
