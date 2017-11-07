@@ -246,6 +246,12 @@
                       (message "No Compilation Errors!"))))))
     #+END_SRC
 
+    Make compile window auto-scroll
+
+    #+BEGIN_SRC emacs-lisp
+      (setq compilation-scroll-output t)
+    #+END_SRC
+
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
