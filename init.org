@@ -1394,7 +1394,22 @@
        (setq company-idle-delay .4)    ; decrease delay before autocompletion popup shows
        (setq company-echo-delay 0))    ; remove annoying blinking
    #+END_SRC
-   
+
+** Language Server Protocol (LSP)
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package lsp-mode
+       :ensure t
+       :config
+       (use-package company-lsp
+         :ensure t
+         :config
+         (push 'company-lsp company-backends))
+       (with-eval-after-load 'lsp-mode
+         (require 'lsp-flycheck))
+       )
+   #+END_SRC
+
 ** Commenter
 
    Originally for evil, but works great for vanilla
@@ -1515,6 +1530,14 @@
      (use-package json-mode
        :ensure t
        :pin melpa-stable)
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package lsp-javascript-typescript
+       :ensure t
+       :config
+       (with-eval-after-load 'lsp-javascript-typescript
+         (add-hook 'js-mode-hook #'lsp-javascript-typescript-enable)))
    #+END_SRC
 
 ** Web Mode (php+html+javascript)
