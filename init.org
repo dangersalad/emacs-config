@@ -1354,16 +1354,18 @@
        (setq-default flycheck-disabled-checkers
                      (append flycheck-disabled-checkers
                              '(javascript-jshint)))
+       (setq flycheck-display-errors-delay 0.4)
        (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
-     (use-package flycheck-pos-tip
+     (use-package flycheck-popup-tip
        :ensure t
-       :pin melpa-stable
        :config
+       (custom-set-variables
+        '(flycheck-popup-tip-error-prefix "> "))
        (with-eval-after-load 'flycheck
-       (flycheck-pos-tip-mode)))
+         (flycheck-popup-tip-mode)))
    #+END_SRC
 
    The mode line coloring is disabled for now
