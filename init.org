@@ -1355,7 +1355,24 @@
                      (append flycheck-disabled-checkers
                              '(javascript-jshint)))
        (setq flycheck-display-errors-delay 0.4)
-       (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules))
+       (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules)
+
+       (defun ds/flycheck-auto-popup ()
+         (let ((curbuf (current-buffer)))
+           (if (/= (length flycheck-current-errors) 0)
+               (progn
+                 (flycheck-list-errors)
+                 (switch-to-buffer-other-window flycheck-error-list-buffer)))
+           (with-current-buffer curbuf
+             (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-auto-popup t))))
+
+
+       (defun ds/flycheck-save-hook ()
+         (add-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-auto-popup nil t))
+
+       (add-hook 'flycheck-mode-hook
+                 (lambda ()
+                   (add-hook 'after-save-hook #'ds/flycheck-save-hook t t))))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
