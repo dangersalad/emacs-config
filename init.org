@@ -1681,7 +1681,9 @@
    #+BEGIN_SRC emacs-lisp
      (use-package kubernetes
        :ensure t
-       :commands (kubernetes-overview))
+       :commands (kubernetes-overview)
+       :config
+       (setq kubernetes-poll-frequency 15))
    #+END_SRC
 
 
