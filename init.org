@@ -261,7 +261,8 @@
           (with-eval-after-load 'company
             (setq-local company-backends '(company-eshell-autosuggest company-elisp))
             (setq-local company-idle-delay 0)))
-        (add-hook 'eshell-mode-hook #'ds/setup-eshell-autosuggest))
+        (with-eval-after-load 'company
+          (add-hook 'eshell-mode-hook #'ds/setup-eshell-autosuggest)))
     #+END_SRC
 
 ** Utility Functions
