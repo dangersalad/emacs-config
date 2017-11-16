@@ -315,12 +315,12 @@
             (defmacro ds/eshell-section (NAME ICON FORM &rest PROPS)
               "Build eshell section NAME with ICON prepended to evaled FORM with PROPS."
               `(defvar ,NAME
-                     (lambda () (when ,FORM
-                                  (let ((result (concat ,ICON (if (> (length ,ICON) 0) ds/eshell-section-delim "") ,FORM)))
-                                    (if ,@PROPS
-                                        (ds/with-face result ,@PROPS)
-                                      result))))
-                     "Eshell prompt section - ,NAME"))
+                 (lambda () (when ,FORM
+                              (let ((result (concat ,ICON (if (> (length ,ICON) 0) ds/eshell-section-delim "") ,FORM)))
+                                (if ,@PROPS
+                                    (ds/with-face result ,@PROPS)
+                                  result))))
+                 "Eshell prompt section - ,NAME"))
 
 
             (defun ds/split-directory-prompt (directory)
@@ -381,6 +381,12 @@
                                              staged unstaged untracked)
                                    nil)))
 
+            (ds/eshell-section esh-last-command-status
+                               ""
+                               (if (eq eshell-last-command-status 0)
+                                   nil
+                                 (ds/with-face "" (zenburn-with-color-variables `(:foreground ,zenburn-red+1)))))
+
             (set-fontset-font t '(#Xf017 . #Xf017) "fontawesome")
 
             (ds/eshell-section esh-clock
@@ -390,13 +396,13 @@
                                  `(:foreground ,zenburn-green)))
 
             ;; Choose which eshell-funcs to enable
-            (defvar ds/eshell-funcs (list (list esh-dir esh-clock) esh-git)
+            (defvar ds/eshell-funcs (list (list esh-dir esh-clock) (list esh-git) (list esh-last-command-status))
               "Eshell prompt sections")
 
             (defun ds/eshell-acc (acc x)
               "Accumulator for evaluating and concatenating esh-sections."
               (if (and (listp x) (not (functionp x)))
-                  (concat acc (-reduce-from 'ds/eshell-acc "" x) "\n")
+                  (concat acc (-reduce-from 'ds/eshell-acc "" x) "\n ")
                 (--if-let (funcall x)
                     (if (s-blank? acc)
                         it
@@ -410,7 +416,7 @@
             (defun ds/eshell-prompt-func ()
               "Build `eshell-prompt-function'"
               (concat ds/eshell-header
-                      (replace-regexp-in-string "\n$" "" (-reduce-from 'ds/eshell-acc "" ds/eshell-funcs))
+                      (replace-regexp-in-string "\n $" "" (-reduce-from 'ds/eshell-acc "" ds/eshell-funcs))
                       "\n"
                       (concat " " (if (= (user-uid) 0) "#" "$") " ")))
 
