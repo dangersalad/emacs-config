@@ -254,6 +254,8 @@
 
 *** Eshell
 
+    Some settings to make eshell "nicer"
+
     #+BEGIN_SRC emacs-lisp
       (use-package eshell
         :config
@@ -261,8 +263,165 @@
           (with-eval-after-load 'company
             (setq-local company-backends '(company-eshell-autosuggest company-elisp))
             (setq-local company-idle-delay 0)))
+
         (with-eval-after-load 'company
-          (add-hook 'eshell-mode-hook #'ds/setup-eshell-autosuggest)))
+          (add-hook 'eshell-mode-hook #'ds/setup-eshell-autosuggest))
+
+        (setenv "PAGER" "cat")
+
+        (setq eshell-scroll-to-bottom-on-input 'all
+              eshell-error-if-no-glob t
+              eshell-hist-ignoredups t
+              eshell-save-history-on-exit t
+              eshell-prefer-lisp-functions nil
+              eshell-destroy-buffer-when-process-dies t)
+
+        (add-hook 'eshell-mode-hook
+                  (lambda ()
+                    (add-to-list 'eshell-visual-commands "ssh")
+                    (add-to-list 'eshell-visual-commands "tail")
+                    (add-to-list 'eshell-visual-commands "top"))))
+    #+END_SRC
+
+    Prompt setup for eshell
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package dash
+        :ensure t
+        :config
+        (use-package s
+          :ensure t
+          :config
+          (use-package eshell
+            :init
+
+            (with-eval-after-load 'zenburn-theme
+              (defvar ds/eshell-sep " | "
+                "Separator between esh-sections")
+
+              (defvar ds/eshell-section-delim " "
+                "Separator between an esh-section icon and form")
+
+              (defvar ds/eshell-header "\n "
+                "Eshell prompt header")
+
+              (setq eshell-prompt-regexp "^ [$#] ")
+
+              ;; set base prompt face
+              (zenburn-with-color-variables
+                (set-face-attribute 'eshell-prompt-face nil :foreground zenburn-fg :weight 'normal))
+
+              (defmacro ds/with-face (STR &rest PROPS)
+                "Return STR propertized with PROPS."
+                `(propertize ,STR 'face (list ,@PROPS)))
+
+              (defmacro ds/eshell-section (NAME ICON FORM &rest PROPS)
+                "Build eshell section NAME with ICON prepended to evaled FORM with PROPS."
+                `(setq ,NAME
+                       (lambda () (when ,FORM
+                                    (let ((result (concat ,ICON (if (> (length ,ICON) 0) ds/eshell-section-delim "") ,FORM)))
+                                      (if ,@PROPS
+                                          (ds/with-face result ,@PROPS)
+                                        result))))))
+
+
+              (defun ds/split-directory-prompt (directory)
+                (if (string-match-p ".*/.*" directory)
+                    (list (file-name-directory directory) (file-name-base directory))
+                  (list "" directory)))
+
+              (defun ds/pwd-shorten-dirs (pwd)
+                "Shorten all directory names in PWD except the last two."
+                (let ((p-lst (split-string pwd "/")))
+                  (if (> (length p-lst) 2)
+                      (concat
+                       (mapconcat (lambda (elm) (if (zerop (length elm)) ""
+                                                  (substring elm 0 1)))
+                                  (butlast p-lst 2)
+                                  "/")
+                       "/"
+                       (mapconcat (lambda (elm) elm)
+                                  (last p-lst 2)
+                                  "/"))
+                    pwd)))  ;; Otherwise, we just return the PWD
+        
+              (ds/eshell-section esh-dir
+                                 (ds/with-face "" (zenburn-with-color-variables
+                                                     `(:foreground ,zenburn-fg-1 :weight bold)))
+                                 (let* ((dirparts (ds/split-directory-prompt (ds/pwd-shorten-dirs (abbreviate-file-name (eshell/pwd)))))
+                                        (parent (car dirparts))
+                                        (dirname (cadr dirparts)))
+                                   (concat (ds/with-face parent (zenburn-with-color-variables
+                                                                  `(:foreground ,zenburn-bg+3)))
+                                           (ds/with-face dirname (zenburn-with-color-variables
+                                                                   `(:foreground ,zenburn-fg-1 :weight bold))))))
+
+              (ds/eshell-section esh-git
+                                 (ds/with-face ""
+                                               (zenburn-with-color-variables `(:foreground ,zenburn-orange)))
+                                 (let* ((unstaged-count (length (magit-unstaged-files)))
+                                        (staged-count (length (magit-staged-files)))
+                                        (untracked-count (length (magit-untracked-files)))
+                                        (unstaged (if (> unstaged-count 0)
+                                                      (ds/with-face
+                                                       (concat " (" (number-to-string unstaged-count) ")")
+                                                       (zenburn-with-color-variables `(:foreground ,zenburn-yellow)))
+                                                    ""))
+                                        (staged (if (> staged-count 0)
+                                                    (ds/with-face
+                                                     (concat " (" (number-to-string staged-count) ")")
+                                                     (zenburn-with-color-variables `(:foreground ,zenburn-green)))
+                                                  ""))
+                                        (untracked (if (> untracked-count 0)
+                                                       (ds/with-face
+                                                        (concat " (" (number-to-string untracked-count) ")")
+                                                        (zenburn-with-color-variables `(:foreground ,zenburn-red)))
+                                                     "")))
+                                   (if (magit-get-current-branch)
+                                       (concat (ds/with-face (magit-get-current-branch)
+                                                             (zenburn-with-color-variables `(:foreground ,zenburn-blue)))
+                                               staged unstaged untracked)
+                                     nil)))
+
+              (set-fontset-font t '(#Xf017 . #Xf017) "fontawesome")
+        
+              (ds/eshell-section esh-clock
+                                 ""
+                                 (format-time-string "%H:%M" (current-time))
+                                 (zenburn-with-color-variables
+                                   `(:foreground ,zenburn-green)))
+
+              ;; Choose which eshell-funcs to enable
+              (setq eshell-funcs (list (list esh-dir esh-clock) esh-git))
+
+
+
+
+              (defun ds/eshell-acc (acc x)
+                "Accumulator for evaluating and concatenating esh-sections."
+                (if (and (listp x) (not (functionp x)))
+                    (concat acc (-reduce-from 'ds/eshell-acc "" x) "\n")
+                  (--if-let (funcall x)
+                      (if (s-blank? acc)
+                          it
+                        (concat acc
+                                (if (string= "\n" (substring acc (- (length acc) 1) (length acc)))
+                                    " "
+                                  ds/eshell-sep)
+                                it))
+                    acc)))
+
+              (defun ds/eshell-prompt-func ()
+                "Build `eshell-prompt-function'"
+                (concat ds/eshell-header
+                        (replace-regexp-in-string "\n$" "" (-reduce-from 'ds/eshell-acc "" eshell-funcs))
+                        "\n"
+                        (concat " " (if (= (user-uid) 0) "#" "$") " ")))
+
+              ;; Enable the new eshell prompt
+              (setq eshell-prompt-function 'ds/eshell-prompt-func)
+
+              ))))
     #+END_SRC
 
 ** Utility Functions
@@ -1729,6 +1888,15 @@
        :commands (kubernetes-overview)
        :config
        (setq kubernetes-poll-frequency 15))
+   #+END_SRC
+
+** Pacman
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package arch-packer
+       :ensure t
+       :config
+       (setq arch-packer-default-command "pacaur"))
    #+END_SRC
 
 
