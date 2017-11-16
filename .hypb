@@ -1,0 +1,3 @@
+
+"init.org"
+("Compile" nil nil eval-elisp ((ds/tangle-init)) "paul@sputnik" "20171116:23:17:25" nil nil)
