@@ -1,2 +1,2 @@
-alias sysup pacaur --noprogressbar -Syu
-alias ll ls -l
+alias sysup pacaur --noprogressbar -Syu $*
+alias ll ls -l $*
