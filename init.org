@@ -388,6 +388,8 @@
                                  (ds/with-face "" (zenburn-with-color-variables `(:foreground ,zenburn-red+1)))))
 
             (set-fontset-font t '(#Xf017 . #Xf017) "fontawesome")
+            (set-fontset-font t '(#Xf011 . #Xf011) "fontawesome")
+            (set-fontset-font t '(#Xf026 . #Xf028) "fontawesome")
 
             (ds/eshell-section esh-clock
                                ""
@@ -928,7 +930,7 @@
            ("zenburn-bg-2"     . "#000000")
            ("zenburn-bg-1"     . "#0C0C0C")
            ("zenburn-bg-05"    . "#121212")
-           ("zenburn-bg"       . "#1C1C1C")
+           ("zenburn-bg"       . "#1D1D1D")
            ("zenburn-bg+05"    . "#222222")
            ("zenburn-bg+1"     . "#2C2C2C")
            ("zenburn-bg+2"     . "#3C3C3C")
