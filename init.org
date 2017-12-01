@@ -1914,6 +1914,16 @@
    #+END_SRC
 
 
+* Local Config 
+
+  Load in a local config file if it exists
+
+  #+BEGIN_SRC emacs-lisp
+    (let ((local-conf (concat user-emacs-directory "local.el")))
+          (if (file-exists-p local-conf)
+              (load-file local-conf)))
+  #+END_SRC
+
 * Bootstrap
 
   ;; Local Variables:
