@@ -1199,7 +1199,7 @@
          (let ((map (make-sparse-keymap)))
            (define-key map "g" 'magit-status)
            (define-key map (kbd "C-g") 'magit-status)
-           (define-key map "l" 'magit-log)
+           (define-key map "l" 'magit-list-repositories)
            (define-key map "f" 'magit-fetch-current)
            (define-key map "!" 'magit-blame-mode)
            (define-key map "c" 'magit-checkout)
@@ -1923,6 +1923,7 @@
           (if (file-exists-p local-conf)
               (load-file local-conf)))
   #+END_SRC
+
 
 * Bootstrap
 
