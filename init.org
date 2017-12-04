@@ -66,8 +66,6 @@
              ("gnu"          . 10)
              ("melpa"        . 0)))
 
-     (setq package-pinned-packages '((use-package . "melpa")))
-
      (package-initialize)
 
      (unless (package-installed-p 'use-package)
