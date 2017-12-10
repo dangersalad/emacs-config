@@ -1555,7 +1555,9 @@
      (use-package swiper
        :ensure t
        :pin melpa-stable
-       :bind (("C-s" . swiper)))
+       :bind (("C-s" . swiper))
+       :config
+       (add-to-list 'ivy-re-builders-alist '((swiper . ivy--regex-plus))))
    #+END_SRC
 
 
