@@ -1900,11 +1900,14 @@
          (message "Saving timeclock file")
          (let ((cmdstr (concat "~/.emacs.d/bin/org2tc "
                                (buffer-file-name)
-                               " > " (find-ledger-directory) "/"
+                               " > " (find-ledger-directory) "/timeclocks/"
                                (replace-regexp-in-string
-                                (regexp-quote "\.org") ".timeclock" (buffer-name) nil 'literal))))
+                                (regexp-quote "\.org") ".timeclock" (buffer-name) nil 'literal)))
+               (cleanup (concat "for file in $(find " (find-ledger-directory) "/timeclocks/ -size 0);"
+                                "do rm $file; done")))
            (message cmdstr)
-           (shell-command cmdstr)))
+           (shell-command cmdstr)
+           (shell-command cleanup)))
 
 
        (add-hook 'org-mode-hook
