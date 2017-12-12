@@ -503,7 +503,8 @@
    A function to indent the entire buffer, bound to ~C-\~
 
    #+BEGIN_SRC emacs-lisp
-     (defun indent-buffer ()
+
+     (defun ds/indent-buffer ()
        "Indent entire buffer using `indent-according-to-mode'."
        (interactive)
        (save-excursion
@@ -511,7 +512,17 @@
          (push-mark (point-max) nil t)
          (goto-char (point-min))
          (indent-region (region-beginning) (region-end))))
-     (global-set-key (kbd "C-c \\") 'indent-buffer)
+
+     (defun ds/indent-mmm-section ()
+       "Indent entire MMM section using `indent-according-to-mode'."
+       (interactive)
+       (save-excursion
+         (push-mark (point))
+         (push-mark (mmm-back-end mmm-current-overlay) nil t)
+         (goto-char (mmm-front-start mmm-current-overlay))
+         (indent-region (region-beginning) (region-end))))
+
+     (global-set-key (kbd "C-c \\") 'ds/indent-buffer)
    #+END_SRC
 
    A function that makes a variable local to the buffer and sets it's
@@ -1783,6 +1794,8 @@
      (use-package vue-mode
        :ensure t
        :pin melpa-stable
+       :bind (:map vue-mode-map
+              ("C-c \\" . ds/indent-buffer))
        :config
        (add-to-list 'auto-mode-alist '("\\.vue\\'" . vue-mode)))
    #+END_SRC
