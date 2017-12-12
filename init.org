@@ -276,6 +276,8 @@
 
         (add-hook 'eshell-mode-hook
                   (lambda ()
+                    (defvar eshell-visual-commands '()
+                      "Commands in shell that need a \"real\" terminal")
                     (add-to-list 'eshell-visual-commands "ssh")
                     (add-to-list 'eshell-visual-commands "tail")
                     (add-to-list 'eshell-visual-commands "top")
@@ -1317,6 +1319,9 @@
        (setq org-clock-into-drawer "LOGBOOK")
        (setq org-duration-format '(("h" . t) (special . 2)))
 
+       (add-hook 'org-src-mode-hook
+                 (lambda ()
+                   (add-to-list flycheck-disabled-checkers 'emacs-lisp-checkdoc)))
 
 
        ;; Resume clocking task when emacs is restarted
@@ -1539,7 +1544,7 @@
        :bind (("M-x" . counsel-M-x)
               ("C-x C-f" . counsel-find-file)
               :map read-expression-map
-              ("C-r" . counsel-expression-history)))
+              ("C-r" . counsel-minibuffer-history)))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
@@ -1630,6 +1635,8 @@
        (setq company-idle-delay .4)    ; decrease delay before autocompletion popup shows
        (setq company-echo-delay 0)    ; remove annoying blinking
 
+       (use-package eshell
+       :init
        ;; add completion frontends for eshell
        (defun company-eshell-autosuggest-candidates (prefix)
          (let* ((history
@@ -1661,7 +1668,7 @@
            (interactive (company-begin-backend 'company-eshell))
            (prefix (and (eq major-mode 'eshell-mode)
                         (company-eshell-autosuggest--prefix)))
-           (candidates (company-eshell-autosuggest-candidates arg)))))
+           (candidates (company-eshell-autosuggest-candidates arg))))))
    #+END_SRC
    
 ** Commenter
@@ -1937,13 +1944,10 @@
        (setq kubernetes-poll-frequency 15))
    #+END_SRC
 
-** Pacman
-
+** PDF Tools
+   
    #+BEGIN_SRC emacs-lisp
-     (use-package arch-packer
-       :ensure t
-       :config
-       (setq arch-packer-default-command "pacaur"))
+   (use-package pdf-tools :ensure t)
    #+END_SRC
 
 
