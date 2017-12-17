@@ -111,7 +111,8 @@
    #+BEGIN_SRC emacs-lisp
      (menu-bar-mode -1)
      (tool-bar-mode -1)
-     (scroll-bar-mode -1)
+     (if (boundp 'scroll-bar-mode)
+         (scroll-bar-mode -1))
    #+END_SRC
 
    Set the font
@@ -387,9 +388,10 @@
                                    nil
                                  (ds/with-face "" (zenburn-with-color-variables `(:foreground ,zenburn-red+1)))))
 
-            (set-fontset-font t '(#Xf017 . #Xf017) "fontawesome")
-            (set-fontset-font t '(#Xf011 . #Xf011) "fontawesome")
-            (set-fontset-font t '(#Xf026 . #Xf028) "fontawesome")
+            (if (boundp 'set-fontset-font)
+                (progn (set-fontset-font t '(#Xf017 . #Xf017) "fontawesome")
+                       (set-fontset-font t '(#Xf011 . #Xf011) "fontawesome")
+                       (set-fontset-font t '(#Xf026 . #Xf028) "fontawesome")))
 
             (ds/eshell-section esh-clock
                                ""
