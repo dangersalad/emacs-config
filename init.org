@@ -1329,11 +1329,7 @@
        (setq org-log-into-drawer "LOGBOOK")
        (setq org-clock-into-drawer "LOGBOOK")
        (setq org-duration-format '(("h" . t) (special . 2)))
-
-       (add-hook 'org-src-mode-hook
-                 (lambda ()
-                   (add-to-list flycheck-disabled-checkers 'emacs-lisp-checkdoc)))
-
+       (setq org-src-window-setup 'other-frame)
 
        ;; Resume clocking task when emacs is restarted
        (org-clock-persistence-insinuate)
@@ -1794,8 +1790,6 @@
      (use-package vue-mode
        :ensure t
        :pin melpa-stable
-       :bind (:map vue-mode-map
-              ("C-c \\" . ds/indent-buffer))
        :config
        (add-to-list 'auto-mode-alist '("\\.vue\\'" . vue-mode)))
    #+END_SRC
