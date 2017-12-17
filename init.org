@@ -507,11 +507,13 @@
      (defun ds/indent-buffer ()
        "Indent entire buffer using `indent-according-to-mode'."
        (interactive)
+       (if (overlayp mmm-current-overlay)
+           (ds/indent-mmm-section)
        (save-excursion
          (push-mark (point))
          (push-mark (point-max) nil t)
          (goto-char (point-min))
-         (indent-region (region-beginning) (region-end))))
+         (indent-region (region-beginning) (region-end)))))
 
      (defun ds/indent-mmm-section ()
        "Indent entire MMM section using `indent-according-to-mode'."
