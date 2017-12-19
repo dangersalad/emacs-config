@@ -1683,6 +1683,7 @@
    #+END_SRC
    
 ** Commenter
+   
 
    Originally for evil, but works great for vanilla
 
@@ -1693,7 +1694,24 @@
        :bind (("C-c C-/ C-/" . evilnc-comment-or-uncomment-lines)
               ("C-c C-/ C-l" . evilnc-comment-or-uncomment-to-the-line)
               ("C-c C-/ C-c" . evilnc-copy-and-comment-lines)
-              ("C-c C-/ C-p" . evilnc-comment-or-uncomment-paragraphs)))
+              ("C-c C-/ C-p" . evilnc-comment-or-uncomment-paragraphs)
+              ("C-c C-_ C-_" . evilnc-comment-or-uncomment-lines)
+              ("C-c C-_ C-l" . evilnc-comment-or-uncomment-to-the-line)
+              ("C-c C-_ C-c" . evilnc-copy-and-comment-lines)
+              ("C-c C-_ C-p" . evilnc-comment-or-uncomment-paragraphs)))
+   #+END_SRC
+
+** Clang (Irony)
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package irony
+       :ensure t
+       :config
+       (add-hook 'c-mode-hook 'irony-mode)
+       (use-package irony-eldoc
+         :ensure t
+         :config
+         (add-hook 'irony-mode-hook #'irony-eldoc)))
    #+END_SRC
 
 ** Golang
