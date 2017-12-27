@@ -1007,12 +1007,12 @@
            ("zenburn-blue-5"   . "#366060")
            ("zenburn-magenta"  . "#DC8CC3"))
          "List of Zenburn colors.
-     Each element has the form (NAME . HEX).
+          Each element has the form (NAME . HEX).
 
-     `+N' suffixes indicate a color is lighter.
-     `-N' suffixes indicate a color is darker.
+          `+N' suffixes indicate a color is lighter.
+          `-N' suffixes indicate a color is darker.
 
-     This overrides the colors provided by the `zenburn-theme' package.")
+          This overrides the colors provided by the `zenburn-theme' package.")
 
 
        :config
@@ -1030,6 +1030,8 @@
          (set-face-attribute 'fringe nil :background zenburn-bg+1)
          ;; italic comments
          (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
+         ;; eldoc function face
+         (set-face-attribute 'eldoc-highlight-function-argument nil :foreground zenburn-blue-1)
          ;; set the verticle border color
          (set-face-attribute 'vertical-border nil :foreground zenburn-bg-1))
 
@@ -1081,8 +1083,6 @@
            (setq hl-paren-background-colors `(,zenburn-bg-2 ,zenburn-bg-1 ,zenburn-bg-05 ,zenburn-bg+05 ,zenburn-bg+1 ,zenburn-bg+2 ,zenburn-bg+3 ,zenburn-fg-1))
            (setq hl-paren-colors `(,zenburn-red-2 ,zenburn-green ,zenburn-orange ,zenburn-blue ,zenburn-yellow ,zenburn-cyan ,zenburn-magenta ,zenburn-fg+1))))
 
-
-
        ;; faces for avy
        (with-eval-after-load 'avy
          (zenburn-with-color-variables
@@ -1090,16 +1090,16 @@
            (set-face-attribute 'avy-lead-face-0 nil :foreground zenburn-fg+1 :background zenburn-blue-5)
            (set-face-attribute 'avy-lead-face-1 nil :foreground zenburn-fg+1 :background zenburn-bg-2)
            (set-face-attribute 'avy-lead-face-2 nil :foreground zenburn-fg+1 :background zenburn-blue-4)
-           (set-face-attribute 'avy-lead-face nil :foreground zenburn-fg+1 :background zenburn-red-4))))
+           (set-face-attribute 'avy-lead-face nil :foreground zenburn-fg+1 :background zenburn-red-4)))
 
-     (with-eval-after-load 'ivy
+       (with-eval-after-load 'ivy
          (zenburn-with-color-variables
            (set-face-attribute 'ivy-current-match nil :foreground zenburn-fg+1 :background zenburn-bg+3 :box zenburn-blue :underline nil)
            (set-face-attribute 'ivy-subdir nil :foreground zenburn-blue-1 :background nil :weight 'bold)
            (set-face-attribute 'ivy-minibuffer-match-face-1 nil :background nil :box zenburn-green-1 :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-2 nil :background nil :box zenburn-green-1 :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-3 nil :background nil :box zenburn-red-1 :underline nil)
-           (set-face-attribute 'ivy-minibuffer-match-face-4 nil :background nil :box zenburn-yellow-1 :underline nil)))
+           (set-face-attribute 'ivy-minibuffer-match-face-4 nil :background nil :box zenburn-yellow-1 :underline nil))))
    #+END_SRC
 
 ** Try
@@ -1711,7 +1711,13 @@
        (use-package irony-eldoc
          :ensure t
          :config
+         (setq irony-eldoc-use-unicode t)
          (add-hook 'irony-mode-hook #'irony-eldoc)))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package clang-format
+       :ensure t)
    #+END_SRC
 
 ** Golang
@@ -1738,11 +1744,7 @@
        :ensure t
        :pin melpa-stable
        :config
-       (add-hook 'go-mode-hook 'go-eldoc-setup)
-
-       (set-face-attribute 'eldoc-highlight-function-argument nil
-                           :foreground "blue"
-                           :weight 'bold))
+       (add-hook 'go-mode-hook 'go-eldoc-setup))
    #+END_SRC
    
    #+BEGIN_SRC emacs-lisp
