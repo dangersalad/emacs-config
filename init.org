@@ -1562,7 +1562,7 @@
      (use-package counsel-projectile
        :ensure t
        :config
-       (counsel-projectile-on))
+       (counsel-projectile-mode))
    #+END_SRC
 
 ** Swiper
@@ -1648,6 +1648,7 @@
 
        (use-package eshell
        :init
+       (defvar eshell-hitory-ring nil)
        ;; add completion frontends for eshell
        (defun company-eshell-autosuggest-candidates (prefix)
          (let* ((history
@@ -1998,7 +1999,10 @@
 ** PDF Tools
    
    #+BEGIN_SRC emacs-lisp
-   (use-package pdf-tools :ensure t)
+     (use-package pdf-tools
+       :ensure t
+       :config
+       (pdf-tools-install))
    #+END_SRC
 
 
