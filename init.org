@@ -1562,7 +1562,12 @@
      (use-package counsel-projectile
        :ensure t
        :config
-       (counsel-projectile-mode))
+       (counsel-projectile-mode)
+       (counsel-projectile-modify-action
+        'counsel-projectile-switch-project-action
+        '((remove "s")
+          (remove "x")
+          (setkey "v" "g"))))
    #+END_SRC
 
 ** Swiper
