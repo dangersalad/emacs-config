@@ -1606,6 +1606,14 @@
        (setq flycheck-display-errors-delay 0.4)
        (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules)
 
+       (add-to-list 'display-buffer-alist
+                    `(,(rx bos "*Flycheck errors*" eos)
+                      (display-buffer-reuse-window
+                       display-buffer-in-side-window)
+                      (side            . bottom)
+                      (reusable-frames . visible)
+                      (window-height   . 0.1)))
+
        (defun ds/flycheck-status-line ()
          "Set status line color based on flycheck errors"
          (copy-face 'mode-line 'ds/face/mode-line)
@@ -1615,8 +1623,33 @@
            (zenburn-with-color-variables
              (set-face-attribute 'ds/face/mode-line nil :background zenburn-bg+1)))
          (face-remap-add-relative 'mode-line '(ds/face/mode-line)))
+
+       (defun ds/kill-flycheck-popup ()
+         (let ((errwindow (get-buffer-window flycheck-error-list-buffer)))
+               (if errwindow (quit-window 'bury errwindow))))
+
+       (defun ds/flycheck-popup ()
+         "Set status line color based on flycheck errors"
+         (copy-face 'mode-line 'ds/face/mode-line)
+         (let ((errors (seq-filter
+                        (lambda (val) (eq (flycheck-error-level val) 'error))
+                        flycheck-current-errors)))
+           (if errors (flycheck-list-errors)
+             ;; if there are no errors, hide the flycheck popup buffer
+             (ds/kill-flycheck-popup))))
+
+       (defun ds/flycheck-close-unused-list (&rest _)
+         (if (and (not flycheck-enabled-checkers)
+                  (bufferp flycheck-error-list-buffer))
+             (ds/kill-flycheck-popup)))
   
-       (add-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-status-line))
+       (add-function :after (symbol-function 'switch-to-buffer) #'ds/flycheck-close-unused-list)
+       (add-function :after (symbol-function 'other-window) #'ds/flycheck-close-unused-list)
+       (add-function :after (symbol-function 'ace-select-window) #'ds/flycheck-close-unused-list)
+
+       (add-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-popup)
+       ;; (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-status-line)
+       )
 
    #+END_SRC
 
@@ -1864,6 +1897,13 @@
        :pin melpa-stable
        :config
        (setq web-mode-code-indent-offset 2)
+       (with-eval-after-load 'flycheck
+         (flycheck-add-mode 'javascript-eslint 'web-mode))
+       (with-eval-after-load 'eslint-fix
+         (add-hook 'web-mode-hook
+                   (lambda ()
+                     (add-hook 'after-save-hook 'eslint-fix nil t))))
+
        (add-to-list 'auto-mode-alist '("\\.html?\\'" . web-mode)))
    #+END_SRC
 
