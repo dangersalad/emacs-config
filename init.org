@@ -1339,7 +1339,7 @@
        (setq org-log-into-drawer "LOGBOOK")
        (setq org-clock-into-drawer "LOGBOOK")
        (setq org-duration-format '(("h" . t) (special . 2)))
-       (setq org-src-window-setup 'other-frame)
+       (setq org-src-window-setup 'reorganize-frame)
 
        ;; Resume clocking task when emacs is restarted
        (org-clock-persistence-insinuate)
@@ -1568,12 +1568,7 @@
      (use-package counsel-projectile
        :ensure t
        :config
-       (counsel-projectile-mode)
-       (counsel-projectile-modify-action
-        'counsel-projectile-switch-project-action
-        '((remove "s")
-          (remove "x")
-          (setkey "v" "g"))))
+       (counsel-projectile-mode))
    #+END_SRC
 
 ** Swiper
@@ -1692,7 +1687,7 @@
 
        (use-package eshell
        :init
-       (defvar eshell-hitory-ring nil)
+       (defvar eshell-history-ring nil)
        ;; add completion frontends for eshell
        (defun company-eshell-autosuggest-candidates (prefix)
          (let* ((history
@@ -2044,7 +2039,7 @@
        :ensure t
        :commands (kubernetes-overview)
        :config
-       (setq kubernetes-poll-frequency 15))
+       (setq kubernetes-poll-frequency 5))
    #+END_SRC
 
 ** PDF Tools
