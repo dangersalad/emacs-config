@@ -459,6 +459,12 @@
       (add-hook 'sh-mode-hook 'sh-script-extra-font-lock-activate)
     #+END_SRC
 
+*** Set mark for accidental ~M-v~ press
+
+    #+BEGIN_SRC emacs-lisp
+      (add-function :before (symbol-function 'scroll-down-command) #'push-mark)
+    #+END_SRC
+
 ** Utility Functions
 
    A function to get files in a directory recursively, this is used in
