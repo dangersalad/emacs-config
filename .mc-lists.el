@@ -5,6 +5,7 @@
       '(
         ivy-done
         kill-region
+        yaml-electric-backspace
         ))
 
 (setq mc/cmds-to-run-once
