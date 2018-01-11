@@ -1637,10 +1637,11 @@
          (if (and (not flycheck-enabled-checkers)
                   (bufferp flycheck-error-list-buffer))
              (ds/kill-flycheck-popup)))
-  
+
        (add-function :after (symbol-function 'switch-to-buffer) #'ds/flycheck-close-unused-list)
        (add-function :after (symbol-function 'other-window) #'ds/flycheck-close-unused-list)
-       (add-function :after (symbol-function 'ace-select-window) #'ds/flycheck-close-unused-list)
+       (with-eval-after-load 'ace-window
+         (add-function :after (symbol-function 'ace-select-window) #'ds/flycheck-close-unused-list))
 
        (add-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-popup)
        ;; (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-status-line)
