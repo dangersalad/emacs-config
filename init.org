@@ -1592,6 +1592,7 @@
                    (toggle-truncate-lines t))))
    #+END_SRC
 
+
 * Programming Packages
 
 ** Flycheck
@@ -1600,7 +1601,14 @@
      (use-package flycheck
        :ensure t
        :init
+       (defun ds/toggle-flycheck-errors ()
+         (interactive)
+         (if (get-buffer flycheck-error-list-buffer)
+             (kill-buffer flycheck-error-list-buffer)
+           (flycheck-list-errors)))
        (setq-default flycheck-emacs-lisp-load-path 'inherit)
+       :bind (:map flycheck-command-map
+                   ("l" . ds/toggle-flycheck-errors))
        :config
        ;; enable flycheck everywhere
        (add-hook 'after-init-hook #'global-flycheck-mode)
@@ -1628,13 +1636,7 @@
              (set-face-attribute 'ds/face/mode-line nil :background zenburn-bg+1)))
          (face-remap-add-relative 'mode-line '(ds/face/mode-line)))
 
-       (defun ds/kill-flycheck-popup ()
-         (let ((errwindow (get-buffer-window flycheck-error-list-buffer)))
-               (if errwindow (quit-window 'bury errwindow))))
-
        (defun ds/flycheck-popup ()
-         "Set status line color based on flycheck errors"
-         (copy-face 'mode-line 'ds/face/mode-line)
          (let ((errors (seq-filter
                         (lambda (val) (eq (flycheck-error-level val) 'error))
                         flycheck-current-errors)))
@@ -1643,19 +1645,14 @@
              (ds/kill-flycheck-popup))))
 
        (defun ds/flycheck-close-unused-list (&rest _)
-         (if (and (not flycheck-enabled-checkers)
-                  (bufferp flycheck-error-list-buffer))
+         (if (or (and (not flycheck-enabled-checkers)
+                      (bufferp flycheck-error-list-buffer))
+                 (not (bound-and-true-p flycheck-mode)))
              (ds/kill-flycheck-popup)))
-
-       (add-function :after (symbol-function 'switch-to-buffer) #'ds/flycheck-close-unused-list)
-       (add-function :after (symbol-function 'other-window) #'ds/flycheck-close-unused-list)
-       (with-eval-after-load 'ace-window
-         (add-function :after (symbol-function 'ace-select-window) #'ds/flycheck-close-unused-list))
 
        (add-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-popup)
        ;; (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-status-line)
        )
-
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
