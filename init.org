@@ -21,7 +21,7 @@
   you save the ~init.org~ file, the ~init.el~ file will be tangled and
   compiled.
 
-  
+
 * Configuration
 
 ** Init
@@ -39,7 +39,8 @@
          ;; Avoid running hooks when tangling.
          (let ((prog-mode-hook nil))
            (org-babel-tangle)
-           (byte-compile-file (concat user-emacs-directory "init.el")))))
+                                             ;(byte-compile-file (concat user-emacs-directory "init.el"))
+           )))
 
      (add-hook 'after-save-hook 'ds/tangle-init)
    #+END_SRC
@@ -430,6 +431,22 @@
             )))
     #+END_SRC
 
+*** Ansi Term
+    
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/ansi-term-handle-close ()
+        "Close current term buffer when `exit' from term buffer."
+        (when (ignore-errors (get-buffer-process (current-buffer)))
+          (set-process-sentinel (get-buffer-process (current-buffer))
+                                (lambda (proc change)
+                                  (when (string-match "\\(finished\\|exited\\)" change)
+                                    (kill-buffer (process-buffer proc))
+                                    (if (not (= (length (window-list)) 1))
+                                        (delete-window)))))))
+
+      (add-hook 'term-mode-hook #'ds/ansi-term-handle-close)
+    #+END_SRC
+    
 *** Shell Highlighting
 
     Add this to highlight more stuff in ~sh-mode~
