@@ -1772,13 +1772,13 @@
    #+BEGIN_SRC emacs-lisp
      (use-package go-mode
        :ensure t
+       :bind (:map go-mode-map
+                   ("C-c D" . godoc-at-point))
        :config
        (defun ds/go-hook ()
          "Hook for go-mode."
          ;; call gofmt for every save
          (add-hook 'before-save-hook 'gofmt-before-save)
-         ;; add keybind for godoc
-         (define-key go-mode-map (kbd "C-c D") 'godoc-at-point)
          ;; customize the compile command
          (if (not (string-match "go" compile-command))
              (set (make-local-variable 'compile-command)
