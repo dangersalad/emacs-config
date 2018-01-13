@@ -1582,6 +1582,15 @@
        (add-to-list 'ivy-re-builders-alist '((swiper . ivy--regex-plus))))
    #+END_SRC
 
+** SQLi
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package sql
+       :config
+       (add-hook 'sql-interactive-mode-hook
+                 (lambda ()
+                   (toggle-truncate-lines t))))
+   #+END_SRC
 
 * Programming Packages
 
