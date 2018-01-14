@@ -2175,7 +2175,7 @@
       :ensure t
       :init
       (defvar ds/exwm-popup-shell-buffer "*Popup Shell*")
-      (defvar ds/exwm-popup-telegram-buffer "*Telegram*")
+      (defvar ds/exwm-popup-telegram-buffer "TelegramDesktop")
       (defvar ds/exwm-previous-workspace nil)
       :config
 
@@ -2242,23 +2242,40 @@
                                             (concat user-emacs-directory "exwm/lib/lock.png")))))
 
 
+      (add-to-list 'display-buffer-alist
+                   `(,(rx bos "*Popup Shell*" eos)
+                     (display-buffer-reuse-window
+                      display-buffer-in-side-window)
+                     (side            . top)
+                     (reusable-frames . nil)
+                     (inhibit-switch-frame . t)
+                     (window-height   . 0.4)))
+
       (defmacro ds/popup-thing (NAME BUFFER &rest BODY)
-        `(defun ,NAME ()
-           (interactive)
-           (let ((win (selected-window))
-                 (current-popup (get-buffer-window ,BUFFER))
-                 (popup-buf (get-buffer ,BUFFER)))
-             (if (equal win current-popup)
-                 (if (= (length (window-list)) 1)
-                     (save-selected-window
-                       (bury-buffer ,BUFFER)
-                       (set-window-buffer current-popup (other-buffer)))
-                   (delete-window current-popup))
-               (if current-popup
-                   (select-window current-popup)
-                 (if popup-buf
-                     (pop-to-buffer popup-buf)
-                   ,@BODY))))))
+        "Make a popup thing with function NAME buffer name BUFFER executing BODY to create."
+        `(let* ((delete-func-name (concat (symbol-name ',NAME) "--delete"))
+                (delete-func-sym (intern delete-func-name))
+                (bufname ,BUFFER))
+           (eval `(defun ,delete-func-sym (&rest _)
+                    (let ((current-popup (get-buffer-window ,bufname)))
+                      (if current-popup
+                          (delete-window current-popup)))))
+           (eval `(add-function :before (symbol-function 'exwm-workspace-switch) #',delete-func-sym))
+           (defun ,NAME ()
+             (interactive)
+             (let ((win (selected-window))
+                   (current-popup (get-buffer-window ,BUFFER))
+                   (popup-buf (or (get-buffer ,BUFFER)
+                                  (let (buffound)
+                                    (dolist (pair exwm--id-buffer-alist buffound)
+                                      (if (equal (concat " " ,BUFFER) (buffer-name (cdr pair))) (setq buffound (cdr pair))))))))
+               (if (equal win current-popup)
+                   (quit-restore-window current-popup)
+                 (if current-popup
+                     (select-window current-popup)
+                   (if popup-buf
+                       (pop-to-buffer popup-buf)
+                     ,@BODY)))))))
 
       ;; popup eshell
       (ds/popup-thing ds/exwm-popup-shell ds/exwm-popup-shell-buffer
@@ -2267,11 +2284,11 @@
       (exwm-input-set-key (kbd "s-m") #'ds/exwm-popup-shell)
 
       ;; popup telegram
-      (ds/popup-thing ds/exwm-popup-telegram ds/exwm-popup-telegram-buffer
-                      (start-process-shell-command ds/exwm-popup-telegram-buffer nil "telegram-desktop"))
+      ;; (ds/popup-thing ds/exwm-popup-telegram ds/exwm-popup-telegram-buffer
+      ;;                 (start-process-shell-command ds/exwm-popup-telegram-buffer nil "telegram-desktop"))
+      ;; (exwm-input-set-key (kbd "s-c") #'ds/exwm-popup-telegram)
 
 
-      (exwm-input-set-key (kbd "s-c") #'ds/exwm-popup-telegram)
 
       ;; terminals
       (exwm-input-set-key (kbd "<s-return>")
@@ -2360,8 +2377,8 @@
                        "xrandr" nil "xrandr --output eDP1 --off --output DP1 --auto")
                     ;; check for laptop display only
                     (if (equal "eDP1 connected" (shell-command-to-string "xrandr | grep -o '^eDP1 connected' | tr -d '\n'"))
-                      (start-process-shell-command
-                       "xrandr" nil "xrandr --output eDP1 --auto --output DP1 --off")))))
+                        (start-process-shell-command
+                         "xrandr" nil "xrandr --output eDP1 --auto --output DP1 --off")))))
 
 
 
