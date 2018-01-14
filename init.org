@@ -1472,9 +1472,30 @@
      (use-package ace-window
        :ensure t
        :pin melpa-stable
-       :bind (("C-x o" . ace-window)))
+       :disabled
+       :bind (("C-x o" . ace-window))
+       :config
+       (setq aw-scope 'frame))
    #+END_SRC
    
+** Switch Window
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package switch-window
+       :ensure t
+       :init
+       (defun ds/switch-window (arg)
+         (interactive "P")
+         (if arg (switch-window-then-swap-buffer 0)
+           (switch-window)))
+       :bind (("C-x o" . ds/switch-window))
+       :config
+       (setq switch-window-threshold 2)
+       (setq switch-window-increase 4)
+       ;(setq switch-window-input-style 'minibuffer)
+       )
+   #+END_SRC
+
 ** Exec Path from Shell
 
    #+BEGIN_SRC emacs-lisp
@@ -2076,7 +2097,7 @@
        (pdf-tools-install))
    #+END_SRC
 
-
+   
 * EXWM
 
   Emacs as a window manager
@@ -2086,27 +2107,59 @@
       :ensure t
       :init
       (defvar ds/exwm-popup-shell-buffer "*Popup Shell*")
+      (defvar ds/exwm-popup-telegram-buffer "*Telegram*")
+      (defvar ds/exwm-previous-workspace nil)
       :config
 
       ;; display the time
       (setq display-time-format "  %Y.%m.%d %l:%M %p %Z  ")
       (display-time-mode t)
 
+
+      ;; workspace stuff
       (setq exwm-workspace-number 4)
+      (defun ds/exwm-mark-previous (&rest _)
+        (setq ds/exwm-previous-workspace exwm-workspace-current-index))
+      (defun ds/exwm-workspace-toggle ()
+        (interactive)
+        (exwm-workspace-switch ds/exwm-previous-workspace))
+      ;; (remove-function (symbol-function 'exwm-workspace-switch) #'ds/exwm-mark-previous)
+      (add-function :before (symbol-function 'exwm-workspace-switch) #'ds/exwm-mark-previous)
+
+      (exwm-input-set-key (kbd "<s-tab>") #'ds/exwm-workspace-toggle)
+
+
+
       ;; Make class name the buffer name
       (add-hook 'exwm-update-class-hook
                 (lambda ()
                   (exwm-workspace-rename-buffer exwm-class-name)))
+
       ;; 's-r': Reset
       (exwm-input-set-key (kbd "s-r") #'exwm-reset)
       ;; 's-w': Switch workspace
       (exwm-input-set-key (kbd "s-w") #'exwm-workspace-switch)
       ;; 's-N': Switch to certain workspace
-      (dotimes (i 10)
-        (exwm-input-set-key (kbd (format "s-%d" i))
+      (dolist (i '((1 . "!")
+                   (2 . "@")
+                   (3 . "#")
+                   (4 . "$")
+                   (5 . "%")
+                   (6 . "^")
+                   (7 . "&")
+                   (8 . "*")
+                   (9 . "(")
+                   (0 . ")")))
+        (exwm-input-set-key (kbd (format "s-%d" (car i)))
                             `(lambda ()
                                (interactive)
-                               (exwm-workspace-switch-create ,i))))
+                               (exwm-workspace-switch-create ,(car i))))
+        (exwm-input-set-key (kbd (format "s-%s" (cdr i)))
+                            `(lambda ()
+                               (interactive)
+                               (exwm-workspace-move-window ,(car i))
+                               )))
+
       ;; 's-&': Launch application
       (exwm-input-set-key (kbd "s-SPC")
                           (lambda (command)
@@ -2119,30 +2172,41 @@
                             (interactive)
                             (start-process "" nil
                                            (concat
-                                            (concat user-emacs-directory "bin/lock")
+                                            (expand-file-name (concat user-emacs-directory "exwm/bin/lock"))
                                             " "
-                                            (concat user-emacs-directory "lib/lock.png")))))
+                                            (concat user-emacs-directory "exwm/lib/lock.png")))))
+
+
+      (defmacro ds/popup-thing (NAME BUFFER &rest BODY)
+        `(defun ,NAME ()
+           (interactive)
+           (let ((win (selected-window))
+                 (current-popup (get-buffer-window ,BUFFER))
+                 (popup-buf (get-buffer ,BUFFER)))
+             (if (equal win current-popup)
+                 (if (= (length (window-list)) 1)
+                     (save-selected-window
+                       (bury-buffer ,BUFFER)
+                       (set-window-buffer current-popup (other-buffer)))
+                   (delete-window current-popup))
+               (if current-popup
+                   (select-window current-popup)
+                 (if popup-buf
+                     (pop-to-buffer popup-buf)
+                   ,@BODY))))))
 
       ;; popup eshell
-      (defun ds/exwm-popup-shell ()
-        (interactive)
-        (let ((win (selected-window))
-              (current-popup (get-buffer-window ds/exwm-popup-shell-buffer))
-              (popup-buf (get-buffer ds/exwm-popup-shell-buffer))
-              (eshell-buffer-name ds/exwm-popup-shell-buffer))
-          (if (equal win current-popup)
-              (if (= (length (window-list)) 1)
-                  (save-selected-window
-                    (bury-buffer ds/exwm-popup-shell-buffer)
-                    (set-window-buffer current-popup (other-buffer)))
-                (delete-window current-popup))
-            (if current-popup
-                (select-window current-popup)
-              (if popup-buf
-                  (pop-to-buffer popup-buf)
-                (eshell ds/exwm-popup-shell-buffer))))))
-
+      (ds/popup-thing ds/exwm-popup-shell ds/exwm-popup-shell-buffer
+                      (let ((eshell-buffer-name ds/exwm-popup-shell-buffer))
+                        (eshell t)))
       (exwm-input-set-key (kbd "s-m") #'ds/exwm-popup-shell)
+
+      ;; popup telegram
+      (ds/popup-thing ds/exwm-popup-telegram ds/exwm-popup-telegram-buffer
+                      (start-process-shell-command ds/exwm-popup-telegram-buffer nil "telegram-desktop"))
+
+
+      (exwm-input-set-key (kbd "s-c") #'ds/exwm-popup-telegram)
 
       ;; terminals
       (exwm-input-set-key (kbd "<s-return>")
@@ -2155,6 +2219,22 @@
                             (interactive)
                             (ansi-term (getenv "SHELL"))))
 
+      ;; volume
+      (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>")
+                          (lambda ()
+                            (interactive)
+                            (start-process "" nil (executable-find "pulseaudio-ctl") "up")))
+  
+      (exwm-input-set-key (kbd "<XF86AudioLowerVolume>")
+                          (lambda ()
+                            (interactive)
+                            (start-process "" nil (executable-find "pulseaudio-ctl") "down")))
+  
+      (exwm-input-set-key (kbd "<XF86AudioMute>")
+                          (lambda ()
+                            (interactive)
+                            (start-process "" nil (executable-find "pulseaudio-ctl") "mute")))
+                      
 
       ;; Line-editing shortcuts
       (exwm-input-set-simulation-keys
@@ -2178,9 +2258,16 @@
          ([?\C-y] . ?\C-v)
          ;; undo/redo
          ([?\C-/] . ?\C-z)
-         ([?\C-?] . ?\C-Z)
+         ([?\C-?] . ?\C-\S-z)
          ;; search
          ([?\C-s] . ?\C-f)))
+
+      (push 's-tab exwm-input-prefix-keys)
+      (push 's-return exwm-input-prefix-keys)
+      (push 's-S-return exwm-input-prefix-keys)
+      (push 'XF86AudioRaiseVolume exwm-input-prefix-keys)
+      (push 'XF86AudioLowerVolume exwm-input-prefix-keys)
+      (push 'XF86AudioMute exwm-input-prefix-keys)
 
       ;; xrandr support
       (use-package exwm-randr
@@ -2196,6 +2283,20 @@
       ;; hide the mode-line of floating X windows
       ;; (add-hook 'exwm-floating-setup-hook #'exwm-layout-hide-mode-line)
       ;; (add-hook 'exwm-floating-exit-hook #'exwm-layout-show-mode-line)
+
+      ;; (use-package exwm-cm
+      ;;   :demand
+      ;;   :config
+      ;;   ;; Make all Emacs frames opaque.
+      ;;   (setq window-system-default-frame-alist '((x . ((alpha . 93)))))
+      ;;   ;; Assign everything else a 80% opacity.
+      ;;   ;; (setq exwm-cm-opacity 100)
+      ;;   (exwm-cm-enable))
+
+      ;; (use-package exwm-systemtray
+      ;;   :demand
+      ;;   :config
+      ;;   (exwm-systemtray-enable))
 
       ;; hide the minibuffer and echo area when they're not used, by
       ;; (setq exwm-workspace-minibuffer-position 'bottom)
