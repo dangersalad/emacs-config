@@ -1599,7 +1599,9 @@
        :bind (("M-x" . counsel-M-x)
               ("C-x C-f" . counsel-find-file)
               :map read-expression-map
-              ("C-r" . counsel-minibuffer-history)))
+              ("C-r" . counsel-minibuffer-history))
+       :config
+       (push (concat (getenv "HOME") "/.local/share/applications/") counsel-linux-apps-directories))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
