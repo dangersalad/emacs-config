@@ -2231,17 +2231,17 @@
       (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>")
                           (lambda ()
                             (interactive)
-                            (start-process "" nil (executable-find "pulseaudio-ctl") "up")))
+                            (start-process "volume-up" nil (executable-find "pulseaudio-ctl") "up")))
 
       (exwm-input-set-key (kbd "<XF86AudioLowerVolume>")
                           (lambda ()
                             (interactive)
-                            (start-process "" nil (executable-find "pulseaudio-ctl") "down")))
+                            (start-process "volume-down" nil (executable-find "pulseaudio-ctl") "down")))
 
       (exwm-input-set-key (kbd "<XF86AudioMute>")
                           (lambda ()
                             (interactive)
-                            (start-process "" nil (executable-find "pulseaudio-ctl") "mute")))
+                            (start-process "volume-mute" nil (executable-find "pulseaudio-ctl") "mute")))
 
       (start-process "" nil (concat user-emacs-directory "exwm/bin/xinitscript"))
 
