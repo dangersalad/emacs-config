@@ -1664,30 +1664,34 @@
                       (reusable-frames . visible)
                       (window-height   . 0.1)))
 
-       (defun ds/flycheck-status-line ()
-         "Set status line color based on flycheck errors"
-         (copy-face 'mode-line 'ds/face/mode-line)
-         (if (/= (length flycheck-current-errors) 0)
-             (zenburn-with-color-variables
-               (set-face-attribute 'ds/face/mode-line nil :background zenburn-red-4))
-           (zenburn-with-color-variables
-             (set-face-attribute 'ds/face/mode-line nil :background zenburn-bg+1)))
-         (face-remap-add-relative 'mode-line '(ds/face/mode-line)))
+       (defun ds/kill-flycheck-popup ()
+         (if (get-buffer flycheck-error-list-buffer)
+             (kill-buffer flycheck-error-list-buffer)))
 
        (defun ds/flycheck-popup ()
-         (let ((errors (seq-filter
-                        (lambda (val) (eq (flycheck-error-level val) 'error))
-                        flycheck-current-errors)))
-           (if errors (flycheck-list-errors)
-             ;; if there are no errors, hide the flycheck popup buffer
-             (ds/kill-flycheck-popup))))
+         (if (and (bound-and-true-p flycheck-mode)
+                  flycheck-enabled-checkers)
+             (let ((errors (seq-filter
+                            (lambda (val) (eq (flycheck-error-level val) 'error))
+                            flycheck-current-errors)))
+               (if errors (flycheck-list-errors)
+                 ;; if there are no errors, hide the flycheck popup buffer
+                 (ds/kill-flycheck-popup)))))
+
 
        (defun ds/flycheck-close-unused-list (&rest _)
-         (if (or (and (not flycheck-enabled-checkers)
-                      (bufferp flycheck-error-list-buffer))
-                 (not (bound-and-true-p flycheck-mode)))
-             (ds/kill-flycheck-popup)))
+         (if (and (get-buffer flycheck-error-list-buffer)
+                  (not (equal (buffer-name) flycheck-error-list-buffer))
+                  (not (equal (buffer-name)
+                              (with-current-buffer flycheck-error-list-buffer
+                                flycheck-error-list-source-buffer))))
+             (if (not (bound-and-true-p flycheck-mode))
+                 (ds/kill-flycheck-popup)
+               (if (not flycheck-enabled-checkers)
+                   (ds/kill-flycheck-popup)))))
 
+       ;; (remove-hook 'buffer-list-update-hook #'ds/flycheck-popup)
+       (add-hook 'buffer-list-update-hook #'ds/flycheck-close-unused-list)
        (add-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-popup)
        ;; (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-status-line)
        )
