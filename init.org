@@ -2135,10 +2135,7 @@
                                )))
 
       ;; 's-&': Launch application
-      (exwm-input-set-key (kbd "s-SPC")
-                          (lambda (command)
-                            (interactive (list (read-shell-command "$ ")))
-                            (start-process-shell-command command nil command)))
+      (exwm-input-set-key (kbd "s-SPC") #'counsel-linux-app)
 
       ;; screen lock
       (exwm-input-set-key (kbd "s-C-l")
