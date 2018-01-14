@@ -2301,8 +2301,8 @@
       ;;              "xrandr" nil "xrandr --output VGA1 --left-of LVDS1 --auto")))
 
       ;; hide the mode-line of floating X windows
-      ;; (add-hook 'exwm-floating-setup-hook #'exwm-layout-hide-mode-line)
-      ;; (add-hook 'exwm-floating-exit-hook #'exwm-layout-show-mode-line)
+      (add-hook 'exwm-floating-setup-hook #'exwm-layout-hide-mode-line)
+      (add-hook 'exwm-floating-exit-hook #'exwm-layout-show-mode-line)
 
       ;; (use-package exwm-cm
       ;;   :demand
