@@ -259,14 +259,6 @@
     #+BEGIN_SRC emacs-lisp
       (use-package eshell
         :config
-        (defun ds/setup-eshell-autosuggest ()
-          (with-eval-after-load 'company
-            (setq-local company-backends '(company-eshell-autosuggest company-elisp))
-            (setq-local company-idle-delay 0)))
-
-        (with-eval-after-load 'company
-          (add-hook 'eshell-mode-hook #'ds/setup-eshell-autosuggest))
-
         (setenv "PAGER" "cat")
 
         (setq eshell-scroll-to-bottom-on-input 'all
@@ -283,8 +275,16 @@
                     (add-to-list 'eshell-visual-commands "ssh")
                     (add-to-list 'eshell-visual-commands "tail")
                     (add-to-list 'eshell-visual-commands "top")
+                    (add-to-list 'eshell-visual-commands "htop")
                     (zenburn-with-color-variables
                       (set-face-attribute 'eshell-prompt-face nil :foreground zenburn-fg :weight 'normal)))))
+    #+END_SRC
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package esh-autosuggest
+        :ensure t
+        :config
+        (add-hook 'eshell-mode-hook #'esh-autosuggest-mode))
     #+END_SRC
 
     Prompt setup for eshell
@@ -1736,43 +1736,7 @@
        (setq company-search-regexp-function #'company-search-flex-regexp)
        (setq company-tooltip-limit 20) ; bigger popup window
        (setq company-idle-delay .4)    ; decrease delay before autocompletion popup shows
-       (setq company-echo-delay 0)    ; remove annoying blinking
-
-       (use-package eshell
-       :init
-       (defvar eshell-history-ring nil)
-       ;; add completion frontends for eshell
-       (defun company-eshell-autosuggest-candidates (prefix)
-         (let* ((history
-                 (delete-dups
-                  (mapcar (lambda (str)
-                            (string-trim (substring-no-properties str)))
-                          (ring-elements eshell-history-ring))))
-                (most-similar (cl-find-if
-                               (lambda (str)
-                                 (string-prefix-p prefix str))
-                               history)))
-           (when most-similar
-             `(,most-similar))))
-
-       (defun company-eshell-autosuggest--prefix ()
-         (let ((prefix
-                (string-trim-left
-                 (buffer-substring-no-properties
-                  (save-excursion
-                    (eshell-bol))
-                  (save-excursion (end-of-line) (point))))))
-           (if (not (string-empty-p prefix))
-               prefix
-             'stop)))
-
-       (defun company-eshell-autosuggest (command &optional arg &rest ignored)
-         (interactive (list 'interactive))
-         (cl-case command
-           (interactive (company-begin-backend 'company-eshell))
-           (prefix (and (eq major-mode 'eshell-mode)
-                        (company-eshell-autosuggest--prefix)))
-           (candidates (company-eshell-autosuggest-candidates arg))))))
+       (setq company-echo-delay 0))    ; remove annoying blinking
    #+END_SRC
    
 ** Commenter
