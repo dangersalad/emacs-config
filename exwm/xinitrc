@@ -1,11 +1,13 @@
 # Disable access control
-xhost +SI:localuser:$USER
+# xhost +SI:localuser:$USER
 
 # Themes, etc
-#gnome-settings-daemon &
+# gnome-settings-daemon &
 
 # Fallback cursor
 xsetroot -cursor_name left_ptr
+
+setxkbmap -option ctrl:nocaps
 
 # Keyboard repeat rate
 xset r rate 200 60

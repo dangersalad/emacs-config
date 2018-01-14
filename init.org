@@ -2116,12 +2116,12 @@
       :config
 
       ;; display the time
-      (setq display-time-format "  %Y.%m.%d %l:%M %p %Z  ")
+      (setq display-time-format "  %Y.%m.%d %l:%M %p %Z ")
       (display-time-mode t)
 
 
       ;; workspace stuff
-      (setq exwm-workspace-number 4)
+      (setq exwm-workspace-number 10)
       (defun ds/exwm-mark-previous (&rest _)
         (setq ds/exwm-previous-workspace exwm-workspace-current-index))
       (defun ds/exwm-workspace-toggle ()
@@ -2228,17 +2228,19 @@
                           (lambda ()
                             (interactive)
                             (start-process "" nil (executable-find "pulseaudio-ctl") "up")))
-  
+
       (exwm-input-set-key (kbd "<XF86AudioLowerVolume>")
                           (lambda ()
                             (interactive)
                             (start-process "" nil (executable-find "pulseaudio-ctl") "down")))
-  
+
       (exwm-input-set-key (kbd "<XF86AudioMute>")
                           (lambda ()
                             (interactive)
                             (start-process "" nil (executable-find "pulseaudio-ctl") "mute")))
-                      
+
+      (start-process "" nil (concat user-emacs-directory "exwm/bin/xinitscript"))
+
 
       ;; Line-editing shortcuts
       (exwm-input-set-simulation-keys
