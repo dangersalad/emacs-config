@@ -2279,6 +2279,16 @@
       (push 'XF86AudioLowerVolume exwm-input-prefix-keys)
       (push 'XF86AudioMute exwm-input-prefix-keys)
 
+      ;; customized simulations and shit for certain X apps
+      (defun ds/exwm-keyrules-termite ()
+        (when (and exwm-class-name
+                   (string= exwm-class-name "Termite"))
+          (exwm-input-set-local-simulation-keys nil)
+          (setq-local exwm-input-prefix-keys '(?\C-x))))
+
+      (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite)
+
+
       ;; xrandr support
       (use-package exwm-randr
         :demand
