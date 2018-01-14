@@ -1689,13 +1689,21 @@
    #+BEGIN_SRC emacs-lisp
      (use-package counsel
        :ensure t
-       :pin melpa-stable
        :bind (("M-x" . counsel-M-x)
               ("C-x C-f" . counsel-find-file)
               :map read-expression-map
               ("C-r" . counsel-minibuffer-history))
        :config
-       (push (concat (getenv "HOME") "/.local/share/applications/") counsel-linux-apps-directories))
+       (push (concat (getenv "HOME") "/.local/share/applications/") counsel-linux-apps-directories)
+       (defun ds/counsel-linux-app-format-function (name comment exec)
+         "Default Linux application name formatter.
+     NAME is the name of the application, COMMENT its comment and EXEC
+     the command to launch it."
+         (format "% -45s %s"
+                 (propertize name 'face 'font-lock-builtin-face)
+                 (or comment "")))
+  
+       (setq counsel-linux-app-format-function #'ds/counsel-linux-app-format-function))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
