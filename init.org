@@ -2392,12 +2392,22 @@
                 (lambda ()
                   ;; check for laptop external display
                   (if (equal "DP1 connected" (shell-command-to-string "xrandr | grep -o '^DP1 connected' | tr -d '\n'"))
-                      (start-process-shell-command
-                       "xrandr" nil "xrandr --output eDP1 --off --output DP1 --auto")
+                      (progn
+                        (start-process-shell-command
+                         "xrandr" nil "xrandr --output eDP1 --off --output DP1 --auto")
+                        (start-process-shell-command
+                         "killpanel" nil "killall lemonbar")
+                        (start-process-shell-command
+                         "startpanel" nil (expand-file-name (concat user-emacs-directory "exwm/bin/start-lemonbar"))))
                     ;; check for laptop display only
                     (if (equal "eDP1 connected" (shell-command-to-string "xrandr | grep -o '^eDP1 connected' | tr -d '\n'"))
-                        (start-process-shell-command
-                         "xrandr" nil "xrandr --output eDP1 --auto --output DP1 --off")))))
+                        (progn
+                          (start-process-shell-command
+                           "xrandr" nil "xrandr --output eDP1 --auto --output DP1 --off")
+                          (start-process-shell-command
+                           "killpanel" nil "killall lemonbar")
+                          (start-process-shell-command
+                           "startpanel" nil (expand-file-name (concat user-emacs-directory "exwm/bin/start-lemonbar"))))))))
 
 
 
