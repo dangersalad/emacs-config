@@ -2266,7 +2266,8 @@
                 (bufname ,BUFFER))
            (eval `(defun ,delete-func-sym (&rest _)
                     (let ((current-popup (get-buffer-window ,bufname)))
-                      (if current-popup
+                      (if (and current-popup
+                               (> (length (window-list)) 1))
                           (delete-window current-popup)))))
            (eval `(add-function :before (symbol-function 'exwm-workspace-switch) #',delete-func-sym))
            (defun ,NAME ()
