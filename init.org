@@ -2220,7 +2220,7 @@
                   (exwm-workspace-rename-buffer exwm-class-name)))
 
       ;; 's-r': Reset
-      (exwm-input-set-key (kbd "s-r") #'exwm-reset)
+      (exwm-input-set-key (kbd "s-R") #'exwm-reset)
       ;; 's-w': Switch workspace
       (exwm-input-set-key (kbd "s-w") #'exwm-workspace-switch)
       ;; 's-N': Switch to certain workspace
@@ -2246,6 +2246,11 @@
 
       ;; 's-&': Launch application
       (exwm-input-set-key (kbd "s-SPC") #'counsel-linux-app)
+
+      (exwm-input-set-key (kbd "s-r")
+                          (lambda (command)
+                            (interactive (list (read-shell-command "$ ")))
+                            (start-process-shell-command command nil command)))
 
       ;; screen lock
       (exwm-input-set-key (kbd "s-C-l")

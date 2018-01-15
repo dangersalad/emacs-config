@@ -8,7 +8,7 @@ then
     xset fp rehash
 fi
 
-xsetroot -solid "#333333"
+xsetroot -solid "#2c2c2c"
 
 [[ -f ~/.Xresources ]] && xrdb -merge ~/.Xresources
 

@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+
+FAIL() {
+    echo "<span color='#a9a999'>0.0 b/s $SYMBOL</span>"
+}
+
+IF="$(ip addr | grep -o -E '(enp|wlp)[a-z0-9]+$')"
+
+
+tmpfile=/tmp/$USER-netspeed-unit
+
+declare -a units
+units=( "b" "B" )
+
+if [[ -n "$BLOCK_BUTTON" ]]
+then
+    case $BLOCK_BUTTON in
+        1|4) current=$[$(cat $tmpfile) + 1];;
+        5) current=$[$(cat $tmpfile) - 1];;
+    esac
+else
+    current=$(cat $tmpfile)
+fi
+
+[[ -z "$current" ]] || [[ "$current" -ge "${#units[@]}" ]] && current=0
+
+[[ "$current" -lt 0 ]] && current=$[${#units[@]} - 1]
+
+echo "$current" > $tmpfile
+
+REPORT=${units[$current]}
+
+for dType in down up
+do
+    if [[ $dType = up ]]
+    then
+        RT=tx
+        SYMBOL=
+    else
+        RT=rx
+        SYMBOL=
+    fi
+
+    R1=$(cat /sys/class/net/$IF/statistics/${RT}_bytes) || FAIL
+    sleep 1s
+    R2=$(cat /sys/class/net/$IF/statistics/${RT}_bytes) || FAIL
+    BPS=$(bc <<<"($R2 - $R1)")
+    if [[ "$REPORT" = "b" ]]
+    then
+        BPS=$(bc <<<"($R2 - $R1)*8")
+    fi
+
+    SCALE=0
+
+    while [[ $(bc <<<"$BPS >= 1024") -eq 1 ]]
+    do
+        BPS=$(bc <<<"scale=2; $BPS / 1024")
+        SCALE=$((SCALE+1))
+    done
+
+    case $SCALE in
+        1) UNIT="K";;
+        2) UNIT="M";;
+        3) UNIT="G";;
+    esac
+
+    final=$final$(echo $BPS ${UNIT}${REPORT}/s $SYMBOL | sed 's/^\./0./')" "
+
+done
+
+echo "<span color='#a9a999'>$final</span>"
