@@ -285,16 +285,10 @@
     #+BEGIN_SRC emacs-lisp
       (use-package esh-autosuggest
         :ensure t
-        :init
-        (make-face 'ds/esh-autosuggest-face)
-        (zenburn-with-color-variables
-          (set-face-attribute 'ds/esh-autosuggest-face nil
-                              :foreground zenburn-fg-1
-                              :background zenburn-bg))
         :config
         (defun ds/esh-autosuggest-setup ()
           (face-remap-add-relative 'company-preview-common 'ds/esh-autosuggest-face))
-  
+
         (add-hook 'eshell-mode-hook #'esh-autosuggest-mode)
         (add-hook 'eshell-mode-hook #'ds/esh-autosuggest-setup))
     #+END_SRC
@@ -1145,6 +1139,7 @@
        :config
        (load-theme 'zenburn t)
 
+       (make-face 'ds/esh-autosuggest-face)
 
        ;; default face customizations
        (zenburn-with-color-variables
@@ -1160,7 +1155,10 @@
          ;; eldoc function face
          (set-face-attribute 'eldoc-highlight-function-argument nil :foreground zenburn-blue-1)
          ;; set the verticle border color
-         (set-face-attribute 'vertical-border nil :foreground zenburn-bg-1))
+         (set-face-attribute 'vertical-border nil :foreground zenburn-bg-1)
+         (set-face-attribute 'ds/esh-autosuggest-face nil
+                                :foreground zenburn-fg-1
+                                :background zenburn-bg))
 
        ;; powerline colors
        (with-eval-after-load 'powerline
