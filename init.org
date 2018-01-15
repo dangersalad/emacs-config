@@ -2198,8 +2198,8 @@
       :config
 
       ;; display the time
-      (setq display-time-format "  %Y.%m.%d %l:%M %p %Z ")
-      (display-time-mode t)
+      ;; (setq display-time-format "  %Y.%m.%d %l:%M %p %Z ")
+      ;; (display-time-mode t)
 
 
       ;; workspace stuff
