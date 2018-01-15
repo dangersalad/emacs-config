@@ -1,3 +1,0 @@
-#!/usr/bin/env bash
-
-while true; do $HOME/.emacs.d/exwm/bin/lemonbar-data; done | lemonbar -b -f "Input Sans:size=8" -f "Font Awesome" -B "#2c2c2c" -F "#dcdccc"

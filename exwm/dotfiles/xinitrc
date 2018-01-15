@@ -16,7 +16,7 @@ xset r rate 200 60
 export SSH_AUTH_SOCK="$(journalctl --user -u gpg-agent -b | grep -Eo 'ssh socket \((/[^/]+)+\.ssh' | tail -1 | sed 's/ssh socket (//')"
 
 # start lemonbar
-$HOME/.emacs.d/exwm/bin/start-lemonbar &
+$HOME/.emacs.d/exwm/bin/start-bar &
 
 # Start Emacs
 exec dbus-launch --exit-with-session emacs
