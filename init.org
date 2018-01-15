@@ -285,8 +285,18 @@
     #+BEGIN_SRC emacs-lisp
       (use-package esh-autosuggest
         :ensure t
+        :init
+        (make-face 'ds/esh-autosuggest-face)
+        (zenburn-with-color-variables
+          (set-face-attribute 'ds/esh-autosuggest-face nil
+                              :foreground zenburn-fg-1
+                              :background zenburn-bg))
         :config
-        (add-hook 'eshell-mode-hook #'esh-autosuggest-mode))
+        (defun ds/esh-autosuggest-setup ()
+          (face-remap-add-relative 'company-preview-common 'ds/esh-autosuggest-face))
+  
+        (add-hook 'eshell-mode-hook #'esh-autosuggest-mode)
+        (add-hook 'eshell-mode-hook #'ds/esh-autosuggest-setup))
     #+END_SRC
 
     More completions
