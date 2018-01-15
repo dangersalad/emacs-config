@@ -2242,6 +2242,7 @@
                             `(lambda ()
                                (interactive)
                                (exwm-workspace-move-window ,(car i))
+                               (select-frame-set-input-focus exwm-workspace--current)
                                )))
 
       ;; 's-&': Launch application
