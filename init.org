@@ -2389,26 +2389,51 @@
       ;; xrandr support
       (use-package exwm-randr
         :demand
+        :init
+        (defun ds/display-connected-p (name)
+          "Test if display NAME is connected."
+          (let* ((test-string (format "%s connected" name))
+                 (shell-cmd (format "xrandr | grep -o '^%s' | tr -d '\n'" test-string)))
+            (equal test-string (shell-command-to-string shell-cmd))))
+
+        (defun ds/list-displays ()
+          "List all displays this machine can handle."
+          (split-string
+           (shell-command-to-string
+            "xrandr | grep -Eo '^[A-Za-z0-9]+ (dis)?connected' | awk '{print $1}' | tr '\n' ' '")))
+
+        (defun ds/restart-bar ()
+          "Restart whatever bar is being used."
+          (interactive)
+          (start-process-shell-command
+           "startpanel" nil (expand-file-name (concat user-emacs-directory "exwm/bin/start-bar"))))
+
+        (defun ds/connect-laptop-external ()
+          "Connect the laptop to it's external display, no display on laptop screen"
+          (interactive)
+          (start-process-shell-command
+           "xrandr" nil "xrandr --output eDP1 --off --output DP1 --auto")
+          (ds/restart-bar))
+
+        (defun ds/disconnect-laptop-external ()
+          "Connect laptop display, no external display"
+          (interactive)
+          (start-process-shell-command
+           "xrandr" nil "xrandr --output eDP1 --auto --output DP1 --off")
+          (ds/restart-bar))
+
         :config
         (exwm-randr-enable))
       ;; (setq exwm-randr-workspace-output-plist '(0 "VGA1"))
       (add-hook 'exwm-randr-screen-change-hook
                 (lambda ()
-                  ;; check for laptop external display
-                  (if (equal "DP1 connected" (shell-command-to-string "xrandr | grep -o '^DP1 connected' | tr -d '\n'"))
-                      (progn
-                        (start-process-shell-command
-                         "xrandr" nil "xrandr --output eDP1 --off --output DP1 --auto")
-                        (start-process-shell-command
-                         "startpanel" nil (expand-file-name (concat user-emacs-directory "exwm/bin/start-bar"))))
-                    ;; check for laptop display only
-                    (if (equal "eDP1 connected" (shell-command-to-string "xrandr | grep -o '^eDP1 connected' | tr -d '\n'"))
-                        (progn
-                          (start-process-shell-command
-                           "xrandr" nil "xrandr --output eDP1 --auto --output DP1 --off")
-                          (start-process-shell-command
-                           "startpanel" nil (expand-file-name (concat user-emacs-directory "exwm/bin/start-bar"))))))))
-
+                  (let ((laptop-display (ds/display-connected-p "eDP1"))
+                        (laptop-display-external (ds/display-connected-p "DP1")))
+                    ;; check for laptop external display
+                    (if laptop-display
+                        (if laptop-display-external
+                            (ds/connect-laptop-external)
+                          (ds/disconnect-laptop-external))))))
 
 
 
