@@ -189,7 +189,7 @@ fi
 # printf "<span color='#4c4c4c'>| </span>%-${msg_limit}s" "<span color='$color'>$symbol</span> $full_text"
 
 # Output the status block
-echo "<span color='#4c4c4c'>| </span><span color='$color'>$symbol</span> $full_text"
+echo "<span color='#4c4c4c'> |  </span><span color='$color'>$symbol</span> $full_text"
 
 
 
