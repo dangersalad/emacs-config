@@ -110,6 +110,8 @@ fi
 
 # get total count, reset index if necessary
 total_notifications=$(wc -l "$cache_file" | awk '{print $1}')
+
+# if no notifications, just exit here
 if [[ "$total_notifications" -eq 0 ]]
 then
     echo ""
@@ -175,7 +177,19 @@ then
     full_text="<span color='$color_count'>($index/$total_notifications)</span> $full_text"
 fi
 
+# limit for total message length, based on screen size here
+# disp_size="$(xrandr | grep ' connected \(primary \)\?[0-9]' | sed 's/.* \([0-9]\+x[0-9]\+\).*/\1/')"
+
+# if [[ "$disp_size" = "2560x1080" ]]
+# then
+#     msg_limit=363
+# else
+#     msg_limit=100
+# fi
+# printf "<span color='#4c4c4c'>| </span>%-${msg_limit}s" "<span color='$color'>$symbol</span> $full_text"
+
 # Output the status block
-echo "<span color='$color'>$symbol</span> $full_text"
+echo "<span color='#4c4c4c'>| </span><span color='$color'>$symbol</span> $full_text"
+
 
 
