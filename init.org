@@ -2261,6 +2261,8 @@
       ;; 's-&': Launch application
       (exwm-input-set-key (kbd "s-SPC") #'counsel-linux-app)
 
+      (exwm-input-set-key (kbd "s-d") #'exwm-workspace-switch-to-buffer)
+
       (exwm-input-set-key (kbd "s-r")
                           (lambda (command)
                             (interactive (list (read-shell-command "$ ")))
@@ -2388,6 +2390,7 @@
       (push 'XF86AudioRaiseVolume exwm-input-prefix-keys)
       (push 'XF86AudioLowerVolume exwm-input-prefix-keys)
       (push 'XF86AudioMute exwm-input-prefix-keys)
+      (push ?\s-d exwm-input-prefix-keys)
 
       ;; customized simulations and shit for certain X apps
       (defun ds/exwm-keyrules-termite ()
