@@ -2467,7 +2467,11 @@
       (defun ds/exwm-keyrules-termite ()
         (when (and exwm-class-name
                    (string= exwm-class-name "Termite"))
-          (exwm-input-set-local-simulation-keys nil)
+          (exwm-input-set-local-simulation-keys
+           '(
+             ([?\C-w] . ?\C-\S-x)
+             ([?\M-w] . ?\C-\S-c)
+             ([?\C-y] . ?\C-\S-v)))
           (setq-local exwm-input-prefix-keys '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n ?\C-n ?\s-o ?\C-\s-o ?\M-x ?\M-:))))
 
       (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite)
