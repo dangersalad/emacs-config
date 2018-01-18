@@ -769,6 +769,17 @@
            (setq-local flycheck-javascript-eslint-executable eslint))))
    #+END_SRC
 
+   Set a window's width in pixels
+
+   #+BEGIN_SRC emacs-lisp
+     (defun ds/set-window-pixel-width (pixel-width)
+       "Set the window to PIXEL-WIDTH pixels wide"
+       (interactive "nNew Width: ")
+       (let* ((current-width (window-pixel-width))
+              (delta (- pixel-width current-width)))
+         (adjust-window-trailing-edge (selected-window) delta t t)))
+   #+END_SRC
+
    "Clear" the minibuffer
 
    #+BEGIN_SRC emacs-lisp
