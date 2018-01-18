@@ -2257,6 +2257,11 @@
 
       (exwm-input-set-key (kbd "<s-tab>") #'ds/exwm-workspace-toggle)
 
+      ;; fix magit for this key
+      (with-eval-after-load 'magit
+        (defun ds/exwm-fix-magit-workspace-switch ()
+          (define-key magit-status-mode-map (kbd "<s-tab>") #'ds/exwm-workspace-toggle))
+        (add-hook 'magit-status-mode-hook #'ds/exwm-fix-magit-workspace-switch))
 
 
       ;; Make class name the buffer name
