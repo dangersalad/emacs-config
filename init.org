@@ -2322,6 +2322,8 @@
 
       (exwm-input-set-key (kbd "s-d") #'ds/exwm-switch-to-x-window)
       (exwm-input-set-key (kbd "C-s-d") #'ds/exwm-bring-window-here)
+      (exwm-input-set-key (kbd "s-o") #'ds/switch-window)
+      (exwm-input-set-key (kbd "C-s-o") '(lambda () (interactive) (ds/switch-window t)))
 
       (exwm-input-set-key (kbd "C-s-n") #'rename-buffer)
 
@@ -2455,16 +2457,18 @@
       (push ?\s-d exwm-input-prefix-keys)
       (push ?\s-p exwm-input-prefix-keys)
       (push ?\s-n exwm-input-prefix-keys)
+      (push ?\s-o exwm-input-prefix-keys)
+      (push ?\C-\s-o exwm-input-prefix-keys)
       (push ?\C-\s-n exwm-input-prefix-keys)
       (push ?\C-\s-d exwm-input-prefix-keys)
 
-  
+
       ;; customized simulations and shit for certain X apps
       (defun ds/exwm-keyrules-termite ()
         (when (and exwm-class-name
                    (string= exwm-class-name "Termite"))
           (exwm-input-set-local-simulation-keys nil)
-          (setq-local exwm-input-prefix-keys '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n ?\C-n))))
+          (setq-local exwm-input-prefix-keys '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n ?\C-n ?\s-o ?\C-\s-o))))
 
       (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite)
 
@@ -2606,7 +2610,7 @@
             (select-window (get-buffer-window (buffer-name)) t))))
 
       (add-function :after (symbol-function 'eosd-dbus-notify) #'ds/exwm-notification-autopop)
-  
+
       (server-start)
       (exwm-enable))
   #+END_SRC
