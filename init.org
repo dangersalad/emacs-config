@@ -2597,6 +2597,16 @@
 
       (add-function :after (symbol-function 'ds/exwm-eosd) #'ds/exwm-refresh-notification-buffer)
 
+      (defun ds/exwm-notification-autopop (&rest _)
+        "Popup the notification buffer without taking focus from the current window."
+        (let ((currentbuffer (buffer-name)))
+          (message currentbuffer)
+          (ds/exwm-eosd)
+          (with-current-buffer currentbuffer
+            (select-window (get-buffer-window (buffer-name)) t))))
+
+      (add-function :after (symbol-function 'eosd-dbus-notify) #'ds/exwm-notification-autopop)
+  
       (server-start)
       (exwm-enable))
   #+END_SRC
