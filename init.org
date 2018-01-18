@@ -769,6 +769,13 @@
            (setq-local flycheck-javascript-eslint-executable eslint))))
    #+END_SRC
 
+   "Clear" the minibuffer
+
+   #+BEGIN_SRC emacs-lisp
+     (defun ds/clear-minibuffer (&rest _)
+       (message nil))
+   #+END_SRC
+
 ** Fence Edit
 
    Fork of [[https://github.com/aaronbieber/fence-edit.el][fence-edit]]
@@ -1932,7 +1939,14 @@
    
    #+BEGIN_SRC emacs-lisp
      (use-package go-scratch
-       :ensure t)
+       :ensure t
+       :config
+       (defun ds/goscratch-display-output-buffer (&rest _)
+         (let ((scratch-buf (get-buffer go-scratch-outbuf)))
+           (if scratch-buf (display-buffer-below-selected scratch-buf nil))))
+
+       (add-function :after (symbol-function 'go-scratch-eval-buffer) #'ds/goscratch-display-output-buffer)
+       (add-function :after (symbol-function 'go-scratch--run-sentinal) #'ds/clear-minibuffer))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
