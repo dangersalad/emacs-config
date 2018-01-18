@@ -2591,6 +2591,12 @@
 
       (exwm-input-set-key (kbd "s-n") #'ds/exwm-eosd)
 
+      (defun ds/exwm-refresh-notification-buffer (&rest _)
+        (if (get-buffer-window (get-buffer "*notifications*"))
+            (eosd-mode-create-or-update-buffer)))
+
+      (add-function :after (symbol-function 'ds/exwm-eosd) #'ds/exwm-refresh-notification-buffer)
+
       (server-start)
       (exwm-enable))
   #+END_SRC
