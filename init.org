@@ -2298,7 +2298,32 @@
       ;; 's-&': Launch application
       (exwm-input-set-key (kbd "s-SPC") #'counsel-linux-app)
 
-      (exwm-input-set-key (kbd "s-d") #'exwm-workspace-switch-to-buffer)
+      ;; switching to x windows
+      (defun ds/exwm-list-x-windows ()
+        "Get list if all EXWM managed X windows."
+        (let ((names ()))
+          (dolist (pair exwm--id-buffer-alist)
+            (with-current-buffer (cdr pair)
+              ;; (setq names (append names `(,(replace-regexp-in-string "^ " "" (buffer-name)))))))
+              (setq names (append names `(,(buffer-name))))))
+          names))
+
+      (defun ds/exwm-switch-to-x-window (buffer-or-name)
+        "Switch to EXWM managed X window BUFFER-OR-NAME."
+        (interactive (list (completing-read "Select Window: " (ds/exwm-list-x-windows) nil t)))
+        (exwm-workspace-switch-to-buffer buffer-or-name))
+
+      (defun ds/exwm-bring-window-here (buffer-or-name)
+        "Move an EXWM managed X window BUFFER-OR-NAME to the current workspace."
+        (interactive (list (completing-read "Select Window: " (ds/exwm-list-x-windows) nil t)))
+        (with-current-buffer buffer-or-name
+          (exwm-workspace-move-window exwm-workspace--current exwm--id)
+          (switch-to-buffer (exwm--id->buffer exwm--id))))
+
+      (exwm-input-set-key (kbd "s-d") #'ds/exwm-switch-to-x-window)
+      (exwm-input-set-key (kbd "C-s-d") #'ds/exwm-bring-window-here)
+
+      (exwm-input-set-key (kbd "C-s-n") #'rename-buffer)
 
       (exwm-input-set-key (kbd "s-r")
                           (lambda (command)
@@ -2429,13 +2454,16 @@
       (push 'XF86AudioMute exwm-input-prefix-keys)
       (push ?\s-d exwm-input-prefix-keys)
       (push ?\s-p exwm-input-prefix-keys)
+      (push ?\C-\s-n exwm-input-prefix-keys)
+      (push ?\C-\s-d exwm-input-prefix-keys)
 
+  
       ;; customized simulations and shit for certain X apps
       (defun ds/exwm-keyrules-termite ()
         (when (and exwm-class-name
                    (string= exwm-class-name "Termite"))
           (exwm-input-set-local-simulation-keys nil)
-          (setq-local exwm-input-prefix-keys '(?\C-x))))
+          (setq-local exwm-input-prefix-keys '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n))))
 
       (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite)
 
@@ -2525,7 +2553,7 @@
 
       (exwm-input-set-key (kbd "s-p") #'ds/get-password)
 
-  
+
       ;; (use-package exwm-cm
       ;;   :demand
       ;;   :config
