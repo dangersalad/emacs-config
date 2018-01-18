@@ -2428,6 +2428,7 @@
       (push 'XF86AudioLowerVolume exwm-input-prefix-keys)
       (push 'XF86AudioMute exwm-input-prefix-keys)
       (push ?\s-d exwm-input-prefix-keys)
+      (push ?\s-p exwm-input-prefix-keys)
 
       ;; customized simulations and shit for certain X apps
       (defun ds/exwm-keyrules-termite ()
@@ -2494,6 +2495,37 @@
       (add-hook 'exwm-floating-setup-hook #'exwm-layout-hide-mode-line)
       (add-hook 'exwm-floating-exit-hook #'exwm-layout-show-mode-line)
 
+      ;; add stuff to use pass database with emacs easily
+      (defcustom ds/pass-database (concat (getenv "HOME") "/.password-store")
+        "Where pass keeps it's password files.")
+
+      (defun ds/list-passwords ()
+        "List passwords in pass password database."
+        (let* ((regexp (regexp-quote (concat ds/pass-database "/"))))
+          (seq-filter (lambda (name)
+                        (not (string-match "^2fa" name)))
+                      (mapcar (lambda (filename)
+                                (replace-regexp-in-string
+                                 "\\\.gpg$" "" (replace-regexp-in-string regexp "" filename)))
+                              (directory-files-recursively ds/pass-database ".*\\\.gpg")))))
+
+      (defun ds/delete-last-kill (&rest _)
+        (kill-new "" t)
+        (remove-function (symbol-function 'yank) #'ds/delete-last-kill))
+
+      (defun ds/get-password (passname)
+        "Get a password from the password store (created by pass) of the name PASSNAME."
+        (interactive (list (completing-read "Select Password: " (ds/list-passwords))))
+        (let* ((filename (concat ds/pass-database "/" passname ".gpg")))
+          ;; (epa-file-insert-file-contents filename)
+          (with-current-buffer (find-file-noselect filename)
+            (kill-new (car (split-string (buffer-string))))
+            (kill-buffer)
+            (add-function :after (symbol-function 'yank) #'ds/delete-last-kill))))
+
+      (exwm-input-set-key (kbd "s-p") #'ds/get-password)
+
+  
       ;; (use-package exwm-cm
       ;;   :demand
       ;;   :config
