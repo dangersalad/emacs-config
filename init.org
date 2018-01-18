@@ -2476,17 +2476,17 @@
           (ds/restart-bar))
 
         :config
+        ;; (setq exwm-randr-workspace-output-plist '(0 "VGA1"))
+        (add-hook 'exwm-randr-screen-change-hook
+                  (lambda ()
+                    (let ((laptop-display (ds/display-connected-p "eDP1"))
+                          (laptop-display-external (ds/display-connected-p "DP1")))
+                      ;; check for laptop external display
+                      (if laptop-display
+                          (if laptop-display-external
+                              (ds/connect-laptop-external)
+                            (ds/disconnect-laptop-external))))))
         (exwm-randr-enable))
-      ;; (setq exwm-randr-workspace-output-plist '(0 "VGA1"))
-      (add-hook 'exwm-randr-screen-change-hook
-                (lambda ()
-                  (let ((laptop-display (ds/display-connected-p "eDP1"))
-                        (laptop-display-external (ds/display-connected-p "DP1")))
-                    ;; check for laptop external display
-                    (if laptop-display
-                        (if laptop-display-external
-                            (ds/connect-laptop-external)
-                          (ds/disconnect-laptop-external))))))
 
 
 
