@@ -2182,6 +2182,13 @@
        :ensure t
        :commands (kubernetes-overview)
        :config
+       (add-to-list 'display-buffer-alist
+                    `(,(rx bos "*kubernetes logs*" eos)
+                      (display-buffer-reuse-window
+                       display-buffer-in-side-window)
+                      (side            . top)
+                      (reusable-frames . nil)
+                      (window-height   . 0.33)))
        (setq kubernetes-poll-frequency 5))
    #+END_SRC
 
