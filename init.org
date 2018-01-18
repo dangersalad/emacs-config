@@ -2454,6 +2454,7 @@
       (push 'XF86AudioMute exwm-input-prefix-keys)
       (push ?\s-d exwm-input-prefix-keys)
       (push ?\s-p exwm-input-prefix-keys)
+      (push ?\s-n exwm-input-prefix-keys)
       (push ?\C-\s-n exwm-input-prefix-keys)
       (push ?\C-\s-d exwm-input-prefix-keys)
 
@@ -2463,7 +2464,7 @@
         (when (and exwm-class-name
                    (string= exwm-class-name "Termite"))
           (exwm-input-set-local-simulation-keys nil)
-          (setq-local exwm-input-prefix-keys '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n))))
+          (setq-local exwm-input-prefix-keys '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n ?\C-n))))
 
       (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite)
 
@@ -2572,6 +2573,24 @@
       ;; (setq exwm-workspace-minibuffer-position 'bottom)
 
       ;; Enable EXWM
+      (add-to-list 'load-path "~/.emacs.d/eosd/")
+      (require 'eosd)
+      (eosd-start)
+
+      (add-to-list 'display-buffer-alist
+                   `(,(rx bos "*notifications*" eos)
+                     (display-buffer-reuse-window
+                      display-buffer-in-side-window)
+                     (side            . right)
+                     (reusable-frames . nil)
+                     (inhibit-switch-frame . t)
+                     (window-height   . 0.1)))
+
+      (ds/popup-thing ds/exwm-eosd "*notifications*"
+                      (eosd))
+
+      (exwm-input-set-key (kbd "s-n") #'ds/exwm-eosd)
+
       (server-start)
       (exwm-enable))
   #+END_SRC
