@@ -10,7 +10,7 @@ xsetroot -cursor_name left_ptr
 setxkbmap -option ctrl:nocaps
 
 # Keyboard repeat rate
-xset r rate 200 60
+# xset r rate 200 60
 
 # export ssh auth socket
 export SSH_AUTH_SOCK="$(journalctl --user -u gpg-agent -b | grep -Eo 'ssh socket \((/[^/]+)+\.ssh' | tail -1 | sed 's/ssh socket (//')"
