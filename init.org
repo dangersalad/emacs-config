@@ -1263,8 +1263,7 @@
 
    #+BEGIN_SRC emacs-lisp
      (use-package try
-       :ensure t
-       :pin melpa-stable)
+       :ensure t)
    #+END_SRC
 
 ** Fontawesome
