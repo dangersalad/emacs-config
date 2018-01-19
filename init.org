@@ -1490,7 +1490,7 @@
        (setq org-log-into-drawer "LOGBOOK")
        (setq org-clock-into-drawer "LOGBOOK")
        (setq org-duration-format '(("h" . t) (special . 2)))
-       (setq org-src-window-setup 'reorganize-frame)
+       (setq org-src-window-setup 'current-window)
 
        ;; Resume clocking task when emacs is restarted
        (org-clock-persistence-insinuate)
