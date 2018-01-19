@@ -2305,7 +2305,7 @@
       (exwm-input-set-key (kbd "s-j") #'windmove-down)
       (exwm-input-set-key (kbd "s-k") #'windmove-up)
       (exwm-input-set-key (kbd "s-l") #'windmove-right)
-  
+
 
       ;; switching to x windows
       (defun ds/exwm-list-x-windows ()
@@ -2375,30 +2375,29 @@
 
       (defmacro ds/popup-thing (NAME BUFFER &rest BODY)
         "Make a popup thing with function NAME buffer name BUFFER executing BODY to create."
-        `(let* ((delete-func-name (concat (symbol-name ',NAME) "--delete"))
-                (delete-func-sym (intern delete-func-name))
-                (bufname ,BUFFER))
-           (eval `(defun ,delete-func-sym (&rest _)
-                    (let ((current-popup (get-buffer-window ,bufname)))
-                      (if (and current-popup
-                               (> (length (window-list)) 1))
-                          (delete-window current-popup)))))
-           (eval `(add-function :before (symbol-function 'exwm-workspace-switch) #',delete-func-sym))
-           (defun ,NAME ()
-             (interactive)
-             (let ((win (selected-window))
-                   (current-popup (get-buffer-window ,BUFFER))
-                   (popup-buf (or (get-buffer ,BUFFER)
-                                  (let (buffound)
-                                    (dolist (pair exwm--id-buffer-alist buffound)
-                                      (if (equal (concat " " ,BUFFER) (buffer-name (cdr pair))) (setq buffound (cdr pair))))))))
-               (if (equal win current-popup)
-                   (quit-restore-window current-popup)
-                 (if current-popup
-                     (select-window current-popup)
-                   (if popup-buf
-                       (pop-to-buffer popup-buf)
-                     ,@BODY)))))))
+        (let* ((delete-func-sym (intern (concat (symbol-name NAME) "--delete"))))
+          `(progn
+             (defun ,delete-func-sym (&rest _)
+               (let ((current-popup (get-buffer-window ,BUFFER)))
+                 (if (and current-popup
+                          (> (length (window-list)) 1))
+                     (delete-window current-popup))))
+             (add-function :before (symbol-function 'exwm-workspace-switch) #',delete-func-sym)
+             (defun ,NAME ()
+               (interactive)
+               (let ((win (selected-window))
+                     (current-popup (get-buffer-window ,BUFFER))
+                     (popup-buf (or (get-buffer ,BUFFER)
+                                    (let (buffound)
+                                      (dolist (pair exwm--id-buffer-alist buffound)
+                                        (if (equal (concat " " ,BUFFER) (buffer-name (cdr pair))) (setq buffound (cdr pair))))))))
+                 (if (equal win current-popup)
+                     (quit-restore-window current-popup)
+                   (if current-popup
+                       (select-window current-popup)
+                     (if popup-buf
+                         (pop-to-buffer popup-buf)
+                       (progn ,@BODY)))))))))
 
       ;; popup eshell
       (ds/popup-thing ds/exwm-popup-shell ds/exwm-popup-shell-buffer
@@ -2640,8 +2639,8 @@
           (if (equal currentbuffer "*notifications*")
               (ds/exwm-refresh-notification-buffer)
             (progn (ds/exwm-eosd)
-              (with-current-buffer currentbuffer
-                (select-window (get-buffer-window (buffer-name)) t))))))
+                   (with-current-buffer currentbuffer
+                     (select-window (get-buffer-window (buffer-name)) t))))))
 
       (add-function :after (symbol-function 'eosd-dbus-notify) #'ds/exwm-notification-autopop)
 
