@@ -2695,6 +2695,16 @@
        ;; load eosd
        (add-to-list 'load-path "~/.emacs.d/eosd/")
        (require 'eosd)
+       ;; customize notification faces
+       (eval-after-load 'zenburn-theme
+         (zenburn-with-color-variables
+           (set-face-attribute 'eosd-heading-face nil :foreground zenburn-fg-1)
+           (set-face-attribute 'eosd-title-face nil :foreground zenburn-green)
+           (set-face-attribute 'eosd-datetime-face nil :foreground zenburn-blue)
+           (set-face-attribute 'eosd-action-link-face nil :foreground zenburn-blue :background zenburn-bg+1 :box zenburn-blue :underline nil)
+           (set-face-attribute 'eosd-delete-link-face nil :foreground zenburn-red :background zenburn-bg+1 :box zenburn-red :underline nil)
+           (set-face-attribute 'eosd-text-mark-face nil :foreground zenburn-fg-1)))
+       ;; start the notification service
        (eosd-start)
        :config
        ;; show notifications in sside window
