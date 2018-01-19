@@ -274,6 +274,10 @@
         :config
         (setenv "PAGER" "cat")
 
+        ;; add "pin" to the list of words for detecting password entry from eshell
+        (push "pin" password-word-equivalents)
+        (setq eshell-password-prompt-regexp (format "\\(%s\\).*:\\s *\\'" (regexp-opt password-word-equivalents)))
+  
         (setq eshell-scroll-to-bottom-on-input 'all
               eshell-error-if-no-glob t
               eshell-hist-ignoredups t
