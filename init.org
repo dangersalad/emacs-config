@@ -2325,6 +2325,18 @@
       (exwm-input-set-key (kbd "s-o") #'ds/switch-window)
       (exwm-input-set-key (kbd "C-s-o") '(lambda () (interactive) (ds/switch-window t)))
 
+      (defun ds/exwm-quit ()
+        "Close a window in EXWM.
+
+    If it is an X window, then kill the buffer.
+    If it is not an X window, delete the window unless it is the only one."
+        (interactive)
+        (if (equal major-mode 'exwm-mode)
+            (kill-buffer))
+        (if (> (length (window-list)) 1)
+            (delete-window)))
+      (exwm-input-set-key (kbd "C-s-q") #'ds/exwm-quit)
+  
       (exwm-input-set-key (kbd "C-s-n") #'rename-buffer)
 
       (exwm-input-set-key (kbd "s-r")
@@ -2461,6 +2473,7 @@
       (push ?\C-\s-o exwm-input-prefix-keys)
       (push ?\C-\s-n exwm-input-prefix-keys)
       (push ?\C-\s-d exwm-input-prefix-keys)
+      (push ?\C-\s-q exwm-input-prefix-keys)
 
 
       ;; customized simulations and shit for certain X apps
@@ -2472,7 +2485,7 @@
              ([?\C-w] . ?\C-\S-x)
              ([?\M-w] . ?\C-\S-c)
              ([?\C-y] . ?\C-\S-v)))
-          (setq-local exwm-input-prefix-keys '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n ?\C-n ?\s-o ?\C-\s-o ?\M-x ?\M-:))))
+          (setq-local exwm-input-prefix-keys '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n ?\C-n ?\s-o ?\C-\s-o ?\M-x ?\M-: ?\C-\s-q))))
 
       (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite)
 
