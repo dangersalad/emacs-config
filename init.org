@@ -2751,7 +2751,11 @@
      (use-package exwm
        :ensure t
        :config
+       ;; start the server so scripts can query emacs for information (mainly for the bar)
        (server-start)
+       ;; enable pinentry
+       (pinentry-start t)
+       ;; start exwm
        (exwm-enable))
    #+END_SRC
 
