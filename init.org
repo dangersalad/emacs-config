@@ -2336,7 +2336,7 @@
         (if (> (length (window-list)) 1)
             (delete-window)))
       (exwm-input-set-key (kbd "C-s-q") #'ds/exwm-quit)
-  
+
       (exwm-input-set-key (kbd "C-s-n") #'rename-buffer)
 
       (exwm-input-set-key (kbd "s-r")
@@ -2621,10 +2621,11 @@
       (defun ds/exwm-notification-autopop (&rest _)
         "Popup the notification buffer without taking focus from the current window."
         (let ((currentbuffer (buffer-name)))
-          (message currentbuffer)
-          (ds/exwm-eosd)
-          (with-current-buffer currentbuffer
-            (select-window (get-buffer-window (buffer-name)) t))))
+          (if (equal currentbuffer "*notifications*")
+              (ds/exwm-refresh-notification-buffer)
+            (progn (ds/exwm-eosd)
+              (with-current-buffer currentbuffer
+                (select-window (get-buffer-window (buffer-name)) t))))))
 
       (add-function :after (symbol-function 'eosd-dbus-notify) #'ds/exwm-notification-autopop)
 
