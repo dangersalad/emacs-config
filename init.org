@@ -279,6 +279,7 @@
               eshell-hist-ignoredups t
               eshell-save-history-on-exit t
               eshell-prefer-lisp-functions nil
+              eshell-history-size 2048
               eshell-destroy-buffer-when-process-dies t)
 
         (add-hook 'eshell-mode-hook
