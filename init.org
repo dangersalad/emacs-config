@@ -2231,6 +2231,23 @@
        (pdf-tools-install))
    #+END_SRC
 
+** Password Store
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package pass
+       :ensure t
+       :config
+       (use-package password-store-otp
+         :ensure t
+         :init
+         (defun ds/password-store-get-otp (record)
+           (interactive (list (password-store--completing-read)))
+           (password-store-otp-token-copy record))
+       (use-package auth-password-store
+         :ensure t
+         :config
+         (auth-pass-enable)))
+   #+END_SRC
    
 * EXWM
 
@@ -2642,36 +2659,11 @@
      (use-package exwm
        :ensure t
        :init
-       (defcustom ds/pass-database (concat (getenv "HOME") "/.password-store")
-         "Where pass keeps it's password files.")
-
-       (defun ds/list-passwords ()
-         "List passwords in pass password database."
-         (let* ((regexp (regexp-quote (concat ds/pass-database "/"))))
-           (seq-filter (lambda (name)
-                         (not (string-match "^2fa" name)))
-                       (mapcar (lambda (filename)
-                                 (replace-regexp-in-string
-                                  "\\\.gpg$" "" (replace-regexp-in-string regexp "" filename)))
-                               (directory-files-recursively ds/pass-database ".*\\\.gpg")))))
-
-       (defun ds/delete-last-kill (&rest _)
-         (kill-new "" t)
-         (remove-function (symbol-function 'yank) #'ds/delete-last-kill))
-
-       (defun ds/get-password (passname)
-         "Get a password from the password store (created by pass) of the name PASSNAME."
-         (interactive (list (completing-read "Select Password: " (ds/list-passwords))))
-         (let* ((filename (concat ds/pass-database "/" passname ".gpg")))
-           ;; (epa-file-insert-file-contents filename)
-           (with-current-buffer (find-file-noselect filename)
-             (kill-new (car (split-string (buffer-string))))
-             (kill-buffer)
-             (add-function :after (symbol-function 'yank) #'ds/delete-last-kill))))
-
        :config
-       (exwm-input-set-key (kbd "s-p") #'ds/get-password)
-       (push ?\s-p exwm-input-prefix-keys))
+       (exwm-input-set-key (kbd "s-p") #'password-store-copy)
+       (push ?\s-p exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "C-s-p") #'ds/password-store-get-otp)
+       (push ?\C-\s-p exwm-input-prefix-keys))
    #+END_SRC
 
 ** Notifications
