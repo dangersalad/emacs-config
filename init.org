@@ -2299,6 +2299,14 @@
       ;; 's-&': Launch application
       (exwm-input-set-key (kbd "s-SPC") #'counsel-linux-app)
 
+      ;; s-[hjkl] to move windows
+      (setq windmove-wrap-around t)
+      (exwm-input-set-key (kbd "s-h") #'windmove-left)
+      (exwm-input-set-key (kbd "s-j") #'windmove-down)
+      (exwm-input-set-key (kbd "s-k") #'windmove-up)
+      (exwm-input-set-key (kbd "s-l") #'windmove-right)
+  
+
       ;; switching to x windows
       (defun ds/exwm-list-x-windows ()
         "Get list if all EXWM managed X windows."
@@ -2475,6 +2483,10 @@
       (push ?\C-\s-n exwm-input-prefix-keys)
       (push ?\C-\s-d exwm-input-prefix-keys)
       (push ?\C-\s-q exwm-input-prefix-keys)
+      (push ?\s-h exwm-input-prefix-keys)
+      (push ?\s-j exwm-input-prefix-keys)
+      (push ?\s-k exwm-input-prefix-keys)
+      (push ?\s-l exwm-input-prefix-keys)
 
 
       ;; customized simulations and shit for certain X apps
@@ -2486,7 +2498,10 @@
              ([?\C-w] . ?\C-\S-x)
              ([?\M-w] . ?\C-\S-c)
              ([?\C-y] . ?\C-\S-v)))
-          (setq-local exwm-input-prefix-keys '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n ?\C-n ?\s-o ?\C-\s-o ?\M-x ?\M-: ?\C-\s-q))))
+          (setq-local exwm-input-prefix-keys
+                      '(?\C-x ?\s-d ?\C-\s-d ?\s-p s-tab ?\C-\s-n
+                              ?\C-n ?\s-o ?\C-\s-o ?\M-x ?\M-:
+                              ?\C-\s-q ?\s-h ?\s-j ?\s-k ?\s-l))))
 
       (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite)
 
