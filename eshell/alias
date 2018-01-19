@@ -1,3 +1,3 @@
 alias kubelogs kubetail $* -k false --timestamps -j ".severity + \" \" + .message"
-alias ll ls -l $*
+alias ls ls -l $*
 alias sysup pacaur --noprogressbar --noedit -Syu $*
