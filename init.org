@@ -2434,38 +2434,38 @@
          (adjust-window-trailing-edge (selected-window) delta (equal dir 'right)))
 
        (defun ds/exwm-window-resize--get-delta (delta default)
-         (abs (or (if (= delta 1) default delta) default)))
+         (abs (or delta default)))
 
        (defun ds/exwm-window-grow-above (delta)
-         (interactive "p")
+         (interactive "P")
          (ds/adjust-window-leading-edge (ds/exwm-window-resize--get-delta delta 5) 'above))
 
        (defun ds/exwm-window-shrink-above (delta)
-         (interactive "p")
+         (interactive "P")
          (ds/adjust-window-leading-edge (* -1 (ds/exwm-window-resize--get-delta delta 5)) 'above))
 
        (defun ds/exwm-window-grow-below (delta)
-         (interactive "p")
+         (interactive "P")
          (ds/adjust-window-trailing-edge (ds/exwm-window-resize--get-delta delta 5) 'below))
 
        (defun ds/exwm-window-shrink-below (delta)
-         (interactive "p")
+         (interactive "P")
          (ds/adjust-window-trailing-edge (* -1 (ds/exwm-window-resize--get-delta delta 5)) 'below))
 
        (defun ds/exwm-window-grow-left (delta)
-         (interactive "p")
+         (interactive "P")
          (ds/adjust-window-leading-edge (ds/exwm-window-resize--get-delta delta 10) 'left))
 
        (defun ds/exwm-window-shrink-left (delta)
-         (interactive "p")
+         (interactive "P")
          (ds/adjust-window-leading-edge (* -1 (ds/exwm-window-resize--get-delta delta 10)) 'left))
 
        (defun ds/exwm-window-grow-right (delta)
-         (interactive "p")
+         (interactive "P")
          (ds/adjust-window-trailing-edge (ds/exwm-window-resize--get-delta delta 10) 'right))
 
        (defun ds/exwm-window-shrink-right (delta)
-         (interactive "p")
+         (interactive "P")
          (ds/adjust-window-trailing-edge (* -1 (ds/exwm-window-resize--get-delta delta 10)) 'right))
        :config
        (exwm-input-set-key (kbd "C-s-k") #'ds/exwm-window-grow-above)
