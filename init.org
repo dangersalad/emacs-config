@@ -1844,7 +1844,7 @@
 
        ;; (remove-hook 'buffer-list-update-hook #'ds/flycheck-popup)
        ;; (remove-hook 'buffer-list-update-hook #'ds/flycheck-close-unused-list)
-       (add-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-popup)
+       ;; (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-popup)
        ;; (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-status-line)
        )
    #+END_SRC
