@@ -2820,6 +2820,15 @@
        (push ?\C-\M-\S-\s-l exwm-input-prefix-keys))
    #+END_SRC
 
+** System Tray
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm-systemtray
+       :demand t
+       :config
+       (exwm-systemtray-enable))
+   #+END_SRC
+
 ** Start
 
    #+BEGIN_SRC emacs-lisp
