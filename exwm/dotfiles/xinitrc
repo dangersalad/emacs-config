@@ -15,6 +15,9 @@ setxkbmap -option ctrl:nocaps
 # export ssh auth socket
 export SSH_AUTH_SOCK="$(journalctl --user -u gpg-agent -b | grep -Eo 'ssh socket \((/[^/]+)+\.ssh' | tail -1 | sed 's/ssh socket (//')"
 
+# turn on numlock
+numlockx &
+
 # start lemonbar
 $HOME/.emacs.d/exwm/bin/start-bar &
 
