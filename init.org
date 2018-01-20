@@ -2809,12 +2809,14 @@
    #+BEGIN_SRC emacs-lisp
      (use-package exwm
        :ensure t
+       :init
+       (defun ds/lock-screen (&rest _)
+         (interactive)
+         (start-process "" nil "slock"))
        :config
-       (exwm-input-set-key
-        (kbd "C-M-S-s-l")
-        (lambda ()
-          (interactive)
-          (start-process "" nil "slock")))
+       (exwm-input-set-key (kbd "C-M-S-s-l") #'ds/lock-screen)
+       (define-key global-map (kbd "C-x C-z") #'ds/lock-screen)
+       (define-key global-map (kbd "C-z") #'ds/lock-screen)
        (push ?\C-\M-\S-\s-l exwm-input-prefix-keys))
    #+END_SRC
 
