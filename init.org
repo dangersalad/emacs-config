@@ -2432,7 +2432,7 @@
    Set up bindings to resize windows
 
    #+BEGIN_SRC emacs-lisp
-     (use-package exem
+     (use-package exwm
        :ensure t
        :init
        (defun ds/adjust-window-leading-edge (delta dir)
