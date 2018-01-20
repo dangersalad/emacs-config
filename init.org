@@ -2511,7 +2511,7 @@
 
        (defun ds/exwm-bring-window-here (buffer-or-name)
          "Move an EXWM managed X window BUFFER-OR-NAME to the current workspace."
-         (interactive (list (completing-read "Select Window: " (ds/exwm-list-x-windows) nil t)))
+         (interactive (list (completing-read "Bring Window: " (ds/exwm-list-x-windows) nil t)))
          (with-current-buffer buffer-or-name
            (exwm-workspace-move-window exwm-workspace--current exwm--id)
            (switch-to-buffer (exwm--id->buffer exwm--id))))
