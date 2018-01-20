@@ -2722,21 +2722,18 @@
        (add-function :after (symbol-function 'eosd-dbus-notify) #'ds/exwm-notification-autopop))
    #+END_SRC
 
-** Screen Lock not working)
+** Screen Lock
 
    #+BEGIN_SRC emacs-lisp
      (use-package exwm
        :ensure t
        :config
        (exwm-input-set-key
-        (kbd "s-C-l")
+        (kbd "C-M-s-l")
         (lambda ()
           (interactive)
-          (start-process "" nil
-                         (concat
-                          (expand-file-name (concat user-emacs-directory "exwm/bin/lock"))
-                          " "
-                          (concat user-emacs-directory "exwm/lib/lock.png"))))))
+          (start-process "" nil "slock")))
+       (push ?\C-\M-\s-l exwm-input-prefix-keys))
    #+END_SRC
 
 ** Start
