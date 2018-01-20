@@ -2418,6 +2418,77 @@
        (push ?\s-l exwm-input-prefix-keys))
    #+END_SRC
 
+   Set up bindings to resize windows
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exem
+       :ensure t
+       :init
+       (defun ds/adjust-window-leading-edge (delta dir)
+         (let ((otherwin (window-in-direction dir))
+               (otherdelta (* -1 delta)))
+           (if otherwin
+               (adjust-window-trailing-edge otherwin otherdelta (equal dir 'left)))))
+
+       (defun ds/adjust-window-trailing-edge (delta dir)
+         (adjust-window-trailing-edge (selected-window) delta (equal dir 'right)))
+
+       (defun ds/exwm-window-resize--get-delta (delta default)
+         (abs (or (if (= delta 1) default delta) default)))
+
+       (defun ds/exwm-window-grow-above (delta)
+         (interactive "p")
+         (ds/adjust-window-leading-edge (ds/exwm-window-resize--get-delta delta 5) 'above))
+
+       (defun ds/exwm-window-shrink-above (delta)
+         (interactive "p")
+         (ds/adjust-window-leading-edge (* -1 (ds/exwm-window-resize--get-delta delta 5)) 'above))
+
+       (defun ds/exwm-window-grow-below (delta)
+         (interactive "p")
+         (ds/adjust-window-trailing-edge (ds/exwm-window-resize--get-delta delta 5) 'below))
+
+       (defun ds/exwm-window-shrink-below (delta)
+         (interactive "p")
+         (ds/adjust-window-trailing-edge (* -1 (ds/exwm-window-resize--get-delta delta 5)) 'below))
+
+       (defun ds/exwm-window-grow-left (delta)
+         (interactive "p")
+         (ds/adjust-window-leading-edge (ds/exwm-window-resize--get-delta delta 10) 'left))
+
+       (defun ds/exwm-window-shrink-left (delta)
+         (interactive "p")
+         (ds/adjust-window-leading-edge (* -1 (ds/exwm-window-resize--get-delta delta 10)) 'left))
+
+       (defun ds/exwm-window-grow-right (delta)
+         (interactive "p")
+         (ds/adjust-window-trailing-edge (ds/exwm-window-resize--get-delta delta 10) 'right))
+
+       (defun ds/exwm-window-shrink-right (delta)
+         (interactive "p")
+         (ds/adjust-window-trailing-edge (* -1 (ds/exwm-window-resize--get-delta delta 10)) 'right))
+       :config
+       (exwm-input-set-key (kbd "C-s-k") #'ds/exwm-window-grow-above)
+       (push ?\C-\s-k exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "C-M-s-k") #'ds/exwm-window-shrink-above)
+       (push ?\C-\M-\s-k exwm-input-prefix-keys)
+
+       (exwm-input-set-key (kbd "C-s-j") #'ds/exwm-window-grow-below)
+       (push ?\C-\s-j exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "C-M-s-j") #'ds/exwm-window-shrink-below)
+       (push ?\C-\M-\s-j exwm-input-prefix-keys)
+
+       (exwm-input-set-key (kbd "C-s-h") #'ds/exwm-window-grow-left)
+       (push ?\C-\s-h exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "C-M-s-h") #'ds/exwm-window-shrink-left)
+       (push ?\C-\M-\s-h exwm-input-prefix-keys)
+
+       (exwm-input-set-key (kbd "C-s-l") #'ds/exwm-window-grow-right)
+       (push ?\C-\s-l exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "C-M-s-l") #'ds/exwm-window-shrink-right)
+       (push ?\C-\M-\s-l exwm-input-prefix-keys))
+   #+END_SRC
+
    Listing and moving X windows only
 
    #+BEGIN_SRC emacs-lisp
@@ -2729,11 +2800,11 @@
        :ensure t
        :config
        (exwm-input-set-key
-        (kbd "C-M-s-l")
+        (kbd "C-M-S-s-l")
         (lambda ()
           (interactive)
           (start-process "" nil "slock")))
-       (push ?\C-\M-\s-l exwm-input-prefix-keys))
+       (push ?\C-\M-\S-\s-l exwm-input-prefix-keys))
    #+END_SRC
 
 ** Start
