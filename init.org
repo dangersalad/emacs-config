@@ -2108,7 +2108,18 @@
                         :predicate buffer-file-name)))))
    #+END_SRC
 
-   
+** Elisp   
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package srefactor
+       :ensure t
+       :config
+       (use-package srefactor-lisp
+         :bind (:map emacs-lisp-mode-map
+                     ("C-c M-q" . srefactor-lisp-format-sexp))))
+   #+END_SRC
+
+
 * Applications
 
   Packages that are sort of "apps" on their own or interact with other
