@@ -2749,6 +2749,7 @@
        (server-start)
        ;; enable pinentry
        (pinentry-start t)
+       (setq pinentry-popup-prompt-window nil)
        ;; start exwm
        (exwm-enable))
    #+END_SRC
