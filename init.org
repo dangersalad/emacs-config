@@ -2245,10 +2245,12 @@
            (password-store-otp-token-copy record))
        (use-package auth-password-store
          :ensure t
+         :demand t
          :config
-         (auth-pass-enable)))
+         (auth-pass-enable))))
    #+END_SRC
    
+
 * EXWM
 
   Emacs as a window manager
