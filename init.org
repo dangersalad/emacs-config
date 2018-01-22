@@ -135,6 +135,20 @@
            (load custom-file)))
    #+END_SRC
 
+** Macros
+*** Popup Window Width setter
+
+    Use this for setting a width of a popup window in the
+    ~display-buffer-alist~ when using a side window.
+
+    #+BEGIN_SRC emacs-lisp
+      (defmacro ds/set-popup-width (TARGET-WIDTH)
+        "Return a lambda that uses TARGET-WIDTH to set the width of a popup buffer."
+        `(lambda (win)
+           (if (< (window-width win) ,TARGET-WIDTH)
+               (ds/set-window-column-width ,TARGET-WIDTH win))))
+    #+END_SRC
+
 ** Basic Customizations
 *** Indentation
 
@@ -243,9 +257,7 @@
                      (slot            . 2)
                      (reusable-frames . nil)
                      (inhibit-switch-frame . t)
-                     (window-width   . (lambda (win)
-                                         (if (< (window-width win) 106)
-                                             (ds/set-window-column-width 106 win))))))
+                     (window-width   . (ds/set-popup-width 106))))
     #+END_SRC
 
     Close compilation windows after 2 seconds if they are successful
@@ -2655,9 +2667,7 @@
                       (side            . right)
                       (reusable-frames . nil)
                       (inhibit-switch-frame . t)
-                      (window-width   . (lambda (win)
-                                          (if (< (window-width win) 135)
-                                              (ds/set-window-column-width 135 win))))))
+                      (window-width   . (ds/set-popup-width 135))))
 
 
        (exwm-input-set-key (kbd "s-?") #'ds/exwm-popup-telegram)
