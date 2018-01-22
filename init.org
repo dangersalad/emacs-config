@@ -599,12 +599,13 @@
     #+END_SRC
 
 ** Utility Functions
+*** Recursive files
 
-   A function to get files in a directory recursively, this is used in
-   the ~org-agenda~ config to add all the files in ~$HOME/org/agenda~
-   and it's subfolders
+    A function to get files in a directory recursively, this is used in
+    the ~org-agenda~ config to add all the files in ~$HOME/org/agenda~
+    and it's subfolders
 
-   #+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
      (defun directory-files-recursive(directory &optional match)
        "Get all files in DIRECTORY recursivley.
      There are three optional arguments:
@@ -638,12 +639,13 @@
                (setq file-list (cons file-name file-list)))))
            (setq current-dir-list (cdr current-dir-list)))
          file-list))
-   #+END_SRC
+    #+END_SRC
 
+*** Full Buffer Indent
 
-   A function to indent the entire buffer, bound to ~C-\~
+    A function to indent the entire buffer, bound to ~C-\~
 
-   #+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 
      (defun ds/indent-buffer ()
        "Indent entire buffer using `indent-according-to-mode'."
@@ -666,13 +668,15 @@
          (indent-region (region-beginning) (region-end))))
 
      (global-set-key (kbd "C-c \\") 'ds/indent-buffer)
-   #+END_SRC
+    #+END_SRC
 
-   A function that makes a variable local to the buffer and sets it's
-   value in one step
+*** Local Variables
+
+    A function that makes a variable local to the buffer and sets it's
+    value in one step
 
 
-   #+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
      (defun set-local-variable (varname value)
        "Make a variable VARNAME local to the buffer if needed, then set to VALUE."
        (interactive "vVariable Name: \nsNew Value: ")
@@ -681,12 +685,14 @@
          (if (and (= 0 number) (not (string-equal "0" value)))
              (set-variable varname value)
            (set-variable varname number))))
-   #+END_SRC
+    #+END_SRC
 
-   A function to toggle a serif font for a buffer, but still keep
-   "code" in that buffer monospaced
+*** Serif Toggle
+
+    A function to toggle a serif font for a buffer, but still keep
+    "code" in that buffer monospaced
    
-   #+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
      (defvar ds/serif-preserve-default-list nil
        "A list holding the faces that preserve the default family and height when TOGGLE-SERIF is used.")
      (defvar ds/preserve-default-cookies-list nil
@@ -756,13 +762,15 @@
                     (setq ds/default-cookie nil)
                     (setq ds/preserve-default-cookies-list nil)
                     (message "Restored default fonts."))))))
-   #+END_SRC
+    #+END_SRC
 
-   A function to get an eslint executable for linting javascript. This
-   should use the local instance installed in ~node_modules~ over any
-   globally installed eslint package
+*** Project Eslint Finder
 
-   #+BEGIN_SRC emacs-lisp
+    A function to get an eslint executable for linting javascript. This
+    should use the local instance installed in ~node_modules~ over any
+    globally installed eslint package
+
+    #+BEGIN_SRC emacs-lisp
      (defun ds/use-eslint-from-node-modules ()
        (let* ((root (locate-dominating-file
                      (or (buffer-file-name) default-directory)
@@ -772,25 +780,29 @@
                                              root))))
          (when (and eslint (file-executable-p eslint))
            (setq-local flycheck-javascript-eslint-executable eslint))))
-   #+END_SRC
+    #+END_SRC
 
-   Set a window's width in pixels
+*** Set Window Width
 
-   #+BEGIN_SRC emacs-lisp
+    Set a window's width in pixels
+
+    #+BEGIN_SRC emacs-lisp
      (defun ds/set-window-pixel-width (pixel-width)
        "Set the window to PIXEL-WIDTH pixels wide"
        (interactive "nNew Width: ")
        (let* ((current-width (window-pixel-width))
               (delta (- pixel-width current-width)))
          (adjust-window-trailing-edge (selected-window) delta t t)))
-   #+END_SRC
+    #+END_SRC
 
-   "Clear" the minibuffer
+*** Clear the minibuffer
 
-   #+BEGIN_SRC emacs-lisp
+    "Clear" the minibuffer
+
+    #+BEGIN_SRC emacs-lisp
      (defun ds/clear-minibuffer (&rest _)
        (message nil))
-   #+END_SRC
+    #+END_SRC
 
 ** Fence Edit
 
