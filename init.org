@@ -2221,6 +2221,7 @@
    #+BEGIN_SRC emacs-lisp
      (use-package kubernetes
        :ensure t
+       :demand t
        :commands (kubernetes-overview)
        :config
        (add-to-list 'display-buffer-alist
