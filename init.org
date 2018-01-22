@@ -2699,8 +2699,28 @@
         (push 's-f2 exwm-input-prefix-keys))
     #+END_SRC
 
+*** Pavucontrol
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        (ds/popup-thing ds/exwm-popup-pavucontrol "Pavucontrol"
+                        (start-process-shell-command "pavucontrol" nil "pavucontrol"))
+
+        (add-to-list 'display-buffer-alist
+                     `(,(rx bos "Pavucontrol" eos)
+                       (display-buffer-reuse-window
+                        display-buffer-in-side-window)
+                       (side            . bottom)
+                       (reusable-frames . nil)
+                       (inhibit-switch-frame . t)
+                       (window-height   . 30)))
 
 
+        (exwm-input-set-key (kbd "<s-f3>") #'ds/exwm-popup-pavucontrol)
+        (push 's-f3 exwm-input-prefix-keys))
+    #+END_SRC
 
 ** Volume Control
 
