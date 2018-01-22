@@ -2670,8 +2670,8 @@
                       (window-width   . (ds/set-popup-width 135))))
 
 
-       (exwm-input-set-key (kbd "s-?") #'ds/exwm-popup-telegram)
-       (push ?\s-? exwm-input-prefix-keys))
+       (exwm-input-set-key (kbd "<s-f1>") #'ds/exwm-popup-telegram)
+       (push 's-f1 exwm-input-prefix-keys))
    #+END_SRC
 
 ** Popup Mattermost
@@ -2694,8 +2694,8 @@
                       (window-width   . (ds/set-popup-width 135))))
 
 
-       (exwm-input-set-key (kbd "s->") #'ds/exwm-popup-mattermost)
-       (push ?\s-> exwm-input-prefix-keys))
+       (exwm-input-set-key (kbd "<s-f2>") #'ds/exwm-popup-mattermost)
+       (push 's-f2 exwm-input-prefix-keys))
    #+END_SRC
 
 ** Volume Control
