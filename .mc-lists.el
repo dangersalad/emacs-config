@@ -5,6 +5,7 @@
       '(
         ivy-done
         kill-region
+        org-self-insert-command
         yaml-electric-backspace
         ))
 
