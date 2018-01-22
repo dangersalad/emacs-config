@@ -142,11 +142,24 @@
     ~display-buffer-alist~ when using a side window.
 
     #+BEGIN_SRC emacs-lisp
-      (defmacro ds/set-popup-width (TARGET-WIDTH)
-        "Return a lambda that uses TARGET-WIDTH to set the width of a popup buffer."
-        `(lambda (win)
-           (if (< ,TARGET-WIDTH (window-width win))
-               (ds/set-window-column-width ,TARGET-WIDTH win))))
+      (defmacro ds/popup-thing-display-settings (BUFFER-NAME SIDE &optional SLOT SIZE)
+        `(add-to-list 'display-buffer-alist
+                      '(,(concat "\\`" (regexp-quote BUFFER-NAME) "\\'")
+                        (display-buffer-reuse-window
+                         display-buffer-in-side-window)
+                        (side            . ,SIDE)
+                        ,(if SLOT `(slot            . ,SLOT))
+                        (reusable-frames)
+                        (inhibit-switch-frame . t)
+                        ,(if SIZE
+                             (if (or (equal SIDE 'top)
+                                     (equal SIDE 'bottom))
+                                 `(window-height . ,SIZE)
+                               `(window-width   . (lambda (win)
+                                                    (if (or (< (window-width win) ,SIZE)
+                                                            (not (or (window-in-direction 'above win t)
+                                                                     (window-in-direction 'below win t))))
+                                                        (ds/set-window-column-width ,SIZE win)))))))))
     #+END_SRC
 
 ** Basic Customizations
@@ -249,15 +262,7 @@
     Special display rules for compile buffer
 
     #+BEGIN_SRC emacs-lisp
-      (add-to-list 'display-buffer-alist
-                   `(,(rx bos "*compilation*" eos)
-                     (display-buffer-reuse-window
-                      display-buffer-in-side-window)
-                     (side            . right)
-                     (slot            . 2)
-                     (reusable-frames . nil)
-                     (inhibit-switch-frame . t)
-                     (window-width   . (ds/set-popup-width 106))))
+      (ds/popup-thing-display-settings "*compilation*" right 2 106)
     #+END_SRC
 
     Close compilation windows after 2 seconds if they are successful
@@ -822,6 +827,7 @@
                (current-width (window-width win))
                (wanted-delta (- column-width current-width))
                (delta (window-resizable win wanted-delta t)))
+          (message "%s %d -> %d (%d)" win current-width column-width delta)
           (window-resize win delta t)))
     #+END_SRC
 
@@ -2266,13 +2272,7 @@
        :demand t
        :commands (kubernetes-overview)
        :config
-       (add-to-list 'display-buffer-alist
-                    `(,(rx bos "*kubernetes logs*" eos)
-                      (display-buffer-reuse-window
-                       display-buffer-in-side-window)
-                      (side            . top)
-                      (reusable-frames . nil)
-                      (window-height   . 0.33)))
+       (ds/popup-thing-display-settings "*kubernetes logs*" top 0 0.33)
        (setq kubernetes-poll-frequency 5))
    #+END_SRC
 
@@ -2626,15 +2626,7 @@
        (push ?\s-m exwm-input-prefix-keys)
 
        ;; rules for displaying the popup buffer
-       (add-to-list 'display-buffer-alist
-                    `(,(rx bos "*Popup Shell*" eos)
-                      (display-buffer-reuse-window
-                       display-buffer-in-side-window)
-                      (side            . top)
-                      (slot            . -1)
-                      (reusable-frames . nil)
-                      (inhibit-switch-frame . t)
-                      (window-height   . 0.4)))
+       (ds/popup-thing-display-settings "*Popup Shell*" top -1 0.4)
 
        ;; 's-return': Launch new eshell
        (exwm-input-set-key (kbd "<s-return>")
@@ -2661,15 +2653,7 @@
         (ds/popup-thing ds/exwm-popup-telegram "TelegramDesktop"
                         (start-process-shell-command "telegram" nil "telegram-desktop"))
 
-        (add-to-list 'display-buffer-alist
-                     `(,(rx bos "TelegramDesktop" eos)
-                       (display-buffer-reuse-window
-                        display-buffer-in-side-window)
-                       (side            . right)
-                       (reusable-frames . nil)
-                       (inhibit-switch-frame . t)
-                       (window-width   . (ds/set-popup-width 135))))
-
+        (ds/popup-thing-display-settings "TelegramDesktop" right -1 135)
 
         (exwm-input-set-key (kbd "<s-f1>") #'ds/exwm-popup-telegram)
         (push 's-f1 exwm-input-prefix-keys))
@@ -2684,16 +2668,7 @@
         (ds/popup-thing ds/exwm-popup-mattermost "Mattermost"
                         (start-process-shell-command "mattermost" nil "mattermost-desktop"))
 
-        (add-to-list 'display-buffer-alist
-                     `(,(rx bos "Mattermost" eos)
-                       (display-buffer-reuse-window
-                        display-buffer-in-side-window)
-                       (side            . right)
-                       (slot            . -1)
-                       (reusable-frames . nil)
-                       (inhibit-switch-frame . t)
-                       (window-width   . (ds/set-popup-width 135))))
-
+        (ds/popup-thing-display-settings "Mattermost" right 0 135)
 
         (exwm-input-set-key (kbd "<s-f2>") #'ds/exwm-popup-mattermost)
         (push 's-f2 exwm-input-prefix-keys))
@@ -2708,15 +2683,7 @@
         (ds/popup-thing ds/exwm-popup-pavucontrol "Pavucontrol"
                         (start-process-shell-command "pavucontrol" nil "pavucontrol"))
 
-        (add-to-list 'display-buffer-alist
-                     `(,(rx bos "Pavucontrol" eos)
-                       (display-buffer-reuse-window
-                        display-buffer-in-side-window)
-                       (side            . bottom)
-                       (reusable-frames . nil)
-                       (inhibit-switch-frame . t)
-                       (window-height   . 30)))
-
+        (ds/popup-thing-display-settings "Pavucontrol" bottom 0 30)
 
         (exwm-input-set-key (kbd "<s-f3>") #'ds/exwm-popup-pavucontrol)
         (push 's-f3 exwm-input-prefix-keys))
@@ -2902,18 +2869,10 @@
        ;; start the notification service
        (eosd-start)
        :config
-       ;; show notifications in sside window
-       (add-to-list 'display-buffer-alist
-                    `(,(rx bos "*notifications*" eos)
-                      (display-buffer-reuse-window
-                       display-buffer-in-side-window)
-                      (side            . right)
-                      (slot            . 1)
-                      (reusable-frames . nil)
-                      (inhibit-switch-frame . t)))
-
+       ;; show notifications in side window
        (ds/popup-thing ds/exwm-eosd "*notifications*"
                        (eosd))
+       (ds/popup-thing-display-settings "*notifications*" right 1)
 
        (exwm-input-set-key (kbd "s-n") #'ds/exwm-eosd)
        (push ?\s-n exwm-input-prefix-keys)
