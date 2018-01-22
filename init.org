@@ -2308,20 +2308,24 @@
               (add-function :before (symbol-function 'exwm-workspace-switch) #',delete-func-sym)
               (defun ,NAME ()
                 (interactive)
-                (let ((win (selected-window))
-                      (current-popup (get-buffer-window ,BUFFER))
-                      (popup-buf (or (get-buffer ,BUFFER)
-                                     (let (buffound)
-                                       (dolist (pair exwm--id-buffer-alist buffound)
-                                         (if (equal (concat " " ,BUFFER) (buffer-name (cdr pair))) (setq buffound (cdr pair))))))))
+                (let* ((win (selected-window))
+                       (current-popup (or (get-buffer-window ,BUFFER t)
+                                          (get-buffer-window ,(concat " " BUFFER) t)))
+                       (popup-buf (or (get-buffer ,BUFFER)
+                                      (get-buffer ,(concat " " BUFFER))))
+                       (is-x-window (equal 'exwm-mode (with-current-buffer popup-buf major-mode))))
                   (if (equal win current-popup)
                       (quit-restore-window current-popup)
                     (if current-popup
                         (select-window current-popup)
                       (if popup-buf
-                          (pop-to-buffer popup-buf)
+                          (progn
+                            (if is-x-window
+                              (save-window-excursion
+                                (with-current-buffer popup-buf
+                                  (exwm-workspace-move-window exwm-workspace--current exwm--id))))
+                            (pop-to-buffer popup-buf))
                         (progn ,@BODY))))))))))
-
    #+END_SRC
 
 ** Workspaces
@@ -2568,13 +2572,10 @@
    #+BEGIN_SRC emacs-lisp
      (use-package exwm
        :ensure t
-       :init
-       (defvar ds/exwm-popup-shell-buffer "*Popup Shell*"
-         "Name for the eshell popup buffer.")
        :config
        ;; popup eshell
-       (ds/popup-thing ds/exwm-popup-shell ds/exwm-popup-shell-buffer
-                       (let ((eshell-buffer-name ds/exwm-popup-shell-buffer))
+       (ds/popup-thing ds/exwm-popup-shell "*Popup Shell*"
+                       (let ((eshell-buffer-name "*Popup Shell*"))
                          (eshell t)))
        (exwm-input-set-key (kbd "s-m") #'ds/exwm-popup-shell)
        (push ?\s-m exwm-input-prefix-keys)
@@ -2602,6 +2603,29 @@
                              (interactive)
                              (start-process-shell-command "termite" nil "termite")))
        (push 'C-s-return exwm-input-prefix-keys))
+   #+END_SRC
+
+** Popup Telegram
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       (ds/popup-thing ds/exwm-popup-telegram "TelegramDesktop"
+                       (start-process-shell-command "telegram" nil "telegram-desktop"))
+
+       (add-to-list 'display-buffer-alist
+                    `(,(rx bos "TelegramDesktop" eos)
+                      (display-buffer-reuse-window
+                       display-buffer-in-side-window)
+                      (side            . right)
+                      (reusable-frames . nil)
+                      (inhibit-switch-frame . t)
+                      (window-width   . 135)))
+
+
+       (exwm-input-set-key (kbd "s-?") #'ds/exwm-popup-telegram)
+       (push ?\s-? exwm-input-prefix-keys))
    #+END_SRC
 
 ** Volume Control
