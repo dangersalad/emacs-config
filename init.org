@@ -285,6 +285,12 @@
       (setq compilation-scroll-output t)
     #+END_SRC
 
+    Delete window on ~q~ in compilation window
+
+    #+BEGIN_SRC emacs-lisp
+      (define-key compilation-mode-map (kbd "q") #'delete-window)
+    #+END_SRC
+
 *** Eshell
 
     Some settings to make eshell "nicer"
