@@ -2270,11 +2270,13 @@
   #+BEGIN_SRC emacs-lisp
     (use-package exwm
       :ensure t
+      :init
+      (defun ds/exwm-set-name ()
+        ;; (message "class: %s, instance: %s, title: %s, state: %s, type: %s" exwm-class-name exwm-instance-name exwm-title exwm-state exwm-window-type)
+        (exwm-workspace-rename-buffer exwm-class-name))
       :config
       ;; auto rename new X window buffers
-      (add-hook 'exwm-update-class-hook
-                (lambda ()
-                  (exwm-workspace-rename-buffer exwm-class-name)))
+      (add-hook 'exwm-update-class-hook #'ds/exwm-set-name)
       ;; hide the mode-line of floating X windows
       (add-hook 'exwm-floating-setup-hook #'exwm-layout-hide-mode-line)
       (add-hook 'exwm-floating-exit-hook #'exwm-layout-show-mode-line)
@@ -2291,7 +2293,7 @@
 
    A macro to make a popup function for a specified buffer with
    instructions to intialize it if it does not exist
-
+   
    #+BEGIN_SRC emacs-lisp
      (use-package exwm
        :ensure t
@@ -2853,6 +2855,18 @@
        :demand t
        :config
        (exwm-systemtray-enable))
+   #+END_SRC
+
+** Compositor   
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm-cm
+       :demand
+       :disabled
+       :config
+       (setq window-system-default-frame-alist '((x . ((alpha . 93)))))
+       (setq exwm-cm-opacity 99)
+       (exwm-cm-enable))
    #+END_SRC
 
 ** Start
