@@ -136,7 +136,7 @@
    #+END_SRC
 
 ** Macros
-*** Popup Window Width setter
+*** Popup Window Width Setter
 
     Use this for setting a width of a popup window in the
     ~display-buffer-alist~ when using a side window.
@@ -145,7 +145,7 @@
       (defmacro ds/set-popup-width (TARGET-WIDTH)
         "Return a lambda that uses TARGET-WIDTH to set the width of a popup buffer."
         `(lambda (win)
-           (if (< (window-width win) ,TARGET-WIDTH)
+           (if (< ,TARGET-WIDTH (window-width win))
                (ds/set-window-column-width ,TARGET-WIDTH win))))
     #+END_SRC
 
