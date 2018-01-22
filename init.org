@@ -240,9 +240,12 @@
                      (display-buffer-reuse-window
                       display-buffer-in-side-window)
                      (side            . right)
+                     (slot            . 2)
                      (reusable-frames . nil)
                      (inhibit-switch-frame . t)
-                     (window-width   . 106)))
+                     (window-width   . (lambda (win)
+                                         (if (< (window-width win) 106)
+                                             (ds/set-window-column-width 106 win))))))
     #+END_SRC
 
     Close compilation windows after 2 seconds if they are successful
@@ -2616,6 +2619,7 @@
                       (display-buffer-reuse-window
                        display-buffer-in-side-window)
                       (side            . top)
+                      (slot            . -1)
                       (reusable-frames . nil)
                       (inhibit-switch-frame . t)
                       (window-height   . 0.4)))
@@ -2651,7 +2655,9 @@
                       (side            . right)
                       (reusable-frames . nil)
                       (inhibit-switch-frame . t)
-                      (window-width   . 135)))
+                      (window-width   . (lambda (win)
+                                          (if (< (window-width win) 135)
+                                              (ds/set-window-column-width 135 win))))))
 
 
        (exwm-input-set-key (kbd "s-?") #'ds/exwm-popup-telegram)
@@ -2844,9 +2850,9 @@
                       (display-buffer-reuse-window
                        display-buffer-in-side-window)
                       (side            . right)
+                      (slot            . 1)
                       (reusable-frames . nil)
-                      (inhibit-switch-frame . t)
-                      (window-height   . 0.1)))
+                      (inhibit-switch-frame . t)))
 
        (ds/popup-thing ds/exwm-eosd "*notifications*"
                        (eosd))
