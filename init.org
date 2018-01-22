@@ -2674,6 +2674,30 @@
        (push ?\s-? exwm-input-prefix-keys))
    #+END_SRC
 
+** Popup Mattermost
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       (ds/popup-thing ds/exwm-popup-mattermost "Mattermost"
+                       (start-process-shell-command "mattermost" nil "mattermost-desktop"))
+
+       (add-to-list 'display-buffer-alist
+                    `(,(rx bos "Mattermost" eos)
+                      (display-buffer-reuse-window
+                       display-buffer-in-side-window)
+                      (side            . right)
+                      (slot            . -1)
+                      (reusable-frames . nil)
+                      (inhibit-switch-frame . t)
+                      (window-width   . (ds/set-popup-width 135))))
+
+
+       (exwm-input-set-key (kbd "s->") #'ds/exwm-popup-mattermost)
+       (push ?\s-> exwm-input-prefix-keys))
+   #+END_SRC
+
 ** Volume Control
 
    #+BEGIN_SRC emacs-lisp
