@@ -2611,7 +2611,14 @@
 
        ;;resize to ratio
        (exwm-input-set-key (kbd "s-=") #'ds/set-window-ratio)
-       (push ?\s-= exwm-input-prefix-keys))
+       (push ?\s-= exwm-input-prefix-keys)
+
+       (defun ds/exwm-to-16:9 ()
+         (interactive)
+         (ds/set-window-ratio nil 16 9 t))
+  
+       (exwm-input-set-key (kbd "C-s-=") #'ds/exwm-to-16:9)
+       (push ?\C-\s-= exwm-input-prefix-keys))
    #+END_SRC
 
    Listing and moving X windows only
