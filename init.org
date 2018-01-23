@@ -288,7 +288,9 @@
     Delete window on ~q~ in compilation window
 
     #+BEGIN_SRC emacs-lisp
-      (define-key compilation-mode-map (kbd "q") #'delete-window)
+      (use-package compile
+        :config
+        (define-key compilation-mode-map (kbd "q") #'delete-window))
     #+END_SRC
 
 *** Eshell
