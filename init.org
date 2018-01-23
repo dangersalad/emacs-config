@@ -1294,7 +1294,7 @@
          ;; flat mode and header lines
          (set-face-attribute 'header-line nil :background zenburn-bg+1 :box nil)
          (set-face-attribute 'mode-line nil :background zenburn-bg+1 :box nil)
-         (set-face-attribute 'mode-line-inactive nil :foreground zenburn-bg+3 :background zenburn-bg+05 :box nil)
+         (set-face-attribute 'mode-line-inactive nil :foreground zenburn-bg+3 :background zenburn-bg+1 :box nil)
          (set-face-attribute 'fringe nil :background zenburn-bg+1)
          ;; italic comments
          (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
@@ -1370,7 +1370,198 @@
            (set-face-attribute 'ivy-minibuffer-match-face-1 nil :background nil :box zenburn-green-1 :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-2 nil :background nil :box zenburn-green-1 :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-3 nil :background nil :box zenburn-red-1 :underline nil)
-           (set-face-attribute 'ivy-minibuffer-match-face-4 nil :background nil :box zenburn-yellow-1 :underline nil))))
+           (set-face-attribute 'ivy-minibuffer-match-face-4 nil :background nil :box zenburn-yellow-1 :underline nil)))
+
+       (with-eval-after-load 'org-clock
+           (zenburn-with-color-variables
+             (set-face-attribute 'org-mode-line-clock nil :foreground nil :background nil :underline nil :box nil))))
+   #+END_SRC
+
+** Powerline
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package powerline
+       :ensure t
+       :demand
+       :after zenburn
+       :init
+       (zenburn-with-color-variables
+         (defface powerline-hud1
+           `((t (:background ,zenburn-fg-1 :inherit mode-line)))
+           "Powerline HUD face 1."
+           :group 'powerline)
+         (defface powerline-hud2
+           `((t (:background ,zenburn-bg :inherit mode-line)))
+           "Powerline HUD face 1."
+           :group 'powerline)
+         (defface powerline-active1
+           `((t (:background ,zenburn-bg+2 :inherit mode-line)))
+           "Powerline face 1."
+           :group 'powerline)
+         (defface powerline-active2
+           `((t (:background ,zenburn-bg+3 :inherit mode-line)))
+           "Powerline face 2."
+           :group 'powerline)
+         (defface powerline-inactive1
+           `((t (:foreground ,zenburn-bg+3 :italic :inherit mode-line-inactive)))
+           "Powerline face 1."
+           :group 'powerline)
+         (defface powerline-inactive2
+           `((t (:foreground ,zenburn-bg+3 :italic :inherit mode-line-inactive)))
+           "Powerline face 2."
+           :group 'powerline)
+
+         (defface powerline-flycheck-base
+           `((t (:foreground ,zenburn-bg-2 :inherit mode-line)))
+           "Powerline flycheck face base."
+           :group 'powerline)
+         (defface powerline-flycheck-ok
+           `((t (:background ,zenburn-green-2 :inherit powerline-flycheck-base)))
+           "Powerline flycheck face for no errors."
+           :group 'powerline)
+         (defface powerline-flycheck-error
+           `((t (:background ,zenburn-red-4 :inherit powerline-flycheck-base)))
+           "Powerline flycheck face for errors."
+           :group 'powerline)
+         (defface powerline-flycheck-warning
+           `((t (:background ,zenburn-yellow-4 :inherit powerline-flycheck-base)))
+           "Powerline flycheck face for warnings."
+           :group 'powerline)
+         (defface powerline-flycheck-info
+           `((t (:background ,zenburn-blue-5 :inherit powerline-flycheck-base)))
+           "Powerline flycheck face for info."
+           :group 'powerline)
+
+         (defface powerline-flycheck-header-base
+           `((t (:foreground ,zenburn-bg-2 :inherit header-line)))
+           "Powerline flycheck face base."
+           :group 'powerline)
+         (defface powerline-flycheck-header-ok
+           `((t (:background ,zenburn-green-2 :inherit powerline-flycheck-header-base)))
+           "Powerline flycheck face for no errors."
+           :group 'powerline)
+         (defface powerline-flycheck-header-error
+           `((t (:background ,zenburn-red-4 :inherit powerline-flycheck-header-base)))
+           "Powerline flycheck face for errors."
+           :group 'powerline)
+         (defface powerline-flycheck-header-warning
+           `((t (:background ,zenburn-yellow-4 :inherit powerline-flycheck-header-base)))
+           "Powerline flycheck face for warnings."
+           :group 'powerline)
+         (defface powerline-flycheck-header-info
+           `((t (:background ,zenburn-blue-5 :inherit powerline-flycheck-header-base)))
+           "Powerline flycheck face for info."
+           :group 'powerline))
+
+
+
+
+       (defun powerline-flycheck-face ()
+         "Function to select appropriate face based on `flycheck-has-current-errors-p'."
+         (if (bound-and-true-p flycheck-mode)
+             (let* ((face (cond ((flycheck-has-current-errors-p 'error)
+                                 'powerline-flycheck-error)
+                                ((flycheck-has-current-errors-p 'warning)
+                                 'powerline-flycheck-warning)
+                                ((flycheck-has-current-errors-p 'info)
+                                 'powerline-flycheck-info))))
+               (if (facep face) face 'powerline-flycheck-ok))
+           'powerline-active2))
+
+       (defun powerline-flycheck-header-face ()
+         "Function to select appropriate face based on `flycheck-has-current-errors-p'."
+         (if (bound-and-true-p flycheck-mode)
+             (let* ((face (cond ((flycheck-has-current-errors-p 'error)
+                                 'powerline-flycheck-header-error)
+                                ((flycheck-has-current-errors-p 'warning)
+                                 'powerline-flycheck-header-warning)
+                                ((flycheck-has-current-errors-p 'info)
+                                 'powerline-flycheck-header-info))))
+               (if (facep face) face 'powerline-flycheck-header-ok))
+           'powerline-active2))
+
+       (defun powerline-flycheck-tag ()
+         "Get customized tag value for current flycheck state."
+         (if (bound-and-true-p flycheck-mode)
+             (let* ((tag (cond ((flycheck-has-current-errors-p 'error) "Error")
+                               ((flycheck-has-current-errors-p 'warning) "Warning")
+                               ((flycheck-has-current-errors-p 'info) "Info"))))
+               (concat "  FlyC: " (if (stringp tag) tag "OK") "    "))
+           ""))
+
+
+       (defun ds/powerline-theme ()
+         "Setup the default mode-line."
+         (interactive)
+         (setq-default mode-line-format
+                       '("%e"
+                         (:eval
+                          (let* ((active (powerline-selected-window-active))
+                                 (mode-line (if active 'mode-line 'mode-line-inactive))
+                                 (face1 (if active 'powerline-active1 'powerline-inactive1))
+                                 (face2 (if active 'powerline-active2 'powerline-inactive2))
+                                 (hudface1 (if active 'powerline-hud1 'powerline-inactive1))
+                                 (hudface2 (if active 'powerline-hud2 'powerline-inactive2))
+                                 (separator-left (intern (format "powerline-%s-%s"
+                                                                 (powerline-current-separator)
+                                                                 (car powerline-default-separator-dir))))
+                                 (separator-right (intern (format "powerline-%s-%s"
+                                                                  (powerline-current-separator)
+                                                                  (cdr powerline-default-separator-dir))))
+                                 (active-modes (mapc (lambda (mode) (condition-case nil
+                                                                        (if (and (symbolp mode) (symbol-value mode))
+                                                                            (add-to-list 'active-modes mode))
+                                                                      (error nil) ))
+                                                     minor-mode-list))
+                                 (flycheck-face (if active (powerline-flycheck-face) 'powerline-inactive1))
+                                 (lhs (list (powerline-raw " " mode-line)
+                                            (powerline-raw "%*" mode-line 'l)
+                                            (when powerline-display-buffer-size
+                                              (powerline-buffer-size mode-line 'l))
+                                            (when powerline-display-mule-info
+                                              (powerline-raw mode-line-mule-info mode-line 'l))
+                                            (powerline-raw " " mode-line)
+                                            (funcall separator-left mode-line flycheck-face powerline-height)
+                                            (powerline-buffer-id flycheck-face 'l)
+                                            (when (and (boundp 'which-func-mode) which-func-mode)
+                                              (powerline-raw which-func-format flycheck-face 'l))
+                                            (powerline-raw " " flycheck-face)
+                                            (funcall separator-left flycheck-face face1 powerline-height)
+                                            (when (boundp 'erc-modified-channels-object)
+                                              (powerline-raw erc-modified-channels-object face1 'l))
+                                            (powerline-major-mode face1 'l)
+                                            (powerline-process face1)
+                                            (powerline-minor-modes face1 'l)
+                                            (powerline-narrow face1 'l)
+                                            (powerline-raw " " face1)
+                                            (funcall separator-left face1 mode-line powerline-height)
+                                            (powerline-vc mode-line 'r)))
+                                 (rhs (list (funcall separator-right mode-line face1 powerline-height)
+                                            (powerline-raw global-mode-string face1 'r)
+                                            (funcall separator-right face1 flycheck-face powerline-height)
+                                            (powerline-raw "%4l" flycheck-face 'l)
+                                            (powerline-raw "%4c" flycheck-face 'r)
+                                            (funcall separator-right flycheck-face mode-line powerline-height)
+                                            (powerline-raw " " mode-line)
+                                            (powerline-raw "%6p" mode-line 'r)
+                                            (powerline-raw " " mode-line))))
+                            (concat (powerline-render lhs)
+                                    (powerline-fill mode-line (powerline-width rhs))
+                                    (powerline-render rhs)))))))
+       :config
+
+       ;; (defun adjust-powerline-to-font ()
+       ;;   "Set the powerline height to a padded height of the current char size."
+       ;;   (interactive)
+       ;;   (setq powerline-height (+ 2 (frame-char-height)))
+       ;;   (ds/powerline-theme))
+
+
+       ;; (adjust-powerline-to-font)
+       (setq powerline-height (frame-char-size))
+       (setq powerline-default-separator 'arrow)
+
+       (ds/powerline-theme))
    #+END_SRC
 
 ** Try
@@ -2390,7 +2581,9 @@
       ;; 's-r': Reset
       (exwm-input-set-key (kbd "s-R") #'exwm-reset)
       ;; do xinit stuff
-      (start-process "" nil (concat user-emacs-directory "exwm/bin/xinitscript")))
+      (start-process "" nil (concat user-emacs-directory "exwm/bin/xinitscript"))
+      ;; disable flycheck for exwm buffers
+      (add-hook 'exwm-mode-hook (lambda () (flycheck-mode -1))))
   #+END_SRC
 
 ** Popup Macro
