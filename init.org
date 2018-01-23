@@ -808,7 +808,7 @@
            (setq-local flycheck-javascript-eslint-executable eslint))))
     #+END_SRC
 
-*** Set Window Width
+*** Set Window Size
 
     Set a window's width in pixels
 
@@ -835,6 +835,60 @@
                (delta (window-resizable win wanted-delta t)))
           (message "%s %d -> %d (%d)" win current-width column-width delta)
           (window-resize win delta t)))
+    #+END_SRC
+
+    Set a window's height in pixels
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/set-window-pixel-height (pixel-height &optional window)
+        "Set the WINDOW to PIXEL-HEIGHT pixels wide"
+        (interactive "nNew Pixel Height: ")
+        (let* ((win (or window (selected-window)))
+               (current-height (window-pixel-height win))
+               (wanted-delta (- pixel-height current-height))
+               (delta (window-resizable win wanted-delta nil nil t)))
+          (window-resize win delta nil nil t)))
+    #+END_SRC
+
+    Set window height in columns
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/set-window-column-height (column-height &optional window)
+        "Set the WINDOW to COLUMN-HEIGHT columns wide"
+        (interactive "nNew Column Height: ")
+        (let* ((win (or window (selected-window)))
+               (current-height (window-height win))
+               (wanted-delta (- column-height current-height))
+               (delta (window-resizable win wanted-delta)))
+          (message "%s %d -> %d (%d)" win current-height column-height delta)
+          (window-resize win delta)))
+    #+END_SRC
+
+    Set a window's ratio
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/set-window-ratio (&optional win width height horizontal)
+        "Set WIN size ratio in pixels based on WIDTH and HEIGHT, optionally resize HORIZONTAL."
+        (interactive "i\nnWidth: \nnHeight: \nSHorizontal: ")
+        (let* ((padding 19)
+               (win (or win (selected-window)))
+               (w (float (or width 16)))
+               (h (float (or height 9)))
+               (ratio (/ w h))
+               (original-size (if horizontal
+                                  (window-width win t)
+                                (- (window-pixel-height win) padding)))
+               (reference-size (if horizontal
+                                   (- (window-pixel-height win) padding)
+                                 (window-width win t)))
+               (new-size (if horizontal
+                             (truncate (* reference-size ratio))
+                           (truncate (* reference-size (/ 1 ratio)))))
+               (delta (- new-size original-size)))
+          (message "%s %f reference: %d current: %d -> new: %d (delta: %d)" horizontal ratio reference-size original-size new-size delta)
+          (if horizontal
+              (ds/set-window-pixel-width new-size win)
+            (ds/set-window-pixel-height (+ new-size padding) win))))
     #+END_SRC
 
 *** Clear the minibuffer
@@ -2553,7 +2607,11 @@
        (exwm-input-set-key (kbd "C-s-l") #'ds/exwm-window-grow-right)
        (push ?\C-\s-l exwm-input-prefix-keys)
        (exwm-input-set-key (kbd "C-M-s-l") #'ds/exwm-window-shrink-right)
-       (push ?\C-\M-\s-l exwm-input-prefix-keys))
+       (push ?\C-\M-\s-l exwm-input-prefix-keys)
+
+       ;;resize to ratio
+       (exwm-input-set-key (kbd "s-=") #'ds/set-window-ratio)
+       (push ?\s-= exwm-input-prefix-keys))
    #+END_SRC
 
    Listing and moving X windows only
