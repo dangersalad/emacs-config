@@ -1306,14 +1306,6 @@
                                 :foreground zenburn-fg-1
                                 :background zenburn-bg))
 
-       ;; powerline colors
-       (with-eval-after-load 'powerline
-         (zenburn-with-color-variables
-           (set-face-attribute 'powerline-active1 nil :background zenburn-bg+05 :foreground zenburn-green+1)
-           (set-face-attribute 'powerline-active2 nil :background zenburn-bg+1 :foreground zenburn-green+1)
-           (set-face-attribute 'powerline-inactive1 nil :background zenburn-bg+05 :foreground zenburn-bg+3)
-           (set-face-attribute 'powerline-inactive2 nil :background zenburn-bg+05 :foreground zenburn-bg+3)))
-
        ;; flycheck use straight underline instead of wave
        (with-eval-after-load 'flycheck
          (zenburn-with-color-variables
@@ -1370,11 +1362,7 @@
            (set-face-attribute 'ivy-minibuffer-match-face-1 nil :background nil :box zenburn-green-1 :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-2 nil :background nil :box zenburn-green-1 :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-3 nil :background nil :box zenburn-red-1 :underline nil)
-           (set-face-attribute 'ivy-minibuffer-match-face-4 nil :background nil :box zenburn-yellow-1 :underline nil)))
-
-       (with-eval-after-load 'org-clock
-           (zenburn-with-color-variables
-             (set-face-attribute 'org-mode-line-clock nil :foreground nil :background nil :underline nil :box nil))))
+           (set-face-attribute 'ivy-minibuffer-match-face-4 nil :background nil :box zenburn-yellow-1 :underline nil))))
    #+END_SRC
 
 ** Powerline
@@ -1383,8 +1371,8 @@
      (use-package powerline
        :ensure t
        :demand
-       :after zenburn
-       :init
+       :after zenburn-theme
+       :config
        (zenburn-with-color-variables
          (defface powerline-hud1
            `((t (:background ,zenburn-fg-1 :inherit mode-line)))
@@ -1548,13 +1536,15 @@
                             (concat (powerline-render lhs)
                                     (powerline-fill mode-line (powerline-width rhs))
                                     (powerline-render rhs)))))))
-       :config
-
+  
        ;; (defun adjust-powerline-to-font ()
        ;;   "Set the powerline height to a padded height of the current char size."
        ;;   (interactive)
        ;;   (setq powerline-height (+ 2 (frame-char-height)))
        ;;   (ds/powerline-theme))
+       (zenburn-with-color-variables
+         (set-face-attribute 'powerline-active1 nil :background zenburn-bg+2)
+         (set-face-attribute 'powerline-active2 nil :background zenburn-bg+3))
 
 
        ;; (adjust-powerline-to-font)
