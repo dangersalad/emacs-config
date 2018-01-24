@@ -1453,7 +1453,10 @@
                                  'powerline-flycheck-warning)
                                 ((flycheck-has-current-errors-p 'info)
                                  'powerline-flycheck-info))))
-               (if (facep face) face 'powerline-flycheck-ok))
+               (if (facep face) face 
+                 (if (> (length flycheck-enabled-checkers) 0)
+                     'powerline-flycheck-ok
+                   'powerline-active2)))
            'powerline-active2))
 
        (defun powerline-flycheck-header-face ()
@@ -1555,7 +1558,7 @@
                             (concat (powerline-render lhs)
                                     (powerline-fill mode-line (powerline-width rhs))
                                     (powerline-render rhs)))))))
-  
+
        ;; (defun adjust-powerline-to-font ()
        ;;   "Set the powerline height to a padded height of the current char size."
        ;;   (interactive)
