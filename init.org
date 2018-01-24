@@ -1477,6 +1477,10 @@
                (concat "  FlyC: " (if (stringp tag) tag "OK") "    "))
            ""))
 
+       (defvar ds/powerline-breakpoint-small 820
+         "Small breakpoint for powerline.")
+       (defvar ds/powerline-breakpoint-medium 1080
+         "Small breakpoint for powerline.")
 
        (defun ds/powerline-theme ()
          "Setup the default mode-line."
@@ -1485,6 +1489,15 @@
                        '("%e"
                          (:eval
                           (let* ((active (powerline-selected-window-active))
+                                 (width (window-pixel-width))
+                                 (is-small (< width ds/powerline-breakpoint-small))
+                                 (is-medium (and (>= width ds/powerline-breakpoint-small)
+                                                 (< width ds/powerline-breakpoint-medium)))
+                                 (is-large (>= (window-pixel-width) ds/powerline-breakpoint-medium))
+                                 (size (cond ( 'small)
+                                             ( 'medium)
+                                             (t 'large)
+                                             ))
                                  (mode-line (if active 'mode-line 'mode-line-inactive))
                                  (face1 (if active 'powerline-active1 'powerline-inactive1))
                                  (face2 (if active 'powerline-active2 'powerline-inactive2))
@@ -1504,34 +1517,40 @@
                                  (flycheck-face (if active (powerline-flycheck-face) 'powerline-inactive1))
                                  (lhs (list (powerline-raw " " mode-line)
                                             (powerline-raw "%*" mode-line 'l)
-                                            (when powerline-display-buffer-size
+                                            (when (and powerline-display-buffer-size
+                                                       is-large)
                                               (powerline-buffer-size mode-line 'l))
-                                            (when powerline-display-mule-info
+                                            (when (and powerline-display-mule-info
+                                                       is-large)
                                               (powerline-raw mode-line-mule-info mode-line 'l))
                                             (powerline-raw " " mode-line)
                                             (funcall separator-left mode-line flycheck-face powerline-height)
                                             (powerline-buffer-id flycheck-face 'l)
-                                            (when (and (boundp 'which-func-mode) which-func-mode)
+                                            (when (and (boundp 'which-func-mode) which-func-mode is-large)
                                               (powerline-raw which-func-format flycheck-face 'l))
                                             (powerline-raw " " flycheck-face)
                                             (funcall separator-left flycheck-face face1 powerline-height)
-                                            (when (boundp 'erc-modified-channels-object)
+                                            (when (and (boundp 'erc-modified-channels-object) is-large)
                                               (powerline-raw erc-modified-channels-object face1 'l))
                                             (powerline-major-mode face1 'l)
-                                            (powerline-process face1)
-                                            (powerline-minor-modes face1 'l)
-                                            (powerline-narrow face1 'l)
+                                            (when is-large (powerline-process face1))
+                                            (when (or is-large is-medium) (powerline-minor-modes face1 'l))
+                                            (when is-large (powerline-narrow face1 'l))
                                             (powerline-raw " " face1)
                                             (funcall separator-left face1 mode-line powerline-height)
-                                            (powerline-vc mode-line 'r)))
-                                 (rhs (list (funcall separator-right mode-line face1 powerline-height)
-                                            (powerline-raw global-mode-string face1 'r)
-                                            (funcall separator-right face1 flycheck-face powerline-height)
+                                            (when (or is-large is-medium) (powerline-vc mode-line 'r))))
+                                 (rhs (list (if is-large
+                                                (funcall separator-right mode-line face1 powerline-height)
+                                              (funcall separator-right mode-line flycheck-face powerline-height))
+                                            (when is-large (powerline-raw global-mode-string face1 'r))
+                                            (if is-large
+                                                (funcall separator-right face1 flycheck-face powerline-height)
+                                              (funcall separator-right mode-line flycheck-face powerline-height))
                                             (powerline-raw "%4l" flycheck-face 'l)
                                             (powerline-raw "%4c" flycheck-face 'r)
                                             (funcall separator-right flycheck-face mode-line powerline-height)
                                             (powerline-raw " " mode-line)
-                                            (powerline-raw "%6p" mode-line 'r)
+                                            (when is-large (powerline-raw "%6p" mode-line 'r))
                                             (powerline-raw " " mode-line))))
                             (concat (powerline-render lhs)
                                     (powerline-fill mode-line (powerline-width rhs))
@@ -1782,6 +1801,9 @@
 
        (setq org-clock-idle-time 15)
        (setq org-clock-mode-line-total 'today)
+       (message "setting org clock face")
+       (set-face-attribute 'org-mode-line-clock nil :foreground nil :background nil :underline nil :box nil)
+       (message "set org clock face")
        (setq org-log-into-drawer "LOGBOOK")
        (setq org-clock-into-drawer "LOGBOOK")
        (setq org-duration-format '(("h" . t) (special . 2)))
