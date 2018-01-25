@@ -1501,6 +1501,7 @@
                                              ( 'medium)
                                              (t 'large)
                                              ))
+                                 (is-exwm-window (equal major-mode 'exwm-mode))
                                  (mode-line (if active 'mode-line 'mode-line-inactive))
                                  (face1 (if active 'powerline-active1 'powerline-inactive1))
                                  (face2 (if active 'powerline-active2 'powerline-inactive2))
@@ -1519,13 +1520,15 @@
                                                      minor-mode-list))
                                  (flycheck-face (if active (powerline-flycheck-face) 'powerline-inactive1))
                                  (lhs (list (powerline-raw " " mode-line)
-                                            (powerline-raw "%*" mode-line 'l)
-                                            (when (and powerline-display-buffer-size
-                                                       is-large)
-                                              (powerline-buffer-size mode-line 'l))
-                                            (when (and powerline-display-mule-info
-                                                       is-large)
-                                              (powerline-raw mode-line-mule-info mode-line 'l))
+                                            (unless is-exwm-window (powerline-raw "%*" mode-line 'l))
+                                            (unless is-exwm-window
+                                              (when (and powerline-display-buffer-size
+                                                         is-large)
+                                                (powerline-buffer-size mode-line 'l)))
+                                            (unless is-exwm-window
+                                              (when (and powerline-display-mule-info
+                                                         is-large)
+                                                (powerline-raw mode-line-mule-info mode-line 'l)))
                                             (powerline-raw " " mode-line)
                                             (funcall separator-left mode-line flycheck-face powerline-height)
                                             (powerline-buffer-id flycheck-face 'l)
@@ -1549,11 +1552,11 @@
                                             (if is-large
                                                 (funcall separator-right face1 flycheck-face powerline-height)
                                               (funcall separator-right mode-line flycheck-face powerline-height))
-                                            (powerline-raw "%4l" flycheck-face 'l)
-                                            (powerline-raw "%4c" flycheck-face 'r)
+                                            (unless is-exwm-window (powerline-raw "%4l" flycheck-face 'l))
+                                            (unless is-exwm-window (powerline-raw "%4c" flycheck-face 'r))
                                             (funcall separator-right flycheck-face mode-line powerline-height)
                                             (powerline-raw " " mode-line)
-                                            (when is-large (powerline-raw "%6p" mode-line 'r))
+                                            (unless is-exwm-window (when is-large (powerline-raw "%6p" mode-line 'r)))
                                             (powerline-raw " " mode-line))))
                             (concat (powerline-render lhs)
                                     (powerline-fill mode-line (powerline-width rhs))
