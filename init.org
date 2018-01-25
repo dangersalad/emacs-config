@@ -1776,6 +1776,7 @@
      (use-package org
        :ensure org-plus-contrib
        :mode (("\\.org$" . org-mode))
+       :demand t
        :pin org
        :init
        (defvar org-directory "~/org" "Directory for org files.")
@@ -3191,7 +3192,7 @@
        (exwm-systemtray-enable))
    #+END_SRC
 
-** Compositor   
+** Compositor
 
    #+BEGIN_SRC emacs-lisp
      (use-package exwm-cm
