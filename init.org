@@ -1529,6 +1529,7 @@
                                  (lhs (append
                                        (ds/powerline-section arrow left
                                                              (mode-line
+                                                              (:args (" ") :prefix "")
                                                               (:cond (not is-exwm-window) :args ("%*") :prefix "")
                                                               (:cond (and (not is-exwm-window)
                                                                           is-large)
@@ -3106,6 +3107,7 @@
          (ds/restart-bar))
 
        :config
+       (add-hook 'exwm-randr-screen-change-hook #'ds/powerline-set-height)
        ;; (setq exwm-randr-workspace-output-plist '(0 "VGA1"))
        (add-hook 'exwm-randr-screen-change-hook
                  (lambda ()
