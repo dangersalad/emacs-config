@@ -3166,8 +3166,7 @@
        (push ?\s-n exwm-input-prefix-keys)
 
        ;; auto refresh and auto popup notifications
-       (add-function :after (symbol-function 'ds/exwm-eosd) #'ds/exwm-refresh-notification-buffer)
-       ;; (remove-function (symbol-function 'eosd-dbus-notify) #'ds/exwm-notification-autopop))
+       (add-function :after (symbol-function 'ds/exwm-eosd) #'ds/exwm-refresh-notification-buffer))
    #+END_SRC
 
 ** Screen Lock
