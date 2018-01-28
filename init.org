@@ -1374,7 +1374,7 @@
        :after zenburn-theme
        :init
        (defmacro ds/powerline-sep (TYPE DIR FACE1 FACE2)
-         `(,(intern (format "powerline-%s-%s" TYPE DIR)) ',FACE1 ',FACE2 powerline-height))
+         `(,(intern (format "powerline-%s-%s" TYPE DIR)) ,FACE1 ,FACE2 powerline-height))
 
        (defmacro ds/powerline-widget (SEP FACE FUNC &optional DIRS PADDING &rest ARGS)
          (let* ((dir-left (cond ((equal DIRS 'left) 'left)
@@ -1382,18 +1382,18 @@
                                 (DIRS 'right)
                                 (t 'left)))
                 (dir-right (cond ((equal DIRS 'left) 'left)
-                                ((equal DIRS 'right) 'right)
-                                (DIRS 'left)
-                                (t 'right)))
-                (sep-left `(ds/powerline-sep ,SEP ,dir-left mode-line ,FACE))
-                (sep-right `(ds/powerline-sep ,SEP ,dir-right ,FACE mode-line))
-               (widget ()))
+                                 ((equal DIRS 'right) 'right)
+                                 (DIRS 'left)
+                                 (t 'right)))
+                (sep-left `(ds/powerline-sep ,SEP ,dir-left 'mode-line ,FACE))
+                (sep-right `(ds/powerline-sep ,SEP ,dir-right ,FACE 'mode-line))
+                (widget ()))
            (if PADDING
                (push `(powerline-raw " " 'mode-line) widget))
            (push sep-right widget)
            (if ARGS
-               (push `(,FUNC ,@ARGS ',FACE) widget)
-             (push `(,FUNC ',FACE) widget))
+               (push `(,FUNC ,@ARGS ,FACE) widget)
+             (push `(,FUNC ,FACE) widget))
            (push sep-left widget)
            (if PADDING
                (push `(powerline-raw " " 'mode-line) widget))
@@ -1407,6 +1407,32 @@
 
        (defmacro ds/powerline-arrow-tag-left (FACE FUNC &rest ARGS)
          `(ds/powerline-widget arrow ,FACE ,FUNC left nil ,@ARGS))
+
+       (defmacro ds/powerline-left (SEP &rest PARTS)
+         (let* ((first-face (car (car PARTS)))
+                (start-sep (macroexpand `(ds/powerline-sep ,SEP left 'mode-line ,first-face)))
+                (section `(,start-sep))
+                (last-face 'mode-line))
+           (dolist (part PARTS)
+             (let ((face (car part)))
+               (if (> (length section) 1) ; add separator only if this is not the first thing
+                   (setq section `(,@section ,(macroexpand `(ds/powerline-sep ,SEP left ,last-face ,face)))))
+               (dolist (thing (cdr part))
+                 (when thing
+                   (let* ((hastest (plist-member thing ':cond))
+                         (prefix (or (plist-get thing ':prefix) " "))
+                         (prefix (if (equal "" prefix) nil prefix))
+                         (suffix (plist-get thing ':suffix))
+                         (test (plist-get thing ':cond))
+                         (cmd (or (plist-get thing ':cmd) 'powerline-raw))
+                         (args (plist-get thing ':args)))
+                     (if prefix (setq section `(,@section ,(if hastest `(if ,test (powerline-raw ,prefix ,face)) `(powerline-raw ,prefix ,face)))))
+                     (setq section `(,@section ,(if hastest `(if ,test (,cmd ,@args ,face)) `(,cmd ,@args ,face))))
+                     (if suffix (setq section `(,@section ,(if hastest `(if ,test (powerline-raw ,suffix ,face)) `(powerline-raw ,suffix ,face))))))))
+               (setq section `(,@section (powerline-raw " " ,face)))
+               (setq last-face face)))
+           (setq section `(,@section ,(macroexpand `(ds/powerline-sep ,SEP left ,last-face 'mode-line))))
+           `(list ,@section)))
 
        :config
        (zenburn-with-color-variables
@@ -1546,6 +1572,9 @@
                                  (tramp-ssh (string-match "ssh:" (eshell/pwd)))
                                  (tramp-sudo (string-match "sudo:" (eshell/pwd)))
                                  (tramp-su (string-match "su:" (eshell/pwd)))
+                                 (tramp-ssh-face (if active 'powerline-flycheck-info 'powerline-inactive1))
+                                 (tramp-sudo-face (if active 'powerline-flycheck-error 'powerline-inactive1))
+                                 (tramp-su-face (if active 'powerline-flycheck-error 'powerline-inactive1))
                                  (is-tramp (or tramp-ssh tramp-sudo tramp-su))
                                  (separator-left (intern (format "powerline-%s-%s"
                                                                  (powerline-current-separator)
@@ -1560,35 +1589,36 @@
                                                      minor-mode-list))
                                  (flycheck-face (if active (powerline-flycheck-face) 'powerline-inactive1))
                                  (lhs (append
-                                       (list (powerline-raw " " mode-line)
-                                             (unless is-exwm-window (powerline-raw "%*" mode-line 'l))
-                                             (unless is-exwm-window
-                                               (when (and powerline-display-buffer-size
-                                                          is-large)
-                                                 (powerline-buffer-size mode-line 'l)))
-                                             (unless is-exwm-window
-                                               (when (and powerline-display-mule-info
-                                                          is-large)
-                                                 (powerline-raw mode-line-mule-info mode-line 'l)))
-                                             (powerline-raw " " mode-line))
-                                       (when tramp-ssh (ds/powerline-arrow-tag-left powerline-flycheck-info powerline-raw " SSH "))
-                                       (when tramp-sudo (ds/powerline-arrow-tag-left powerline-flycheck-error powerline-raw " SUDO "))
-                                       (when tramp-su (ds/powerline-arrow-tag-left powerline-flycheck-warning powerline-raw " SU "))
-                                       (list (funcall separator-left mode-line flycheck-face powerline-height)
-                                             (powerline-buffer-id flycheck-face 'l)
-                                             (when (and (boundp 'which-func-mode) which-func-mode is-large)
-                                               (powerline-raw which-func-format flycheck-face 'l))
-                                             (powerline-raw " " flycheck-face)
-                                             (funcall separator-left flycheck-face face1 powerline-height)
-                                             (when (and (boundp 'erc-modified-channels-object) is-large)
-                                               (powerline-raw erc-modified-channels-object face1 'l))
-                                             (powerline-major-mode face1 'l)
-                                             (when is-large (powerline-process face1))
-                                             (when (or is-large is-medium) (powerline-minor-modes face1 'l))
-                                             (when is-large (powerline-narrow face1 'l))
-                                             (powerline-raw " " face1)
-                                             (funcall separator-left face1 mode-line powerline-height)
-                                             (when (or is-large is-medium) (powerline-vc mode-line 'r)))))
+                                       (ds/powerline-left arrow
+                                                          (mode-line
+                                                           (:cond (not is-exwm-window) :args ("%*") :prefix "")
+                                                           (:cond (and (not is-exwm-window)
+                                                                       is-large)
+                                                                  :cmd powerline-buffer-size)
+                                                           (:cond (and (not is-exwm-window)
+                                                                       is-large)
+                                                                  :args (mode-line-mule-info))))
+                                       (when tramp-ssh (ds/powerline-arrow-tag-left tramp-ssh-face powerline-raw " SSH "))
+                                       (when tramp-sudo (ds/powerline-arrow-tag-left tramp-sudo-face powerline-raw " SUDO "))
+                                       (when tramp-su (ds/powerline-arrow-tag-left tramp-su-face powerline-raw " SU "))
+                                       (ds/powerline-left arrow
+                                                          (flycheck-face
+                                                           (:cmd powerline-buffer-id :prefix "")
+                                                           (:cond (and (boundp 'which-function-mode)
+                                                                       which-function-mode
+                                                                       is-large)
+                                                                  :args (which-func-format)
+                                                                  :prefix " / "))
+                                                          (face1
+                                                           (:cond (and (boundp 'erc-modified-channels-object) is-large)
+                                                                  :args (erc-modified-channels-object)
+                                                                  :prefix "")
+                                                           (:cmd powerline-major-mode)
+                                                           (:cond is-large :cmd powerline-process)
+                                                           (:cond (or is-large is-medium) :cmd powerline-minor-modes)
+                                                           (:cond is-large :cmd powerline-narrow))
+                                                          (mode-line
+                                                           (:cond (or is-large is-medium) :cmd powerline-vc)))))
                                  (rhs (append
                                        (list (if is-large
                                                  (funcall separator-right mode-line face1 powerline-height)
@@ -2481,6 +2511,8 @@
        :config
        (use-package srefactor-lisp
          :bind (:map emacs-lisp-mode-map
+                     ("C-c M-q" . srefactor-lisp-format-sexp)
+                     :map lisp-interaction-mode-map
                      ("C-c M-q" . srefactor-lisp-format-sexp))))
    #+END_SRC
 
@@ -3209,7 +3241,7 @@
 
        ;; auto refresh and auto popup notifications
        (add-function :after (symbol-function 'ds/exwm-eosd) #'ds/exwm-refresh-notification-buffer)
-       (add-function :after (symbol-function 'eosd-dbus-notify) #'ds/exwm-notification-autopop))
+       ;; (remove-function (symbol-function 'eosd-dbus-notify) #'ds/exwm-notification-autopop))
    #+END_SRC
 
 ** Screen Lock
