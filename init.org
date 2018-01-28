@@ -1414,12 +1414,18 @@
 
        (defmacro ds/powerline-section (SEP DIR &rest PARTS)
          (let* ((section '())
-                (last-face 'mode-line))
+                (last-face 'mode-line)
+                (last-was-tag))
            (dolist (part PARTS)
              (let ((face (car part))
                    (face-section ())
                    (is-tag (member ':tag (cdr part))))
-               (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,last-face ,face))))
+               (if is-tag
+                   (progn
+                     (if (not last-was-tag)
+                         (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,last-face 'mode-line)))))
+                     (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR 'mode-line ,face)))))
+                 (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,last-face ,face)))))
                (dolist (thing (cdr part))
                  (when (and thing (listp thing))
                    (let* ((has-test (plist-member thing ':cond))
@@ -1433,9 +1439,12 @@
                        (if prefix (setq face-section `(,@face-section ,(if has-test `(if ,test (powerline-raw ,prefix ,face)) `(powerline-raw ,prefix ,face)))))
                        (setq face-section `(,@face-section ,(if has-test `(if ,test (,cmd ,@args ,face)) `(,cmd ,@args ,face))))
                        (if suffix (setq face-section `(,@face-section ,(if has-test `(if ,test (powerline-raw ,suffix ,face)) `(powerline-raw ,suffix ,face)))))))))
-               (when (> (length face-section) 1)
+               (when (> (length face-section) (if is-tag (if last-was-tag 2 3) 1))
                  (setq section `(,@section ,@face-section (powerline-raw " " ,face)))
-                 (setq last-face face))))
+                 (if is-tag
+                     (setq section `(,@section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,face 'mode-line)))))
+                 (setq last-face (if is-tag 'mode-line face)))
+               (setq last-was-tag is-tag)))
            (setq section `(,@section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,last-face 'mode-line))))
            `(list ,@section)))
 
@@ -1540,10 +1549,13 @@
                                                              (tramp-face
                                                               (:cond is-tramp :args ("Tramp")))
                                                              (tramp-ssh-face
+                                                              :tag
                                                               (:cond tramp-ssh :args ("SSH")))
                                                              (tramp-su-face
+                                                              :tag
                                                               (:cond tramp-su :args ("SU")))
                                                              (tramp-sudo-face
+                                                              :tag
                                                               (:cond tramp-sudo :args ("SUDO")))
                                                              (flycheck-face
                                                               (:cmd powerline-buffer-id :prefix "")
@@ -1570,12 +1582,15 @@
                                                                          is-large)
                                                                     :args (global-mode-string)))
                                                             (flycheck-face
-                                                             (:cond (not is-exwm-window) :args ("%l %c")))
+                                                             (:cond (not is-exwm-window) :args ("%l %c")))
                                                             (mode-line
                                                              (:cond (not is-exwm-window) :args ("%p"))))))
                             (concat (powerline-render lhs)
                                     (powerline-fill mode-line (powerline-width rhs))
                                     (powerline-render rhs)))))))
+
+       (if (boundp 'set-fontset-font)
+           (progn (set-fontset-font t '(#Xe0a0 . #Xe0d7) "SymbolsNerdFont")))
 
        (defun ds/powerline-set-height ()
          (setq powerline-height (frame-char-size)))
