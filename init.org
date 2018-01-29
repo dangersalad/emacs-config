@@ -2656,7 +2656,7 @@
                        (is-x-window (if popup-buf
                                         (equal 'exwm-mode (with-current-buffer popup-buf major-mode)))))
                   (if (equal win current-popup)
-                      (quit-restore-window current-popup)
+                      (delete-window current-popup)
                     (if current-popup
                         (select-window current-popup)
                       (if popup-buf
