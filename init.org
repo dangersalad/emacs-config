@@ -1589,15 +1589,10 @@
                                     (powerline-fill mode-line (powerline-width rhs))
                                     (powerline-render rhs)))))))
 
-       (if (boundp 'set-fontset-font)
-           (progn (set-fontset-font t '(#Xe0a0 . #Xe0d7) "SymbolsNerdFont")))
-
        (defun ds/powerline-set-height ()
          (setq powerline-height (frame-char-size)))
 
        (add-hook 'after-init-hook #'ds/powerline-set-height)
-
-       (setq powerline-default-separator 'arrow)
 
        (ds/powerline-theme))
    #+END_SRC
