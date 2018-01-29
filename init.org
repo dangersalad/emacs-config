@@ -1292,7 +1292,7 @@
        ;; default face customizations
        (zenburn-with-color-variables
          ;; darker region selection
-         (set-face-attribute 'region nil :background zenburn-bg-2)
+         (set-face-attribute 'region nil :background "#3c3c45" :inverse-video t)
          ;; flat mode and header lines
          (set-face-attribute 'header-line nil :background zenburn-bg+1 :box nil)
          (set-face-attribute 'mode-line nil :background zenburn-bg+1 :box nil)
