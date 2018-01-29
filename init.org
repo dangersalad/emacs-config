@@ -1575,7 +1575,7 @@
                                                              (mode-line
                                                               (:cond (or is-large is-medium) :cmd powerline-vc :prefix "")))))
                                  ;; right side
-                                 (rhs (ds/powerline-section arrow right
+                                 (rhs (append (ds/powerline-section arrow right
                                                             (inner-face
                                                              (:cond (and (or (> (length global-mode-string) 1)
                                                                              (> (length (car global-mode-string)) 0))
@@ -1584,7 +1584,8 @@
                                                             (flycheck-face
                                                              (:cond (not is-exwm-window) :args ("%l %c")))
                                                             (mode-line
-                                                             (:cond (not is-exwm-window) :args ("%p"))))))
+                                                             (:cond (not is-exwm-window) :args ("%p"))))
+                                              (list (powerline-raw " " 'mode-line)))))
                             (concat (powerline-render lhs)
                                     (powerline-fill mode-line (powerline-width rhs))
                                     (powerline-render rhs)))))))
