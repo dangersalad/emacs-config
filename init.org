@@ -2588,14 +2588,48 @@
        (use-package password-store-otp
          :ensure t
          :init
+
          (defun ds/password-store-get-otp (record)
            (interactive (list (password-store--completing-read)))
            (password-store-otp-token-copy record))
-       (use-package auth-password-store
-         :ensure t
-         :demand t
+
+         (defun ds/pass-sentinel (process evt)
+           (message "process %s evt %s" process evt)
+           (with-current-buffer (process-buffer process)
+             (if (equal evt "finished\n")
+                 (let ((password (s-chomp (buffer-string))))
+                   (kill-buffer)
+                   (password-store-clear)
+                   (kill-new password)
+                   (setq password-store-kill-ring-pointer kill-ring-yank-pointer)
+                   (message "Copied password to the kill ring. Will clear in %s seconds." (password-store-timeout))
+                   (setq password-store-timeout-timer
+                         (run-at-time (password-store-timeout) nil 'password-store-clear))))
+             (if (string-match-p "^exited abnormally" evt)
+                 (let ((err (s-chomp (buffer-string))))
+                   (kill-buffer)
+                   (error err)))))
+    
          :config
-         (auth-pass-enable))))
+
+         (defun password-store-copy (entry)
+           "Add password for ENTRY to kill ring.
+
+     Clear previous password from kill ring.  Pointer to kill ring is
+     stored in `password-store-kill-ring-pointer'.  Password is cleared
+     after `password-store-timeout' seconds."
+           (interactive (list (password-store--completing-read)))
+           (make-process
+            :name "pass"
+            :buffer "pass-buffer"
+            :command `(,password-store-executable "show" ,entry)
+            :sentinel 'ds/pass-sentinel))
+
+         (use-package auth-password-store
+           :ensure t
+           :demand t
+           :config
+           (auth-pass-enable))))
    #+END_SRC
    
 
