@@ -1420,11 +1420,15 @@
              (let ((face (car part))
                    (face-section ())
                    (is-tag (member ':tag (cdr part))))
+               ;; if this is a tag, add a buffer of modeline face around this
                (if is-tag
                    (progn
+                     ;; if the last section was not a tag, add in the initial separator
                      (if (not last-was-tag)
                          (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,last-face 'mode-line)))))
+                     ;; always put in a sep from modeline to tag face
                      (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR 'mode-line ,face)))))
+                 ;; if this is not a tag, pu in a sep that goes from the last face to this face
                  (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,last-face ,face)))))
                (dolist (thing (cdr part))
                  (when (and thing (listp thing))
@@ -1547,6 +1551,7 @@
                                                                           is-large)
                                                                      :args (mode-line-mule-info)))
                                                              (tramp-face
+                                                              :tag
                                                               (:cond is-tramp :args ("Tramp")))
                                                              (tramp-ssh-face
                                                               :tag
