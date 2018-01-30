@@ -1539,8 +1539,7 @@
                                                          (error nil) ))
                                                      minor-mode-list))
                                  ;; left side
-                                 (lhs (append
-                                       (ds/powerline-section
+                                 (lhs (ds/powerline-section
                                         arrow left
                                         (mode-line
                                          (:args (" ") :prefix "")
@@ -1579,25 +1578,24 @@
                                          (:cond (or is-large is-medium) :cmd powerline-minor-modes)
                                          (:cond is-large :cmd powerline-narrow))
                                         (mode-line
-                                         (:cond (or is-large is-medium) :cmd powerline-vc :prefix "")))))
+                                         (:cond (or is-large is-medium) :cmd powerline-vc :prefix ""))))
                                  ;; right side
-                                 (rhs (append
-                                       (ds/powerline-section
-                                        arrow right
-                                        (inner-face
-                                         (:cond (and (or (> (length global-mode-string) 1)
-                                                         (> (length (car global-mode-string)) 0))
-                                                     is-large)
-                                                :args (global-mode-string)))
-                                        (flycheck-face
-                                         (:cond (not is-exwm-window) :args ("%l %c")))
-                                        (mode-line
-                                         (:cond (not is-exwm-window) :args ("%p"))))
-                                       (list (powerline-raw " " 'mode-line)))))
-                            (concat (powerline-render lhs)
-                                    (powerline-fill mode-line (powerline-width rhs))
-                                    (powerline-render rhs)))))))
-
+                                 (rhs (ds/powerline-section
+                                       arrow right
+                                       (inner-face
+                                        (:cond (and (or (> (length global-mode-string) 1)
+                                                        (> (length (car global-mode-string)) 0))
+                                                    is-large)
+                                               :args (global-mode-string)))
+                                       (flycheck-face
+                                        (:cond (not is-exwm-window) :args ("%l %c")))
+                                       (mode-line
+                                        (:cond (not is-exwm-window) :args ("%p"))
+                                        (:args (" ") :prefix "")))))
+                                 (concat (powerline-render lhs)
+                                         (powerline-fill mode-line (powerline-width rhs))
+                                         (powerline-render rhs)))))))
+    
        (defun ds/powerline-set-height ()
          (setq powerline-height (frame-char-size)))
 
