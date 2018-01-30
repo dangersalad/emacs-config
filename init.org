@@ -1540,57 +1540,60 @@
                                                      minor-mode-list))
                                  ;; left side
                                  (lhs (append
-                                       (ds/powerline-section arrow left
-                                                             (mode-line
-                                                              (:args (" ") :prefix "")
-                                                              (:cond (not is-exwm-window) :args ("%*") :prefix "")
-                                                              (:cond (and (not is-exwm-window)
-                                                                          is-large)
-                                                                     :cmd powerline-buffer-size)
-                                                              (:cond (and (not is-exwm-window)
-                                                                          is-large)
-                                                                     :args (mode-line-mule-info)))
-                                                             (tramp-face
-                                                              :tag
-                                                              (:cond is-tramp :args ("Tramp")))
-                                                             (tramp-ssh-face
-                                                              :tag
-                                                              (:cond tramp-ssh :args ("SSH")))
-                                                             (tramp-su-face
-                                                              :tag
-                                                              (:cond tramp-su :args ("SU")))
-                                                             (tramp-sudo-face
-                                                              :tag
-                                                              (:cond tramp-sudo :args ("SUDO")))
-                                                             (flycheck-face
-                                                              (:cmd powerline-buffer-id :prefix "")
-                                                              (:cond (and (boundp 'which-function-mode)
-                                                                          which-function-mode
-                                                                          is-large)
-                                                                     :args (which-func-format)
-                                                                     :prefix " / "))
-                                                             (inner-face
-                                                              (:cond (and (boundp 'erc-modified-channels-object) is-large)
-                                                                     :args (erc-modified-channels-object)
-                                                                     :prefix "")
-                                                              (:cmd powerline-major-mode)
-                                                              (:cond is-large :cmd powerline-process)
-                                                              (:cond (or is-large is-medium) :cmd powerline-minor-modes)
-                                                              (:cond is-large :cmd powerline-narrow))
-                                                             (mode-line
-                                                              (:cond (or is-large is-medium) :cmd powerline-vc :prefix "")))))
+                                       (ds/powerline-section
+                                        arrow left
+                                        (mode-line
+                                         (:args (" ") :prefix "")
+                                         (:cond (not is-exwm-window) :args ("%*") :prefix "")
+                                         (:cond (and (not is-exwm-window)
+                                                     is-large)
+                                                :cmd powerline-buffer-size)
+                                         (:cond (and (not is-exwm-window)
+                                                     is-large)
+                                                :args (mode-line-mule-info)))
+                                        (tramp-face
+                                         :tag
+                                         (:cond is-tramp :args ("Tramp")))
+                                        (tramp-ssh-face
+                                         :tag
+                                         (:cond tramp-ssh :args ("SSH")))
+                                        (tramp-su-face
+                                         :tag
+                                         (:cond tramp-su :args ("SU")))
+                                        (tramp-sudo-face
+                                         :tag
+                                         (:cond tramp-sudo :args ("SUDO")))
+                                        (flycheck-face
+                                         (:cmd powerline-buffer-id :prefix "")
+                                         (:cond (and (boundp 'which-function-mode)
+                                                     which-function-mode
+                                                     is-large)
+                                                :args (which-func-format)
+                                                :prefix " / "))
+                                        (inner-face
+                                         (:cond (and (boundp 'erc-modified-channels-object) is-large)
+                                                :args (erc-modified-channels-object)
+                                                :prefix "")
+                                         (:cmd powerline-major-mode)
+                                         (:cond is-large :cmd powerline-process)
+                                         (:cond (or is-large is-medium) :cmd powerline-minor-modes)
+                                         (:cond is-large :cmd powerline-narrow))
+                                        (mode-line
+                                         (:cond (or is-large is-medium) :cmd powerline-vc :prefix "")))))
                                  ;; right side
-                                 (rhs (append (ds/powerline-section arrow right
-                                                            (inner-face
-                                                             (:cond (and (or (> (length global-mode-string) 1)
-                                                                             (> (length (car global-mode-string)) 0))
-                                                                         is-large)
-                                                                    :args (global-mode-string)))
-                                                            (flycheck-face
-                                                             (:cond (not is-exwm-window) :args ("%l %c")))
-                                                            (mode-line
-                                                             (:cond (not is-exwm-window) :args ("%p"))))
-                                              (list (powerline-raw " " 'mode-line)))))
+                                 (rhs (append
+                                       (ds/powerline-section
+                                        arrow right
+                                        (inner-face
+                                         (:cond (and (or (> (length global-mode-string) 1)
+                                                         (> (length (car global-mode-string)) 0))
+                                                     is-large)
+                                                :args (global-mode-string)))
+                                        (flycheck-face
+                                         (:cond (not is-exwm-window) :args ("%l %c")))
+                                        (mode-line
+                                         (:cond (not is-exwm-window) :args ("%p"))))
+                                       (list (powerline-raw " " 'mode-line)))))
                             (concat (powerline-render lhs)
                                     (powerline-fill mode-line (powerline-width rhs))
                                     (powerline-render rhs)))))))
