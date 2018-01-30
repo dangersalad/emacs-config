@@ -33,4 +33,4 @@ then
     COLOR="#c3bf9f"
 fi
 
-echo "CPU: <span color='$COLOR' font='Input Mono Bold 12px'>$(printf "%3d%%" ${CPUPERC})</span> $(./load 1) $(./load 5) $(./load 15)"
+echo "CPU: <span color='$COLOR' font='Monospace Bold 12px'>$(printf "%3d%%" ${CPUPERC})</span> $(./load 1) $(./load 5) $(./load 15)"

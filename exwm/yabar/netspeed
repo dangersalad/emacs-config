@@ -71,7 +71,7 @@ do
 
     # BPS="$(echo $BPS | sed 's/^\./0./')"
 
-    final=$final$(printf "<span font='Input Mono, FontAwesome Bold 12px'>%6.2f %-4s</span> %s" $BPS ${UNIT}${REPORT}/s $SYMBOL)" "
+    final=$final$(printf "<span font='Monospace Bold 12px'>%6.2f %-4s</span> %s" $BPS ${UNIT}${REPORT}/s $SYMBOL)" "
 
 done
 

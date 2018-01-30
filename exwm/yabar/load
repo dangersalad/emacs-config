@@ -23,5 +23,5 @@ then
     COLOR="#c3bf9f"
 fi
 
-echo "<span color='$COLOR' font='Input Mono Bold 12px'>$(printf "%6.2f" $LOAD)</span>"
+echo "<span color='$COLOR' font='Monospace Bold 12px'>$(printf "%6.2f" $LOAD)</span>"
 
