@@ -1501,6 +1501,17 @@
                      'ds/powerline-green
                    'ds/powerline-light-gray)))
            'ds/powerline-light-gray))
+
+       (defun ds/extract-tramp-target (conn-type &optional part)
+       (save-match-data
+         (let ((dirname (eshell/pwd)))
+           (and (string-match (concat conn-type ":\\([^@|:]+\\)@?\\([^@|:]*\\)") dirname)
+                (let ((user (match-string 1 dirname))
+                      (host (match-string 2 dirname)))
+                  (cond ((equal part 'user) user)
+                        ((equal part 'host) host)
+                        ((equal part 'all) (concat user "@" host))))))))
+
        :config
 
        (defun ds/powerline-theme ()
@@ -1523,7 +1534,11 @@
                                  (inner-face (if active 'ds/powerline-gray 'ds/powerline-inactive))
                                  (flycheck-face (if active (powerline-flycheck-face) 'ds/powerline-inactive))
                                  (tramp-face (if active 'ds/powerline-blue 'ds/powerline-inactive))
-                                 (tramp-ssh-face (if active 'ds/powerline-green 'ds/powerline-inactive))
+                                 (tramp-ssh-face (if active
+                                                     (if (equal "root" (ds/extract-tramp-target "ssh" 'user))
+                                                         'ds/powerline-yellow
+                                                       'ds/powerline-green)
+                                                   'ds/powerline-inactive))
                                  (tramp-su-face (if active 'ds/powerline-yellow 'ds/powerline-inactive))
                                  (tramp-sudo-face (if active 'ds/powerline-red 'ds/powerline-inactive))
                                  ;; tramp detection
@@ -1550,18 +1565,21 @@
                                          (:cond (and (not is-exwm-window)
                                                      is-large)
                                                 :args (mode-line-mule-info)))
-                                        (tramp-face
-                                         :tag
-                                         (:cond is-tramp :args ("Tramp")))
                                         (tramp-ssh-face
                                          :tag
-                                         (:cond tramp-ssh :args ("SSH")))
+                                         (:cond tramp-ssh :args ((concat
+                                                                  "SSH "
+                                                                  (ds/extract-tramp-target "ssh" 'all)))))
                                         (tramp-su-face
                                          :tag
-                                         (:cond tramp-su :args ("SU")))
+                                         (:cond tramp-su :args ((concat
+                                                                 "SU "
+                                                                 (ds/extract-tramp-target "su" 'user)))))
                                         (tramp-sudo-face
                                          :tag
-                                         (:cond tramp-sudo :args ("SUDO")))
+                                         (:cond tramp-sudo :args ((concat
+                                                                   "SUDO "
+                                                                   (ds/extract-tramp-target "sudo" 'user)))))
                                         (flycheck-face
                                          (:cmd powerline-buffer-id :prefix "")
                                          (:cond (and (boundp 'which-function-mode)
@@ -1595,7 +1613,7 @@
                                  (concat (powerline-render lhs)
                                          (powerline-fill mode-line (powerline-width rhs))
                                          (powerline-render rhs)))))))
-    
+
        (defun ds/powerline-set-height ()
          (setq powerline-height (frame-char-size)))
 
