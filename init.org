@@ -155,11 +155,12 @@
                              (if (or (equal SIDE 'top)
                                      (equal SIDE 'bottom))
                                  `(window-height . ,SIZE)
-                               `(window-width   . (lambda (win)
-                                                    (if (or (< (window-width win) ,SIZE)
-                                                            (not (or (window-in-direction 'above win t)
-                                                                     (window-in-direction 'below win t))))
-                                                        (ds/set-window-column-width ,SIZE win)))))))))
+                               `(window-width   . ,(if (< SIZE 1) SIZE
+                                                     `(lambda (win)
+                                                        (if (or (< (window-width win) ,SIZE)
+                                                                (not (or (window-in-direction 'above win t)
+                                                                         (window-in-direction 'below win t))))
+                                                            (ds/set-window-column-width ,SIZE win))))))))))
     #+END_SRC
 
 ** Basic Customizations
@@ -3081,6 +3082,21 @@
         (push 's-f3 exwm-input-prefix-keys))
     #+END_SRC
 
+*** gnus
+    
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        ;; popup eshell
+        (ds/popup-thing ds/exwm-popup-gnus "*Group*" (gnus))
+        (exwm-input-set-key (kbd "s-g") #'ds/exwm-popup-gnus)
+        (push ?\s-g exwm-input-prefix-keys)
+
+        ;; rules for displaying the popup buffer
+        (ds/popup-thing-display-settings "*Group*" left 0 0.2))
+    #+END_SRC
+    
 ** Volume Control
 
    #+BEGIN_SRC emacs-lisp
