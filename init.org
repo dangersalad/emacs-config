@@ -2679,7 +2679,8 @@
            :ensure t
            :demand t
            :config
-           (auth-pass-enable))))
+           (add-to-list 'auth-sources 'password-store t)
+           (auth-source-forget-all-cached))))
    #+END_SRC
    
 
