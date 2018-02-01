@@ -912,6 +912,22 @@
        (message nil))
     #+END_SRC
 
+*** Bitcoin
+    
+    Get blockchain sync status printerd in minibuffer
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/blockchain-sync-status ()
+        (interactive)
+        (with-temp-buffer
+          (call-process "bitcoin-cli" nil t t "getblockchaininfo")
+          (let* ((json (json-read-from-string (buffer-string)))
+                 (blocks (alist-get 'blocks json))
+                 (total-blocks (alist-get 'headers json))
+                 (completion (truncate (* 100 (/ (float blocks) (float total-blocks))))))
+            (message "%s%% completed (%s/%s)" completion blocks total-blocks))))
+    #+END_SRC
+
 ** Fence Edit
 
    Fork of [[https://github.com/aaronbieber/fence-edit.el][fence-edit]]
