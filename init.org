@@ -627,6 +627,15 @@
       (add-function :before (symbol-function 'scroll-down-command) #'push-mark)
     #+END_SRC
 
+*** Tramp
+
+    #+BEGIN_SRC emacs-lisp
+      (setq tramp-ssh-controlmaster-options
+                      (concat
+                        "-o ControlPath=/tmp/ssh-ControlPath-%%r@%%h:%%p "
+                        "-o ControlMaster=auto -o ControlPersist=yes"))
+    #+END_SRC
+
 ** Utility Functions
 *** Recursive files
 
