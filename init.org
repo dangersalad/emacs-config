@@ -3092,9 +3092,6 @@
         (ds/popup-thing ds/exwm-popup-gnus "*Group*" (gnus))
         (exwm-input-set-key (kbd "s-g") #'ds/exwm-popup-gnus)
         (push ?\s-g exwm-input-prefix-keys)
-
-        ;; rules for displaying the popup buffer
-        (ds/popup-thing-display-settings "*Group*" left 0 0.2))
     #+END_SRC
     
 ** Volume Control
