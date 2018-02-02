@@ -1,3 +1,5 @@
-alias ls ls -lhF $*
-alias sysup pacaur --noedit -Syu $*
+alias btc bitcoin-cli $*
+alias sendbtc bitcoin-cli sendtoaddress $*
 alias kubelogs kubetail $* -k false --timestamps -j ".severity + \" \" + .message"
+alias sysup pacaur --noedit -Syu $*
+alias ls ls -lhF $*
