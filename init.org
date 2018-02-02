@@ -2858,7 +2858,14 @@
        (push ?\s-k exwm-input-prefix-keys)
 
        (exwm-input-set-key (kbd "s-l") #'windmove-right)
-       (push ?\s-l exwm-input-prefix-keys))
+       (push ?\s-l exwm-input-prefix-keys)
+
+       ;; s-[<>] to use `winner-mode'
+       (exwm-input-set-key (kbd "s-<") #'winner-undo)
+       (push ?\s-< exwm-input-prefix-keys)
+
+       (exwm-input-set-key (kbd "s->") #'winner-redo)
+       (push ?\s-> exwm-input-prefix-keys))
    #+END_SRC
 
    Set up bindings to resize windows
