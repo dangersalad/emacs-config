@@ -3098,7 +3098,7 @@
         ;; popup eshell
         (ds/popup-thing ds/exwm-popup-gnus "*Group*" (gnus))
         (exwm-input-set-key (kbd "s-g") #'ds/exwm-popup-gnus)
-        (push ?\s-g exwm-input-prefix-keys)
+        (push ?\s-g exwm-input-prefix-keys))
     #+END_SRC
     
 ** Volume Control
