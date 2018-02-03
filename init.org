@@ -2222,14 +2222,6 @@
        (setq flycheck-display-errors-delay 0.4)
        (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules)
 
-       (add-to-list 'display-buffer-alist
-                    `(,(rx bos "*Flycheck errors*" eos)
-                      (display-buffer-reuse-window
-                       display-buffer-in-side-window)
-                      (side            . bottom)
-                      (reusable-frames . visible)
-                      (window-height   . 0.1)))
-
        (defun ds/kill-flycheck-popup ()
          (if (get-buffer flycheck-error-list-buffer)
              (kill-buffer flycheck-error-list-buffer)))
@@ -3128,6 +3120,20 @@
         (push ?\s-g exwm-input-prefix-keys))
     #+END_SRC
     
+*** Flycheck errors
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        ;; popup eshell
+        (ds/popup-thing ds/exwm-popup-flycheck "*Flycheck errors*" (flycheck-list-errors))
+        (ds/popup-thing-display-settings "*Flycheck errors" bottom 0 0.1)
+        (exwm-input-set-key (kbd "s-e") #'ds/exwm-popup-flycheck)
+        (push ?\s-e exwm-input-prefix-keys))
+
+    #+END_SRC
+
 ** Volume Control
 
    #+BEGIN_SRC emacs-lisp
