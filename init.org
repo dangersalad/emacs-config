@@ -1513,6 +1513,18 @@
            `((t (:foreground ,zenburn-bg-2 :background ,zenburn-yellow-4 :inherit mode-line)))
            "Powerline Yellow."
            :group 'powerline)
+         (defface ds/powerline-orange
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-orange :inherit mode-line)))
+           "Powerline Orange."
+           :group 'powerline)
+         (defface ds/powerline-cyan
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-cyan :inherit mode-line)))
+           "Powerline Cyan."
+           :group 'powerline)
+         (defface ds/powerline-magenta
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-magenta :inherit mode-line)))
+           "Powerline Magenta."
+           :group 'powerline)
          (defface ds/powerline-gray
            `((t (:foreground ,zenburn-fg-05 :background ,zenburn-bg+2 :inherit mode-line)))
            "Powerline Gray."
@@ -1572,7 +1584,7 @@
                                  (mode-line (if active 'mode-line 'mode-line-inactive))
                                  (inner-face (if active 'ds/powerline-gray 'ds/powerline-inactive))
                                  (flycheck-face (if active (powerline-flycheck-face) 'ds/powerline-inactive))
-                                 (tramp-face (if active 'ds/powerline-blue 'ds/powerline-inactive))
+                                 (notification-face (if active 'ds/powerline-blue 'ds/powerline-inactive))
                                  (tramp-ssh-face (if active
                                                      (if (equal "root" (ds/extract-tramp-target "ssh" 'user))
                                                          'ds/powerline-yellow
@@ -1644,6 +1656,8 @@
                                                         (> (length (car global-mode-string)) 0))
                                                     is-large)
                                                :args (global-mode-string)))
+                                       (notification-face
+                                        (:cond eosd-notification-list :args ((format " %d" (length eosd-notification-list)))))
                                        (flycheck-face
                                         (:cond (not is-exwm-window) :args ("%l %c")))
                                        (mode-line
