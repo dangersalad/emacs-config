@@ -294,6 +294,14 @@
         (define-key compilation-mode-map (kbd "q") #'delete-window))
     #+END_SRC
 
+*** Ediff
+    
+    #+BEGIN_SRC emacs-lisp
+      (use-package ediff
+        :config
+        (setq ediff-window-setup-function #'ediff-setup-windows-plain))
+    #+END_SRC
+
 *** Eshell
 
     Some settings to make eshell "nicer"
@@ -3131,7 +3139,6 @@
         (ds/popup-thing-display-settings "*Flycheck errors" bottom 0 0.1)
         (exwm-input-set-key (kbd "s-e") #'ds/exwm-popup-flycheck)
         (push ?\s-e exwm-input-prefix-keys))
-
     #+END_SRC
 
 ** Volume Control
