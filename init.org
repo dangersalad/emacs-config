@@ -2883,18 +2883,18 @@
        ;; wrap windows when moving with windmove
        (setq windmove-wrap-around t)
 
-       ;; s-[hjkl] to move windows
-       (exwm-input-set-key (kbd "s-h") #'windmove-left)
-       (push ?\s-h exwm-input-prefix-keys)
+       ;; s-[arrows] to move windows
+       (exwm-input-set-key (kbd "<s-left>") #'windmove-left)
+       (push 's-left exwm-input-prefix-keys)
 
-       (exwm-input-set-key (kbd "s-j") #'windmove-down)
-       (push ?\s-j exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<s-down>") #'windmove-down)
+       (push 's-down exwm-input-prefix-keys)
 
-       (exwm-input-set-key (kbd "s-k") #'windmove-up)
-       (push ?\s-k exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<s-up>") #'windmove-up)
+       (push 's-up exwm-input-prefix-keys)
 
-       (exwm-input-set-key (kbd "s-l") #'windmove-right)
-       (push ?\s-l exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<s-right>") #'windmove-right)
+       (push 's-right exwm-input-prefix-keys)
 
        ;; s-[<>] to use `winner-mode'
        (exwm-input-set-key (kbd "s-<") #'winner-undo)
@@ -2954,25 +2954,25 @@
          (interactive "P")
          (ds/adjust-window-trailing-edge (* -1 (ds/exwm-window-resize--get-delta delta 10)) 'right))
        :config
-       (exwm-input-set-key (kbd "C-s-k") #'ds/exwm-window-grow-above)
-       (push ?\C-\s-k exwm-input-prefix-keys)
-       (exwm-input-set-key (kbd "C-M-s-k") #'ds/exwm-window-shrink-above)
-       (push ?\C-\M-\s-k exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<C-s-up>") #'ds/exwm-window-grow-above)
+       (push 'C-s-up exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<C-M-s-up>") #'ds/exwm-window-shrink-above)
+       (push 'C-M-s-up exwm-input-prefix-keys)
 
-       (exwm-input-set-key (kbd "C-s-j") #'ds/exwm-window-grow-below)
-       (push ?\C-\s-j exwm-input-prefix-keys)
-       (exwm-input-set-key (kbd "C-M-s-j") #'ds/exwm-window-shrink-below)
-       (push ?\C-\M-\s-j exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<C-s-down>") #'ds/exwm-window-grow-below)
+       (push 'C-s-down exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<C-M-s-down>") #'ds/exwm-window-shrink-below)
+       (push 'C-M-s-down exwm-input-prefix-keys)
 
-       (exwm-input-set-key (kbd "C-s-h") #'ds/exwm-window-grow-left)
-       (push ?\C-\s-h exwm-input-prefix-keys)
-       (exwm-input-set-key (kbd "C-M-s-h") #'ds/exwm-window-shrink-left)
-       (push ?\C-\M-\s-h exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<C-s-left>") #'ds/exwm-window-grow-left)
+       (push 'C-s-left exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<C-M-s-left>") #'ds/exwm-window-shrink-left)
+       (push 'C-M-s-left exwm-input-prefix-keys)
 
-       (exwm-input-set-key (kbd "C-s-l") #'ds/exwm-window-grow-right)
-       (push ?\C-\s-l exwm-input-prefix-keys)
-       (exwm-input-set-key (kbd "C-M-s-l") #'ds/exwm-window-shrink-right)
-       (push ?\C-\M-\s-l exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<C-s-right>") #'ds/exwm-window-grow-right)
+       (push 'C-s-right exwm-input-prefix-keys)
+       (exwm-input-set-key (kbd "<C-M-s-right>") #'ds/exwm-window-shrink-right)
+       (push 'C-M-s-right exwm-input-prefix-keys)
 
        ;;resize to ratio
        (exwm-input-set-key (kbd "s-=") #'ds/set-window-ratio)
@@ -2981,7 +2981,7 @@
        (defun ds/exwm-to-16:9 ()
          (interactive)
          (ds/set-window-ratio nil 16 9 t))
-  
+
        (exwm-input-set-key (kbd "C-s-=") #'ds/exwm-to-16:9)
        (push ?\C-\s-= exwm-input-prefix-keys))
    #+END_SRC
