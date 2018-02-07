@@ -2711,6 +2711,15 @@
            (auth-source-forget-all-cached))))
    #+END_SRC
    
+** REST Client
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package restclient
+       :ensure t
+       :config
+       (ds/popup-thing-display-settings "*HTTP Response*" left 0 0.25))
+   #+END_SRC
+
 
 * EXWM
 
