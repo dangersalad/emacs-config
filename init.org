@@ -273,14 +273,13 @@
             '((lambda (buf str)
                 (message "compilation %s" str)
                 (if (eq 0 (string-match-p "^finished$" str))
-                    (progn
-                      ;;no errors, make the compilation window go away in a few seconds
+                    (let ((project-root (if (projectile-project-p) (projectile-project-root) nil)))
                       (run-at-time
-                       3 nil 'delete-windows-on
+                       2 nil 'delete-windows-on
                        (get-buffer-create "*compilation*"))
-                      (if (projectile-project-p)
+                      (if project-root
                         (run-at-time
-                         3.01 nil 'projectile-vc)))))))
+                         2.01 nil 'projectile-vc project-root)))))))
     #+END_SRC
 
     Make compile window auto-scroll
