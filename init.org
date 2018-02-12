@@ -2572,6 +2572,12 @@
                      ("C-c M-q" . srefactor-lisp-format-sexp))))
    #+END_SRC
 
+   Use electric pairs for this
+
+   #+BEGIN_SRC emacs-lisp
+     (add-hook 'emacs-lisp-mode-hook #'electric-pair-local-mode)
+     (add-hook 'lisp-interaction-mode-hook #'electric-pair-local-mode)
+   #+END_SRC
 
 * Applications
 
