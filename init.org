@@ -2604,6 +2604,7 @@
      (add-hook 'lisp-interaction-mode-hook #'electric-pair-local-mode)
    #+END_SRC
 
+
 * Applications
 
   Packages that are sort of "apps" on their own or interact with other
@@ -3446,8 +3447,6 @@
      (use-package exwm
        :ensure t
        :config
-       ;; start the server so scripts can query emacs for information (mainly for the bar)
-       (server-start)
        ;; enable pinentry
        (pinentry-start t)
        (setq pinentry-popup-prompt-window nil)
