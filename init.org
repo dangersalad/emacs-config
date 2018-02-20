@@ -77,6 +77,8 @@
        (require 'use-package))
      ;; use-package should have these loaded
      (require 'diminish)
+     (use-package delight
+       :ensure t)
      (require 'bind-key)
    #+END_SRC
 
@@ -310,7 +312,6 @@
 
     #+BEGIN_SRC emacs-lisp
       (use-package eshell
-        :demand t
         :config
         (setenv "PAGER" "cat")
 
@@ -461,11 +462,15 @@
     #+BEGIN_SRC emacs-lisp
       (use-package dash
         :ensure t
+        :demand t
         :config
         (use-package s
           :ensure t
+          :demand t
           :config
           (use-package eshell
+            :commands (eshell/pwd)
+            :demand t
             :init
 
             (defvar ds/eshell-sep " | "
@@ -643,6 +648,12 @@
           (when font-lock-mode (with-no-warnings (font-lock-fontify-buffer)))))
 
       (add-hook 'sh-mode-hook 'sh-script-extra-font-lock-activate)
+    #+END_SRC
+    
+    Use shell mode for PKGBUILD files
+
+    #+BEGIN_SRC emacs-lisp
+      (add-to-list 'auto-mode-alist '("PKGBUILD$" . sh-mode))
     #+END_SRC
 
 *** Set mark for accidental ~M-v~ press
@@ -1997,6 +2008,7 @@
    #+BEGIN_SRC emacs-lisp
      (use-package projectile
        :ensure t
+       ; :delight '(:eval (concat " " (projectile-project-name)))
        :pin melpa-stable
        :init
        (defvar projectile-remember-window-configs t)
@@ -2543,13 +2555,14 @@
                (:type style :name less :mode less-css-mode)
                (:type style :name scss :mode css-mode)
                (:type style :name sass :mode ssass-mode)))
-       (add-to-list 'auto-mode-alist '("\\.vue\\'" . vue-mode)))
+       (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode)))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
      (use-package json-mode
        :ensure t
-       :pin melpa-stable)
+       :config
+       (add-to-list 'auto-mode-alist '("package\\.json\\'" . json-mode)))
    #+END_SRC
 
 ** Web Mode (php+html+javascript)
