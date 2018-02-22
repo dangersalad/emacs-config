@@ -121,7 +121,7 @@
    Set the font
 
    #+BEGIN_SRC emacs-lisp
-     (add-to-list 'default-frame-alist '(font . "Monospace-10"))
+     (add-to-list 'default-frame-alist '(font . "Monospace-12"))
    #+END_SRC
 
    Setup custom file

@@ -64,7 +64,7 @@ tangled, and the tangled file is compiled."
 (if (boundp 'scroll-bar-mode)
     (scroll-bar-mode -1))
 
-(add-to-list 'default-frame-alist '(font . "Monospace-10"))
+(add-to-list 'default-frame-alist '(font . "Monospace-12"))
 
 (defvar custom-file-location
   (expand-file-name "custom.el" user-emacs-directory)
