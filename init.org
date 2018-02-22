@@ -3353,14 +3353,14 @@
          "Connect the laptop to it's external display, no display on laptop screen"
          (interactive)
          (start-process-shell-command
-          "xrandr" nil "xrandr --output eDP1 --off --output DP1 --auto")
+          "xrandr" nil "xrandr --output eDP-1 --off --output DP-1-2 --auto")
          (ds/restart-bar))
 
        (defun ds/disconnect-laptop-external ()
          "Connect laptop display, no external display"
          (interactive)
          (start-process-shell-command
-          "xrandr" nil "xrandr --output eDP1 --auto --output DP1 --off")
+          "xrandr" nil "xrandr --output eDP-1 --auto --output DP1 --off")
          (ds/restart-bar))
 
        :config
@@ -3368,8 +3368,8 @@
        ;; (setq exwm-randr-workspace-output-plist '(0 "VGA1"))
        (add-hook 'exwm-randr-screen-change-hook
                  (lambda ()
-                   (let ((laptop-display (ds/display-connected-p "eDP1"))
-                         (laptop-display-external (ds/display-connected-p "DP1")))
+                   (let ((laptop-display (ds/display-connected-p "eDP-1"))
+                         (laptop-display-external (ds/display-connected-p "DP-1-2")))
                      ;; check for laptop external display
                      (if laptop-display
                          (if laptop-display-external
