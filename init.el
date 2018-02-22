@@ -2725,7 +2725,17 @@ If it is not an X window, delete the window unless it is the only one."
     "List all displays this machine can handle."
     (split-string
      (shell-command-to-string
-      "xrandr | grep -Eo '^[A-Za-z0-9]+ (dis)?connected' | awk '{print $1}' | tr '\n' ' '")))
+      "xrandr | grep -Eo '^[A-Za-z0-9-]+ (dis)?connected' | awk '{print $1}' | tr '\n' ' '")))
+
+  (defun ds/laptop-display-name ()
+    "Get laptop internal display name ."
+    (shell-command-to-string
+     "xrandr | grep -Eo '^eDP[A-Za-z0-9-]+ connected' | awk '{print $1}' | tr -d '\n'"))
+
+  (defun ds/laptop-external-display-name ()
+    "Get laptop external display name ."
+    (shell-command-to-string
+     "xrandr | grep -Eo '^[^e][A-Za-z0-9-]+ connected' | awk '{print $1}' | tr -d '\n'"))
 
   (defun ds/restart-bar ()
     "Restart whatever bar is being used."
@@ -2737,14 +2747,14 @@ If it is not an X window, delete the window unless it is the only one."
     "Connect the laptop to it's external display, no display on laptop screen"
     (interactive)
     (start-process-shell-command
-     "xrandr" nil "xrandr --output eDP-1-1 --off --output DP-1-2 --auto")
+     "xrandr" nil (concat "xrandr --output " (ds/laptop-display-name) " --off --output " (ds/laptop-external-display-name) " --auto"))
     (ds/restart-bar))
 
   (defun ds/disconnect-laptop-external ()
     "Connect laptop display, no external display"
     (interactive)
     (start-process-shell-command
-     "xrandr" nil "xrandr --output eDP-1-1 --auto --output DP-1-2 --off")
+     "xrandr" nil "xrandr --output " (ds/laptop-display-name) " --auto --output " (ds/laptop-external-display-name) " --off")
     (ds/restart-bar))
 
   :config
@@ -2752,8 +2762,8 @@ If it is not an X window, delete the window unless it is the only one."
   ;; (setq exwm-randr-workspace-output-plist '(0 "VGA1"))
   (add-hook 'exwm-randr-screen-change-hook
             (lambda ()
-              (let ((laptop-display (ds/display-connected-p "eDP-1-1"))
-                    (laptop-display-external (ds/display-connected-p "DP-1-2")))
+              (let ((laptop-display (ds/display-connected-p (ds/laptop-display-name)))
+                    (laptop-display-external (ds/display-connected-p (ds/laptop-external-display-name))))
                 ;; check for laptop external display
                 (if laptop-display
                     (if laptop-display-external
