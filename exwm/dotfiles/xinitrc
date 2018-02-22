@@ -1,3 +1,4 @@
+[[ -f $HOME/.xinitrc.local ]] && . $HOME/.xinitrc.local
 # Disable access control
 # xhost +SI:localuser:$USER
 
