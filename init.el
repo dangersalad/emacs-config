@@ -2737,14 +2737,14 @@ If it is not an X window, delete the window unless it is the only one."
     "Connect the laptop to it's external display, no display on laptop screen"
     (interactive)
     (start-process-shell-command
-     "xrandr" nil "xrandr --output eDP-1 --off --output DP-1-2 --auto")
+     "xrandr" nil "xrandr --output eDP-1-1 --off --output DP-1-2 --auto")
     (ds/restart-bar))
 
   (defun ds/disconnect-laptop-external ()
     "Connect laptop display, no external display"
     (interactive)
     (start-process-shell-command
-     "xrandr" nil "xrandr --output eDP-1 --auto --output DP1 --off")
+     "xrandr" nil "xrandr --output eDP-1-1 --auto --output DP-1-2 --off")
     (ds/restart-bar))
 
   :config
