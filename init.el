@@ -2752,7 +2752,7 @@ If it is not an X window, delete the window unless it is the only one."
   ;; (setq exwm-randr-workspace-output-plist '(0 "VGA1"))
   (add-hook 'exwm-randr-screen-change-hook
             (lambda ()
-              (let ((laptop-display (ds/display-connected-p "eDP-1"))
+              (let ((laptop-display (ds/display-connected-p "eDP-1-1"))
                     (laptop-display-external (ds/display-connected-p "DP-1-2")))
                 ;; check for laptop external display
                 (if laptop-display
