@@ -493,6 +493,9 @@ See also `newline-and-indent'."
 (add-hook 'sh-mode-hook 'sh-script-extra-font-lock-activate)
 
 (add-to-list 'auto-mode-alist '("PKGBUILD$" . sh-mode))
+(add-to-list 'auto-mode-alist '("zshrc$" . sh-mode))
+(add-to-list 'auto-mode-alist '("zshenv$" . sh-mode))
+(add-to-list 'auto-mode-alist '("zprofile$" . sh-mode))
 
 (add-function :before (symbol-function 'scroll-down-command) #'push-mark)
 

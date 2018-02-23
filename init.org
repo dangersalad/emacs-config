@@ -650,10 +650,14 @@
       (add-hook 'sh-mode-hook 'sh-script-extra-font-lock-activate)
     #+END_SRC
     
-    Use shell mode for PKGBUILD files
+    Use shell mode for various files
 
     #+BEGIN_SRC emacs-lisp
       (add-to-list 'auto-mode-alist '("PKGBUILD$" . sh-mode))
+      (add-to-list 'auto-mode-alist '("zshrc$" . sh-mode))
+      (add-to-list 'auto-mode-alist '("zshenv$" . sh-mode))
+      (add-to-list 'auto-mode-alist '("zprofile$" . sh-mode))
+
     #+END_SRC
 
 *** Set mark for accidental ~M-v~ press
