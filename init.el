@@ -639,15 +639,15 @@ If NOSORT is non-nil, the list is not sorted--its order is unpredictable.
                (setq ds/preserve-default-cookies-list nil)
                (message "Restored default fonts."))))))
 
-(defun ds/use-eslint-from-node-modules ()
+(defun ds/find-eslint-executable ()
   (let* ((root (locate-dominating-file
                 (or (buffer-file-name) default-directory)
                 "node_modules"))
-         (eslint (and root
+         (eslint-local (and root
                       (expand-file-name "node_modules/eslint/bin/eslint.js"
-                                        root))))
-    (when (and eslint (file-executable-p eslint))
-      (setq-local flycheck-javascript-eslint-executable eslint))))
+                                        root)))
+         (eslint-system (executable-find "eslint")))
+    (or eslint-local eslint-system)))
 
 (defun ds/set-window-pixel-width (pixel-width &optional window)
   "Set the WINDOW to PIXEL-WIDTH pixels wide"
@@ -1858,6 +1858,10 @@ the command to launch it."
                 (append flycheck-disabled-checkers
                         '(javascript-jshint)))
   (setq flycheck-display-errors-delay 0.4)
+
+  (defun ds/use-eslint-from-node-modules ()
+    (setq-local flycheck-javascript-eslint-executable (ds/find-eslint-executable)))
+
   (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules)
 
   (defun ds/kill-flycheck-popup ()
@@ -2054,16 +2058,23 @@ It looks for archive files in /pkg/."
   :config
   (add-hook 'js-mode-hook #'lsp-javascript-typescript-enable))
 
-(use-package eslint-fix
-  :ensure t
-  :pin melpa-stable
+(defun eslint-fix ()
+  "Format the current file with ESLint."
+  (interactive)
+  (let ((eslint (ds/find-eslint-executable)))
+    (if eslint
+        (progn (call-process eslint nil "*ESLint Errors*" nil "--fix" buffer-file-name)
+               (revert-buffer t t t))
+      (message "ESLint not found."))))
+
+(use-package js
   :config
   (add-hook 'js-mode-hook
-             (lambda ()
-               (add-hook 'after-save-hook 'eslint-fix nil t)))
+            (lambda ()
+              (add-hook 'after-save-hook 'eslint-fix nil t)))
   (add-hook 'vue-mode-hook
-             (lambda ()
-               (add-hook 'after-save-hook 'eslint-fix nil t))))
+            (lambda ()
+              (add-hook 'after-save-hook 'eslint-fix nil t))))
 
 (use-package vue-mode
   :ensure t
