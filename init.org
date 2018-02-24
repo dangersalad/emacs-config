@@ -2405,6 +2405,13 @@
        :bind (:map go-mode-map
                    ("C-c D" . godoc-at-point))
        :config
+       (defun ds/setup-cgo-32 ()
+         "Setup local environment for the buffer so flycheck can still work.
+     This will break go-vet, so you may want to disable it."
+         (interactive)
+         (set (make-local-variable 'process-environment)
+              (append '("CGO_CFLAGS_ALLOW=-m32" "GOBIN=" "CGO_ENABLED=1" "GOARCH=386") process-environment)))
+
        (defun ds/go-packages-native ()
          "Return a list of all installed Go packages.
      It looks for archive files in /pkg/."
