@@ -1713,9 +1713,13 @@ Special commands:
 
 (use-package exec-path-from-shell
   :ensure t
-  :pin melpa-stable
+  :demand
   :config
-  (exec-path-from-shell-initialize))
+  (progn
+    (message "setting up exec path")
+    (exec-path-from-shell-initialize)
+    (exec-path-from-shell-copy-env "PATH")
+    (message "set up exec path")))
 
 (use-package flx
   :ensure t
