@@ -2083,6 +2083,9 @@ It looks for archive files in /pkg/."
   (add-hook 'js-mode-hook
             (lambda ()
               (add-hook 'after-save-hook 'eslint-fix nil t)))
+  (add-hook 'web-mode-hook
+            (lambda ()
+              (add-hook 'after-save-hook 'eslint-fix nil t)))
   (add-hook 'vue-mode-hook
             (lambda ()
               (add-hook 'after-save-hook 'eslint-fix nil t))))
