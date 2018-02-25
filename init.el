@@ -2775,14 +2775,34 @@ If it is not an X window, delete the window unless it is the only one."
     "Connect the laptop to it's external display, no display on laptop screen"
     (interactive)
     (start-process-shell-command
-     "xrandr" nil (concat "xrandr --output " (ds/laptop-display-name) " --off --output " (ds/laptop-external-display-name) " --auto"))
+     "xrandr" nil (concat "xrandr --output "
+                          (ds/laptop-external-display-name)
+                          " --auto"
+                          (mapconcat
+                           (lambda (d)
+                             (concat "--output " d " --off"))
+                           (seq-filter
+                            (lambda (d)
+                              (not (string= d (ds/laptop-external-display-name))))
+                            (ds/list-displays))
+                           " ")))
     (ds/restart-bar))
 
   (defun ds/disconnect-laptop-external ()
     "Connect laptop display, no external display"
     (interactive)
     (start-process-shell-command
-     "xrandr" nil "xrandr --output " (ds/laptop-display-name) " --auto --output " (ds/laptop-external-display-name) " --off")
+     "xrandr" nil (concat "xrandr --output "
+                          (ds/laptop-display-name)
+                          " --auto "
+                          (mapconcat
+                           (lambda (d)
+                             (concat "--output " d " --off"))
+                           (seq-filter
+                            (lambda (d)
+                              (not (string= d (ds/laptop-display-name))))
+                            (ds/list-displays))
+                           " ")))
     (ds/restart-bar))
 
   :config
