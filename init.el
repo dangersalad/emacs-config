@@ -2771,6 +2771,17 @@ If it is not an X window, delete the window unless it is the only one."
     (start-process-shell-command
      "startpanel" nil (expand-file-name (concat user-emacs-directory "exwm/bin/start-bar"))))
 
+  (defun ds/xrandr-other-displays-off (target)
+    "Get a string to run off all displays except for the TARGET."
+    (mapconcat
+     (lambda (d)
+       (concat "--output " d " --off"))
+     (seq-filter
+      (lambda (d)
+        (not (string= d target)))
+      (ds/list-displays))
+     " "))
+
   (defun ds/connect-laptop-external ()
     "Connect the laptop to it's external display, no display on laptop screen"
     (interactive)
@@ -2778,14 +2789,7 @@ If it is not an X window, delete the window unless it is the only one."
      "xrandr" nil (concat "xrandr --output "
                           (ds/laptop-external-display-name)
                           " --auto"
-                          (mapconcat
-                           (lambda (d)
-                             (concat "--output " d " --off"))
-                           (seq-filter
-                            (lambda (d)
-                              (not (string= d (ds/laptop-external-display-name))))
-                            (ds/list-displays))
-                           " ")))
+                          (ds/xrandr-other-displays-off (ds/laptop-external-display-name))))
     (ds/restart-bar))
 
   (defun ds/disconnect-laptop-external ()
@@ -2795,14 +2799,7 @@ If it is not an X window, delete the window unless it is the only one."
      "xrandr" nil (concat "xrandr --output "
                           (ds/laptop-display-name)
                           " --auto "
-                          (mapconcat
-                           (lambda (d)
-                             (concat "--output " d " --off"))
-                           (seq-filter
-                            (lambda (d)
-                              (not (string= d (ds/laptop-display-name))))
-                            (ds/list-displays))
-                           " ")))
+                          (ds/xrandr-other-displays-off (ds/laptop-display-name))))
     (ds/restart-bar))
 
   (defun ds/exwm-auto-screens ()
