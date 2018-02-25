@@ -2805,18 +2805,20 @@ If it is not an X window, delete the window unless it is the only one."
                            " ")))
     (ds/restart-bar))
 
+  (defun ds/exwm-auto-screens ()
+    "Detect known display setups and set screens accordingly."
+    (interactive)
+    (let ((laptop-display (ds/display-connected-p (ds/laptop-display-name)))
+          (laptop-display-external (ds/display-connected-p (ds/laptop-external-display-name))))
+      ;; check for laptop external display
+      (if laptop-display
+          (if laptop-display-external
+              (ds/connect-laptop-external)
+            (ds/disconnect-laptop-external)))))
+
   :config
   (add-hook 'exwm-randr-screen-change-hook #'ds/powerline-set-height)
-  ;; (setq exwm-randr-workspace-output-plist '(0 "VGA1"))
-  (add-hook 'exwm-randr-screen-change-hook
-            (lambda ()
-              (let ((laptop-display (ds/display-connected-p (ds/laptop-display-name)))
-                    (laptop-display-external (ds/display-connected-p (ds/laptop-external-display-name))))
-                ;; check for laptop external display
-                (if laptop-display
-                    (if laptop-display-external
-                        (ds/connect-laptop-external)
-                      (ds/disconnect-laptop-external))))))
+  (add-hook 'exwm-randr-screen-change-hook #'ds/exwm-auto-screens)
   (exwm-randr-enable))
 
 (use-package exwm
