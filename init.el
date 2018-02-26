@@ -2788,7 +2788,7 @@ If it is not an X window, delete the window unless it is the only one."
     (start-process-shell-command
      "xrandr" nil (concat "xrandr --output "
                           (ds/laptop-external-display-name)
-                          " --auto"
+                          " --auto "
                           (ds/xrandr-other-displays-off (ds/laptop-external-display-name))))
     (ds/restart-bar))
 
