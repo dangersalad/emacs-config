@@ -108,6 +108,7 @@ tangled, and the tangled file is compiled."
        (equal major-mode 'python-mode)
        (equal major-mode 'markdown-mode)
        (equal major-mode 'makefile-gmake-mode)
+       (equal major-mode 'picture-mode)
        (equal major-mode 'org-mode)
        (equal major-mode 'org-journal-mode))
       `no-indent'
@@ -723,6 +724,13 @@ If NOSORT is non-nil, the list is not sorted--its order is unpredictable.
            (completion (truncate (* 100 (/ (float blocks) (float total-blocks))))))
       (message "%s%% completed (%s/%s)" completion blocks total-blocks))))
 
+(defun align-repeat (start end regexp)
+    "Repeat alignment with respect to 
+     the given regular expression."
+    (interactive "r\nsAlign regexp: ")
+    (align-regexp start end 
+        (concat "\\(\\s-*\\)" regexp) 1 1 t))
+
 (defcustom fence-edit-lang-modes
   '(("cl" . lisp-interaction-mode))
   "A mapping from markdown language symbols to the modes they should be edited in."
@@ -1150,10 +1158,10 @@ Special commands:
   (with-eval-after-load 'avy
     (zenburn-with-color-variables
       (set-face-attribute 'avy-background-face nil :foreground zenburn-fg-1 :background zenburn-bg-1)
-      (set-face-attribute 'avy-lead-face-0 nil :foreground zenburn-blue-1 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight nil :slant 'italic)
-      (set-face-attribute 'avy-lead-face-1 nil :foreground zenburn-green-2 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight nil :slant 'italic)
-      (set-face-attribute 'avy-lead-face-2 nil :foreground zenburn-yellow-4 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight nil :slant 'italic)
-      (set-face-attribute 'avy-lead-face nil :foreground zenburn-red-1 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight nil :slant 'italic)))
+      (set-face-attribute 'avy-lead-face-0 nil :foreground zenburn-blue-1 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight 'normal :slant 'italic)
+      (set-face-attribute 'avy-lead-face-1 nil :foreground zenburn-green-2 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight 'normal :slant 'italic)
+      (set-face-attribute 'avy-lead-face-2 nil :foreground zenburn-yellow-4 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight 'normal :slant 'italic)
+      (set-face-attribute 'avy-lead-face nil :foreground zenburn-red-1 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight 'normal :slant 'italic)))
 
   (with-eval-after-load 'ivy
     (zenburn-with-color-variables
@@ -2333,9 +2341,10 @@ after `password-store-timeout' seconds."
   (add-hook 'exwm-floating-exit-hook #'exwm-layout-show-mode-line)
   ;; 'C-s-n': Rename buffer
   (exwm-input-set-key (kbd "C-s-n") #'rename-buffer)
-  (push ?\C-\s-n exwm-input-prefix-keys)
-  ;; 's-r': Reset
-  (exwm-input-set-key (kbd "s-R") #'exwm-reset)
+  ;; 'C-s-r': Reset
+  (exwm-input-set-key (kbd "C-s-r") #'exwm-reset)
+  ;; 'C-s-f': Toggle Fullscreen
+  (exwm-input-set-key (kbd "C-s-f") #'exwm-layout-toggle-fullscreen)
   ;; do xinit stuff
   (start-process "" nil (concat user-emacs-directory "exwm/bin/xinitscript"))
   ;; disable flycheck for exwm buffers
@@ -2386,22 +2395,18 @@ after `password-store-timeout' seconds."
   ;; set up bindings to switch to workspaces
   (dotimes (i 10)
     (let* ((switch-binding (kbd (format "s-%d" i)))
-           (switch-prefix (aref switch-binding 0))
-           (move-binding (kbd (format "C-s-%d" i)))
-           (move-prefix (aref move-binding 0)))
+           (move-binding (kbd (format "C-s-%d" i))))
       ;; use s-N to switch to a workspace number
       (exwm-input-set-key switch-binding
                           `(lambda ()
                              (interactive)
                              (exwm-workspace-switch-create ,i)))
-      (push switch-prefix exwm-input-prefix-keys)
       ;; use C-s-N to move the current window to a workspace
       (exwm-input-set-key move-binding
                           `(lambda ()
                              (interactive)
                              (exwm-workspace-move-window ,i)
-                             (select-frame-set-input-focus exwm-workspace--current)))
-      (push move-prefix exwm-input-prefix-keys))))
+                             (select-frame-set-input-focus exwm-workspace--current))))))
 
 (use-package exwm
   :ensure t
@@ -2422,7 +2427,6 @@ after `password-store-timeout' seconds."
 
   ;; use s-tab to switch workspaces back and forth
   (exwm-input-set-key (kbd "<s-tab>") #'ds/exwm-workspace-toggle)
-  (push 's-tab exwm-input-prefix-keys)
 
   ;; fix magit for this key
   (with-eval-after-load 'magit
@@ -2449,23 +2453,13 @@ after `password-store-timeout' seconds."
 
   ;; s-[arrows] to move windows
   (exwm-input-set-key (kbd "<s-left>") #'windmove-left)
-  (push 's-left exwm-input-prefix-keys)
-
   (exwm-input-set-key (kbd "<s-down>") #'windmove-down)
-  (push 's-down exwm-input-prefix-keys)
-
   (exwm-input-set-key (kbd "<s-up>") #'windmove-up)
-  (push 's-up exwm-input-prefix-keys)
-
   (exwm-input-set-key (kbd "<s-right>") #'windmove-right)
-  (push 's-right exwm-input-prefix-keys)
 
   ;; s-[<>] to use `winner-mode'
   (exwm-input-set-key (kbd "s-<") #'winner-undo)
-  (push ?\s-< exwm-input-prefix-keys)
-
-  (exwm-input-set-key (kbd "s->") #'winner-redo)
-  (push ?\s-> exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "s->") #'winner-redo))
 
 (use-package exwm
   :ensure t
@@ -2515,35 +2509,25 @@ after `password-store-timeout' seconds."
     (ds/adjust-window-trailing-edge (* -1 (ds/exwm-window-resize--get-delta delta 10)) 'right))
   :config
   (exwm-input-set-key (kbd "<C-s-up>") #'ds/exwm-window-grow-above)
-  (push 'C-s-up exwm-input-prefix-keys)
   (exwm-input-set-key (kbd "<C-M-s-up>") #'ds/exwm-window-shrink-above)
-  (push 'C-M-s-up exwm-input-prefix-keys)
 
   (exwm-input-set-key (kbd "<C-s-down>") #'ds/exwm-window-grow-below)
-  (push 'C-s-down exwm-input-prefix-keys)
   (exwm-input-set-key (kbd "<C-M-s-down>") #'ds/exwm-window-shrink-below)
-  (push 'C-M-s-down exwm-input-prefix-keys)
 
   (exwm-input-set-key (kbd "<C-s-left>") #'ds/exwm-window-grow-left)
-  (push 'C-s-left exwm-input-prefix-keys)
   (exwm-input-set-key (kbd "<C-M-s-left>") #'ds/exwm-window-shrink-left)
-  (push 'C-M-s-left exwm-input-prefix-keys)
 
   (exwm-input-set-key (kbd "<C-s-right>") #'ds/exwm-window-grow-right)
-  (push 'C-s-right exwm-input-prefix-keys)
   (exwm-input-set-key (kbd "<C-M-s-right>") #'ds/exwm-window-shrink-right)
-  (push 'C-M-s-right exwm-input-prefix-keys)
 
   ;;resize to ratio
   (exwm-input-set-key (kbd "s-=") #'ds/set-window-ratio)
-  (push ?\s-= exwm-input-prefix-keys)
 
   (defun ds/exwm-to-16:9 ()
     (interactive)
     (ds/set-window-ratio nil 16 9 t))
 
-  (exwm-input-set-key (kbd "C-s-=") #'ds/exwm-to-16:9)
-  (push ?\C-\s-= exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "C-s-=") #'ds/exwm-to-16:9))
 
 (use-package exwm
   :ensure t
@@ -2570,18 +2554,14 @@ after `password-store-timeout' seconds."
       (switch-to-buffer (exwm--id->buffer exwm--id))))
 
   (exwm-input-set-key (kbd "s-d") #'ds/exwm-switch-to-x-window)
-  (push ?\s-d exwm-input-prefix-keys)
 
   (exwm-input-set-key (kbd "C-s-d") #'ds/exwm-bring-window-here)
-  (push ?\C-\s-d exwm-input-prefix-keys)
 
   ;; alias the C-x o binding to s-o
   (exwm-input-set-key (kbd "s-o") #'ds/switch-window)
-  (push ?\s-o exwm-input-prefix-keys)
 
   ;; use C-s-o instead of C-u s-o for window swap
-  (exwm-input-set-key (kbd "C-s-o") '(lambda () (interactive) (ds/switch-window t)))
-  (push ?\C-\s-o exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "C-s-o") '(lambda () (interactive) (ds/switch-window t))))
 
 (use-package exwm
   :ensure t
@@ -2596,8 +2576,7 @@ If it is not an X window, delete the window unless it is the only one."
         (kill-buffer))
     (if (> (length (window-list)) 1)
         (delete-window)))
-  (exwm-input-set-key (kbd "C-s-q") #'ds/exwm-quit)
-  (push ?\C-\s-q exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "C-s-q") #'ds/exwm-quit))
 
 (use-package exwm
   :ensure t
@@ -2607,7 +2586,6 @@ If it is not an X window, delete the window unless it is the only one."
                   (let ((eshell-buffer-name "*Popup Shell*"))
                     (eshell t)))
   (exwm-input-set-key (kbd "s-m") #'ds/exwm-popup-shell)
-  (push ?\s-m exwm-input-prefix-keys)
 
   ;; rules for displaying the popup buffer
   (ds/popup-thing-display-settings "*Popup Shell*" top -1 0.4)
@@ -2617,14 +2595,12 @@ If it is not an X window, delete the window unless it is the only one."
                       (lambda ()
                         (interactive)
                         (eshell t)))
-  (push 's-return exwm-input-prefix-keys)
 
   ;; 'C-s-return': Launch new Termite window
   (exwm-input-set-key (kbd "<C-s-return>")
                       (lambda ()
                         (interactive)
-                        (start-process-shell-command "termite" nil "termite")))
-  (push 'C-s-return exwm-input-prefix-keys))
+                        (start-process-shell-command "termite" nil "termite"))))
 
 (use-package exwm
   :ensure t
@@ -2634,8 +2610,7 @@ If it is not an X window, delete the window unless it is the only one."
 
   (ds/popup-thing-display-settings "TelegramDesktop" right -1 135)
 
-  (exwm-input-set-key (kbd "<s-f1>") #'ds/exwm-popup-telegram)
-  (push 's-f1 exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "<s-f1>") #'ds/exwm-popup-telegram))
 
 (use-package exwm
   :ensure t
@@ -2645,8 +2620,7 @@ If it is not an X window, delete the window unless it is the only one."
 
   (ds/popup-thing-display-settings "Mattermost" right 0 135)
 
-  (exwm-input-set-key (kbd "<s-f2>") #'ds/exwm-popup-mattermost)
-  (push 's-f2 exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "<s-f2>") #'ds/exwm-popup-mattermost))
 
 (use-package exwm
   :ensure t
@@ -2656,16 +2630,14 @@ If it is not an X window, delete the window unless it is the only one."
 
   (ds/popup-thing-display-settings "Pavucontrol" bottom 0 30)
 
-  (exwm-input-set-key (kbd "<s-f3>") #'ds/exwm-popup-pavucontrol)
-  (push 's-f3 exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "<s-f3>") #'ds/exwm-popup-pavucontrol))
 
 (use-package exwm
   :ensure t
   :config
   ;; popup eshell
   (ds/popup-thing ds/exwm-popup-gnus "*Group*" (gnus))
-  (exwm-input-set-key (kbd "s-g") #'ds/exwm-popup-gnus)
-  (push ?\s-g exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "s-g") #'ds/exwm-popup-gnus))
 
 (use-package exwm
   :ensure t
@@ -2673,8 +2645,7 @@ If it is not an X window, delete the window unless it is the only one."
   ;; popup eshell
   (ds/popup-thing ds/exwm-popup-flycheck "*Flycheck errors*" (flycheck-list-errors))
   (ds/popup-thing-display-settings "*Flycheck errors" bottom 0 0.1)
-  (exwm-input-set-key (kbd "s-e") #'ds/exwm-popup-flycheck)
-  (push ?\s-e exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "s-e") #'ds/exwm-popup-flycheck))
 
 (use-package exwm
   :ensure t
@@ -2683,24 +2654,21 @@ If it is not an X window, delete the window unless it is the only one."
                       (lambda ()
                         (interactive)
                         (start-process "volume-up" nil (executable-find "pulseaudio-ctl") "up")))
-  (push 'XF86AudioRaiseVolume exwm-input-prefix-keys)
 
   (exwm-input-set-key (kbd "<XF86AudioLowerVolume>")
                       (lambda ()
                         (interactive)
                         (start-process "volume-down" nil (executable-find "pulseaudio-ctl") "down")))
-  (push 'XF86AudioLowerVolume exwm-input-prefix-keys)
 
   (exwm-input-set-key (kbd "<XF86AudioMute>")
                       (lambda ()
                         (interactive)
-                        (start-process "volume-mute" nil (executable-find "pulseaudio-ctl") "mute")))
-  (push 'XF86AudioMute exwm-input-prefix-keys))
+                        (start-process "volume-mute" nil (executable-find "pulseaudio-ctl") "mute"))))
 
 (use-package exwm
   :ensure t
   :config
-  (exwm-input-set-simulation-keys
+  (setq exwm-input-simulation-keys
    '(
      ;; movement
      ([?\C-b] . left)
@@ -2729,13 +2697,38 @@ If it is not an X window, delete the window unless it is the only one."
   :ensure t
   :config
   (defun ds/exwm-keyrules-termite ()
-    (when (and exwm-class-name
-               (string= exwm-class-name "Termite"))
+    (if (and exwm-class-name
+             (string= exwm-class-name "Termite"))
+        (exwm-input-set-local-simulation-keys
+         '(
+           ([?\C-c ?\C-c] . ?\C-c)
+           ([?\C-w] . [?\C-\S-x])
+           ([?\M-w] . [?\C-\S-c])
+           ([?\C-y] . [?\C-\S-v])))
       (exwm-input-set-local-simulation-keys
        '(
-         ([?\C-w] . ?\C-\S-x)
-         ([?\M-w] . ?\C-\S-c)
-         ([?\C-y] . ?\C-\S-v)))))
+         ;; movement
+         ([?\C-b] . left)
+         ([?\M-b] . C-left)
+         ([?\C-f] . right)
+         ([?\M-f] . C-right)
+         ([?\C-p] . up)
+         ([?\C-n] . down)
+         ([?\C-a] . home)
+         ([?\C-e] . end)
+         ([?\M-v] . prior)
+         ([?\C-v] . next)
+         ([?\C-d] . delete)
+         ([?\C-k] . (S-end ?\C-x))
+         ;; cut/paste.
+         ([?\C-w] . ?\C-x)
+         ([?\M-w] . ?\C-c)
+         ([?\C-y] . ?\C-v)
+         ;; undo/redo
+         ([?\C-/] . ?\C-z)
+         ([?\C-?] . ?\C-\S-z)
+         ;; search
+         ([?\C-s] . ?\C-f)))))
 
   (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite))
 
@@ -2788,7 +2781,7 @@ If it is not an X window, delete the window unless it is the only one."
     (start-process-shell-command
      "xrandr" nil (concat "xrandr --output "
                           (ds/laptop-external-display-name)
-                          " --auto "
+                          " --primary --auto "
                           (ds/xrandr-other-displays-off (ds/laptop-external-display-name))))
     (ds/restart-bar))
 
@@ -2798,7 +2791,7 @@ If it is not an X window, delete the window unless it is the only one."
     (start-process-shell-command
      "xrandr" nil (concat "xrandr --output "
                           (ds/laptop-display-name)
-                          " --auto "
+                          " --primary --auto "
                           (ds/xrandr-other-displays-off (ds/laptop-display-name))))
     (ds/restart-bar))
 
@@ -2823,9 +2816,7 @@ If it is not an X window, delete the window unless it is the only one."
   :init
   :config
   (exwm-input-set-key (kbd "s-p") #'password-store-copy)
-  (push ?\s-p exwm-input-prefix-keys)
-  (exwm-input-set-key (kbd "C-s-p") #'ds/password-store-get-otp)
-  (push ?\C-\s-p exwm-input-prefix-keys))
+  (exwm-input-set-key (kbd "C-s-p") #'ds/password-store-get-otp))
 
 (use-package exwm
   :ensure t
@@ -2863,7 +2854,6 @@ If it is not an X window, delete the window unless it is the only one."
   (ds/popup-thing-display-settings "*notifications*" right 1)
 
   (exwm-input-set-key (kbd "s-n") #'ds/exwm-eosd)
-  (push ?\s-n exwm-input-prefix-keys)
 
   ;; auto refresh and auto popup notifications
   (add-function :after (symbol-function 'ds/exwm-eosd) #'ds/exwm-refresh-notification-buffer))
@@ -2877,8 +2867,7 @@ If it is not an X window, delete the window unless it is the only one."
   :config
   (exwm-input-set-key (kbd "C-M-S-s-l") #'ds/lock-screen)
   (define-key global-map (kbd "C-x C-z") #'ds/lock-screen)
-  (define-key global-map (kbd "C-z") #'ds/lock-screen)
-  (push ?\C-\M-\S-\s-l exwm-input-prefix-keys))
+  (define-key global-map (kbd "C-z") #'ds/lock-screen))
 
 (use-package exwm-systemtray
   :demand t
