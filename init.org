@@ -854,10 +854,13 @@
                       (or (buffer-file-name) default-directory)
                       "node_modules"))
                (eslint-local (and root
-                            (expand-file-name "node_modules/eslint/bin/eslint.js"
-                                              root)))
+                                  (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                                    root)))
                (eslint-system (executable-find "eslint")))
-          (or eslint-local eslint-system)))
+          (if (and (stringp eslint-local)
+                   (file-executable-p eslint-local))
+              eslint-local
+            eslint-system)))
     #+END_SRC
 
 *** Set Window Size

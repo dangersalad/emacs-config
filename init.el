@@ -645,10 +645,13 @@ If NOSORT is non-nil, the list is not sorted--its order is unpredictable.
                 (or (buffer-file-name) default-directory)
                 "node_modules"))
          (eslint-local (and root
-                      (expand-file-name "node_modules/eslint/bin/eslint.js"
-                                        root)))
+                            (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                              root)))
          (eslint-system (executable-find "eslint")))
-    (or eslint-local eslint-system)))
+    (if (and (stringp eslint-local)
+             (file-executable-p eslint-local))
+        eslint-local
+      eslint-system)))
 
 (defun ds/set-window-pixel-width (pixel-width &optional window)
   "Set the WINDOW to PIXEL-WIDTH pixels wide"
