@@ -734,6 +734,25 @@ If NOSORT is non-nil, the list is not sorted--its order is unpredictable.
     (align-regexp start end 
         (concat "\\(\\s-*\\)" regexp) 1 1 t))
 
+(defun ds/toggle-camelcase-underscores ()
+  "Toggle between camelcase and underscore notation for the symbol at point."
+  (interactive)
+  (save-excursion
+    (let* ((bounds (bounds-of-thing-at-point 'symbol))
+           (start (car bounds))
+           (end (cdr bounds))
+           (currently-using-underscores-p (progn (goto-char start)
+                                                 (re-search-forward "_" end t))))
+      (if currently-using-underscores-p
+          (progn
+            (upcase-initials-region start end)
+            (replace-string "_" "" nil start end)
+            (downcase-region start (1+ start)))
+        (replace-regexp "\\([A-Z]\\)" "_\\1" nil (1+ start) end)
+        (downcase-region start (cdr (bounds-of-thing-at-point 'symbol)))))))
+
+(global-set-key (kbd "C-c _") 'ds/toggle-camelcase-underscores)
+
 (defcustom fence-edit-lang-modes
   '(("cl" . lisp-interaction-mode))
   "A mapping from markdown language symbols to the modes they should be edited in."
