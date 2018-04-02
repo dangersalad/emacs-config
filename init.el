@@ -221,6 +221,8 @@ See also `newline-and-indent'."
   :ensure t
   :config
   (defun ds/esh-autosuggest-setup ()
+    (make-variable-buffer-local 'company-require-match)
+    (set-variable 'company-require-match nil)
     (face-remap-add-relative 'company-preview-common 'ds/esh-autosuggest-face))
 
   (add-hook 'eshell-mode-hook #'esh-autosuggest-mode)
