@@ -1782,7 +1782,9 @@ _p_: previous
   :bind (("C-c j j" . avy-goto-char-in-line)
          ("C-c j l" . avy-goto-line)
          ("C-c j w" . avy-goto-word-or-subword-1)
-         ("C-c j c" . avy-goto-char)))
+         ("C-c j c" . avy-goto-char))
+  :config
+  (setq avy-keys '(?t ?n ?s ?e)))
 
 (use-package smex
   :ensure t
