@@ -1189,9 +1189,9 @@ Special commands:
 
   (with-eval-after-load 'ivy
     (zenburn-with-color-variables
-      (set-face-attribute 'ivy-current-match nil :foreground zenburn-fg+1 :background zenburn-bg+3 :box zenburn-blue :underline nil)
       (set-face-attribute 'ivy-subdir nil :foreground zenburn-blue-1 :background nil :weight 'bold)
       (set-face-attribute 'ivy-remote nil :foreground zenburn-red-1 :background nil :weight 'bold)
+      (set-face-attribute 'ivy-current-match nil :foreground zenburn-fg+1 :background zenburn-bg+3 :box zenburn-blue :underline nil)
       (set-face-attribute 'ivy-minibuffer-match-face-1 nil :background nil :box zenburn-green-1 :underline nil)
       (set-face-attribute 'ivy-minibuffer-match-face-2 nil :background nil :box zenburn-green-1 :underline nil)
       (set-face-attribute 'ivy-minibuffer-match-face-3 nil :background nil :box zenburn-red-1 :underline nil)
