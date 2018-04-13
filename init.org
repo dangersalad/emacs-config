@@ -678,6 +678,12 @@
                         "-o ControlMaster=auto -o ControlPersist=yes"))
     #+END_SRC
 
+*** Electric Pairs
+
+    #+BEGIN_SRC emacs-lisp
+      (add-hook 'prog-mode-hook #'electric-pair-local-mode)
+    #+END_SRC
+
 ** Utility Functions
 *** Recursive files
 

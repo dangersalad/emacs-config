@@ -507,6 +507,8 @@ See also `newline-and-indent'."
                   "-o ControlPath=/tmp/ssh-ControlPath-%%r@%%h:%%p "
                   "-o ControlMaster=auto -o ControlPersist=yes"))
 
+(add-hook 'prog-mode-hook #'electric-pair-local-mode)
+
 (defun directory-files-recursive(directory &optional match)
   "Get all files in DIRECTORY recursivley.
 There are three optional arguments:
