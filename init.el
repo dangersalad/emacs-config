@@ -1797,7 +1797,8 @@ _p_: previous
   :diminish (ivy-mode . "")
   :bind (("C-x C-b" . ivy-switch-buffer)
          :map ivy-minibuffer-map
-         ("C-'" . ivy-avy))
+         ("C-'" . ivy-avy)
+         ("C-e" . ivy-alt-done))
   :config
   (ivy-mode 1)
   ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
