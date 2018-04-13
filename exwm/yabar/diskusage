@@ -10,7 +10,7 @@ output=""
 
 okcount=0
 
-displaycutoff=50
+displaycutoff=75
 
 for dp in $partitions
 do
