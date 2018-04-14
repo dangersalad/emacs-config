@@ -2164,6 +2164,7 @@ It looks for archive files in /pkg/."
   :pin melpa-stable
   :config
   (setq web-mode-code-indent-offset 2)
+  (add-hook 'web-mode-hook #'electric-pair-local-mode)
   (with-eval-after-load 'flycheck
     (flycheck-add-mode 'javascript-eslint 'web-mode))
   (with-eval-after-load 'eslint-fix
