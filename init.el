@@ -1554,7 +1554,7 @@ Special commands:
       (define-key map (kbd "C-g") 'magit-status)
       (define-key map "l" 'magit-list-repositories)
       (define-key map "f" 'magit-fetch-current)
-      (define-key map "!" 'magit-blame-mode)
+      (define-key map "!" 'magit-blame)
       (define-key map "c" 'magit-checkout)
       (define-key map (kbd "C-r") 'magit-rebase-step)
       (define-key map (kbd "C-f") 'magit-pull)
@@ -1569,7 +1569,14 @@ Special commands:
   (define-key global-map (kbd "C-c g") my-git-command-map)
   (define-key global-map (kbd "C-c C-g") my-git-command-map)
 
-  (setq global-magit-file-mode t)
+  (define-key magit-mode-map [remap previous-line] 'magit-previous-line)
+  (define-key magit-mode-map [remap next-line] 'magit-next-line)
+
+
+  (setq global-magit-file-mode        t
+        magit-log-highlight-keywords  t
+        magit-diff-highlight-keywords t)
+
   (add-hook 'magit-popup-mode-hook
             (lambda()
               (fit-window-to-buffer))))
