@@ -2738,34 +2738,18 @@ If it is not an X window, delete the window unless it is the only one."
              (string= exwm-class-name "Termite"))
         (exwm-input-set-local-simulation-keys
          '(
-           ([?\C-c ?\C-c] . ?\C-c)
+           ([?\C-b] . left)
+           ([?\M-b] . C-left)
+           ([?\C-f] . right)
+           ([?\M-f] . C-right)
+           ([?\C-p] . up)
+           ([?\C-n] . down)
+           ([?\C-a] . [?\C-a])
+           ([?\C-e] . [?\C-e])
+           ([?\C-d] . [?\C-d])
            ([?\C-w] . [?\C-\S-x])
            ([?\M-w] . [?\C-\S-c])
-           ([?\C-y] . [?\C-\S-v])))
-      (exwm-input-set-local-simulation-keys
-       '(
-         ;; movement
-         ([?\C-b] . left)
-         ([?\M-b] . C-left)
-         ([?\C-f] . right)
-         ([?\M-f] . C-right)
-         ([?\C-p] . up)
-         ([?\C-n] . down)
-         ([?\C-a] . home)
-         ([?\C-e] . end)
-         ([?\M-v] . prior)
-         ([?\C-v] . next)
-         ([?\C-d] . delete)
-         ([?\C-k] . (S-end ?\C-x))
-         ;; cut/paste.
-         ([?\C-w] . ?\C-x)
-         ([?\M-w] . ?\C-c)
-         ([?\C-y] . ?\C-v)
-         ;; undo/redo
-         ([?\C-/] . ?\C-z)
-         ([?\C-?] . ?\C-\S-z)
-         ;; search
-         ([?\C-s] . ?\C-f)))))
+           ([?\C-y] . [?\C-\S-v])))))
 
   (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite))
 
