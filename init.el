@@ -1748,7 +1748,7 @@ Special commands:
       (switch-window)))
   :bind (("C-x o" . ds/switch-window))
   :config
-  (setq switch-window-threshold 2)
+  (setq switch-window-threshold 6)
   (setq switch-window-increase 4)
   ;(setq switch-window-input-style 'minibuffer)
   )
