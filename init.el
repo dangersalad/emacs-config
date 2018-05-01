@@ -1825,7 +1825,16 @@ _p_: previous
   ;; configure regexp engine.
   (setq ivy-re-builders-alist
         ;; allow input not in order
-        '((t . ivy--regex-fuzzy))))
+        '((t . ivy--regex-fuzzy)))
+
+  (add-hook
+   'ivy-mode-hook
+   (lambda ()
+     (zenburn-with-color-variables
+       (set-face-attribute 'ivy-subdir nil :foreground zenburn-blue-1 :background nil :weight 'bold)
+       (set-face-attribute 'ivy-remote nil :foreground zenburn-red-1 :background nil :weight 'bold)
+       (set-face-attribute 'ivy-current-match nil :foreground nil :background zenburn-bg+3 :box zenburn-blue :underline nil))))
+  )
 
 (use-package ivy-hydra
   :ensure t
@@ -2306,6 +2315,7 @@ It looks for archive files in /pkg/."
 
 (use-package pdf-tools
   :ensure t
+  :pin melpa
   :config
   (pdf-tools-install))
 
