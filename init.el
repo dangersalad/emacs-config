@@ -109,6 +109,8 @@ tangled, and the tangled file is compiled."
        (equal major-mode 'markdown-mode)
        (equal major-mode 'makefile-gmake-mode)
        (equal major-mode 'picture-mode)
+       (equal major-mode 'gl-conf-mode)
+       (equal major-mode 'nginx-mode)
        (equal major-mode 'org-mode)
        (equal major-mode 'org-journal-mode))
       `no-indent'
@@ -1585,6 +1587,11 @@ Special commands:
   :ensure t
   :pin melpa-stable)
 
+(use-package gl-conf-mode
+  :ensure t
+  :pin melpa
+  :defer t)
+
 (use-package window-purpose
   :ensure t
   :pin melpa-stable
@@ -1875,6 +1882,9 @@ the command to launch it."
   (add-hook 'sql-interactive-mode-hook
             (lambda ()
               (toggle-truncate-lines t))))
+
+(use-package nginx-mode
+  :ensure t)
 
 (use-package lsp-mode
   :ensure t

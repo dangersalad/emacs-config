@@ -189,6 +189,8 @@
              (equal major-mode 'markdown-mode)
              (equal major-mode 'makefile-gmake-mode)
              (equal major-mode 'picture-mode)
+             (equal major-mode 'gl-conf-mode)
+             (equal major-mode 'nginx-mode)
              (equal major-mode 'org-mode)
              (equal major-mode 'org-journal-mode))
             `no-indent'
@@ -1926,6 +1928,13 @@
        :pin melpa-stable)
    #+END_SRC
 
+   #+BEGIN_SRC emacs-lisp
+     (use-package gl-conf-mode
+       :ensure t
+       :pin melpa
+       :defer t)
+   #+END_SRC
+
 ** Window Purpose
 
    #+BEGIN_SRC emacs-lisp
@@ -2294,6 +2303,12 @@
                    (toggle-truncate-lines t))))
    #+END_SRC
 
+** Nginx
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package nginx-mode
+       :ensure t)
+   #+END_SRC
 
 * Programming Packages
 
