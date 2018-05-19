@@ -1917,6 +1917,7 @@ the command to launch it."
 
 (use-package flycheck
   :ensure t
+  :demand t
   :init
   (defun ds/toggle-flycheck-errors ()
     (interactive)
@@ -1960,6 +1961,12 @@ the command to launch it."
         (ds/kill-flycheck-popup)))
 
   )
+
+(use-package flycheck-pos-tip
+  :ensure t
+  :after flycheck
+  :config
+  (flycheck-pos-tip-mode))
 
 (use-package company
   :ensure t
