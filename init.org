@@ -2311,6 +2311,16 @@
        :ensure t)
    #+END_SRC
 
+** Direnv
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package direnv
+       :ensure
+       :config
+       (direnv-mode)
+       (add-hook 'eshell-before-prompt-hook #'direnv-update-directory-environment)))
+   #+END_SRC
+
 * Programming Packages
 
 ** LSP

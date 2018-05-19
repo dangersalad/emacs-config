@@ -1887,6 +1887,12 @@ the command to launch it."
 (use-package nginx-mode
   :ensure t)
 
+(use-package direnv
+  :ensure
+  :config
+  (direnv-mode)
+  (add-hook 'eshell-before-prompt-hook #'direnv-update-directory-environment)))
+
 (use-package lsp-mode
   :ensure t
   :config
