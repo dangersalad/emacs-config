@@ -1891,7 +1891,7 @@ the command to launch it."
   :ensure
   :config
   (direnv-mode)
-  (add-hook 'eshell-before-prompt-hook #'direnv-update-directory-environment))
+  (add-hook 'eshell-directory-change-hook #'direnv-update-directory-environment))
 
 (use-package lsp-mode
   :ensure t
