@@ -1891,7 +1891,7 @@ the command to launch it."
   :ensure
   :config
   (direnv-mode)
-  (add-hook 'eshell-before-prompt-hook #'direnv-update-directory-environment)))
+  (add-hook 'eshell-before-prompt-hook #'direnv-update-directory-environment))
 
 (use-package lsp-mode
   :ensure t
@@ -1954,42 +1954,12 @@ the command to launch it."
             (ds/kill-flycheck-popup)))))
 
 
-  ;; (defun ds/flycheck-close-unused-list (&rest _)
-  ;;   (if (and (get-buffer flycheck-error-list-buffer)
-  ;;            (not (equal (buffer-name) flycheck-error-list-buffer))
-  ;;            (not (equal (buffer-name)
-  ;;                        (with-current-buffer flycheck-error-list-buffer
-  ;;                          flycheck-error-list-source-buffer))))
-  ;;       (if (not (bound-and-true-p flycheck-mode))
-  ;;           (ds/kill-flycheck-popup)
-  ;;         (if (not flycheck-enabled-checkers)
-  ;;             (ds/kill-flycheck-popup)))))
   (defun ds/flycheck-close-unused-list (&rest _)
     (if (and (not (equal (buffer-name) flycheck-error-list-buffer))
              (not (bound-and-true-p flycheck-mode)))
         (ds/kill-flycheck-popup)))
 
-  ;; (remove-hook 'buffer-list-update-hook #'ds/flycheck-popup)
-  ;; (remove-hook 'buffer-list-update-hook #'ds/flycheck-close-unused-list)
-  ;; (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-popup)
-  ;; (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-status-line)
   )
-
-(use-package flycheck-popup-tip
-  :ensure t
-  :config
-  (custom-set-variables
-   '(flycheck-popup-tip-error-prefix "> "))
-  (with-eval-after-load 'flycheck
-    (flycheck-popup-tip-mode)))
-
-(use-package flycheck-color-mode-line
-  :disabled
-  :ensure t
-  :pin melpa-stable
-  :config
-  (eval-after-load 'flycheck
-    '(add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)))
 
 (use-package company
   :ensure t
