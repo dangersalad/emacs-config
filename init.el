@@ -111,6 +111,7 @@ tangled, and the tangled file is compiled."
        (equal major-mode 'picture-mode)
        (equal major-mode 'gl-conf-mode)
        (equal major-mode 'nginx-mode)
+       (equal major-mode 'yaml-mode)
        (equal major-mode 'org-mode)
        (equal major-mode 'org-journal-mode))
       `no-indent'
