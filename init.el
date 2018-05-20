@@ -2909,6 +2909,7 @@ If it is not an X window, delete the window unless it is the only one."
 
 (use-package exwm
   :ensure t
+  :disabled
   :config
   ;; enable pinentry
   (pinentry-start t)
