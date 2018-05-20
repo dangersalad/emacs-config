@@ -21,7 +21,7 @@
   you save the ~init.org~ file, the ~init.el~ file will be tangled and
   compiled.
 
-  
+
 * Configuration
 
 ** Init
@@ -39,7 +39,8 @@
          ;; Avoid running hooks when tangling.
          (let ((prog-mode-hook nil))
            (org-babel-tangle)
-           (byte-compile-file (concat user-emacs-directory "init.el")))))
+                                             ;(byte-compile-file (concat user-emacs-directory "init.el"))
+           )))
 
      (add-hook 'after-save-hook 'ds/tangle-init)
    #+END_SRC
@@ -76,6 +77,8 @@
        (require 'use-package))
      ;; use-package should have these loaded
      (require 'diminish)
+     (use-package delight
+       :ensure t)
      (require 'bind-key)
    #+END_SRC
 
@@ -118,7 +121,7 @@
    Set the font
 
    #+BEGIN_SRC emacs-lisp
-     (add-to-list 'default-frame-alist '(font . "Input Mono-10"))
+     (add-to-list 'default-frame-alist '(font . "Monospace-12"))
    #+END_SRC
 
    Setup custom file
@@ -133,6 +136,34 @@
          (progn
            (load custom-file)))
    #+END_SRC
+
+** Macros
+*** Popup Window Width Setter
+
+    Use this for setting a width of a popup window in the
+    ~display-buffer-alist~ when using a side window.
+
+    #+BEGIN_SRC emacs-lisp
+      (defmacro ds/popup-thing-display-settings (BUFFER-NAME SIDE &optional SLOT SIZE)
+        `(add-to-list 'display-buffer-alist
+                      '(,(concat "\\`" (regexp-quote BUFFER-NAME) "\\'")
+                        (display-buffer-reuse-window
+                         display-buffer-in-side-window)
+                        (side            . ,SIDE)
+                        ,(if SLOT `(slot            . ,SLOT))
+                        (reusable-frames)
+                        (inhibit-switch-frame . t)
+                        ,(if SIZE
+                             (if (or (equal SIDE 'top)
+                                     (equal SIDE 'bottom))
+                                 `(window-height . ,SIZE)
+                               `(window-width   . ,(if (< SIZE 1) SIZE
+                                                     `(lambda (win)
+                                                        (if (or (< (window-width win) ,SIZE)
+                                                                (not (or (window-in-direction 'above win t)
+                                                                         (window-in-direction 'below win t))))
+                                                            (ds/set-window-column-width ,SIZE win))))))))))
+    #+END_SRC
 
 ** Basic Customizations
 *** Indentation
@@ -157,6 +188,10 @@
              (equal major-mode 'python-mode)
              (equal major-mode 'markdown-mode)
              (equal major-mode 'makefile-gmake-mode)
+             (equal major-mode 'picture-mode)
+             (equal major-mode 'gl-conf-mode)
+             (equal major-mode 'nginx-mode)
+             (equal major-mode 'yaml-mode)
              (equal major-mode 'org-mode)
              (equal major-mode 'org-journal-mode))
             `no-indent'
@@ -231,24 +266,48 @@
 
 *** Compiling
 
+    Special display rules for compile buffer
+
+    #+BEGIN_SRC emacs-lisp
+      (ds/popup-thing-display-settings "*compilation*" right 2 104)
+    #+END_SRC
+
     Close compilation windows after 2 seconds if they are successful
 
     #+BEGIN_SRC emacs-lisp
       (setq compilation-finish-functions
             '((lambda (buf str)
-                (if (null (string-match ".*exited abnormally.*" str))
-                    ;;no errors, make the compilation window go away in a few seconds
-                    (progn
+                (message "compilation %s" str)
+                (if (eq 0 (string-match-p "^finished$" str))
+                    (let ((project-root (if (projectile-project-p) (projectile-project-root) nil)))
                       (run-at-time
-                       "2 sec" nil 'delete-windows-on
+                       2 nil 'delete-windows-on
                        (get-buffer-create "*compilation*"))
-                      (message "No Compilation Errors!"))))))
+                      (if project-root
+                        (run-at-time
+                         2.01 nil 'projectile-vc project-root)))))))
     #+END_SRC
 
     Make compile window auto-scroll
 
     #+BEGIN_SRC emacs-lisp
       (setq compilation-scroll-output t)
+    #+END_SRC
+
+    Delete window on ~q~ in compilation window
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package compile
+        :config
+        (define-key compilation-mode-map (kbd "q") #'delete-window))
+    #+END_SRC
+
+*** Ediff
+    
+    #+BEGIN_SRC emacs-lisp
+      (use-package ediff
+        :config
+        (setq ediff-window-setup-function #'ediff-setup-windows-plain))
     #+END_SRC
 
 *** Eshell
@@ -258,21 +317,18 @@
     #+BEGIN_SRC emacs-lisp
       (use-package eshell
         :config
-        (defun ds/setup-eshell-autosuggest ()
-          (with-eval-after-load 'company
-            (setq-local company-backends '(company-eshell-autosuggest company-elisp))
-            (setq-local company-idle-delay 0)))
-
-        (with-eval-after-load 'company
-          (add-hook 'eshell-mode-hook #'ds/setup-eshell-autosuggest))
-
         (setenv "PAGER" "cat")
+
+        ;; add "pin" to the list of words for detecting password entry from eshell
+        (push "pin" password-word-equivalents)
+        (setq eshell-password-prompt-regexp (format "\\(%s\\).*:\\s *\\'" (regexp-opt password-word-equivalents)))
 
         (setq eshell-scroll-to-bottom-on-input 'all
               eshell-error-if-no-glob t
               eshell-hist-ignoredups t
               eshell-save-history-on-exit t
               eshell-prefer-lisp-functions nil
+              eshell-history-size 2048
               eshell-destroy-buffer-when-process-dies t)
 
         (add-hook 'eshell-mode-hook
@@ -282,8 +338,129 @@
                     (add-to-list 'eshell-visual-commands "ssh")
                     (add-to-list 'eshell-visual-commands "tail")
                     (add-to-list 'eshell-visual-commands "top")
+                    (add-to-list 'eshell-visual-commands "htop")
                     (zenburn-with-color-variables
-                      (set-face-attribute 'eshell-prompt-face nil :foreground zenburn-fg :weight 'normal)))))
+                      (set-face-attribute 'eshell-prompt-face nil :foreground zenburn-fg :weight 'normal))))
+
+        ;; share history after every command
+        (setq eshell-save-history-on-exit nil)
+
+        (defun ds/eshell-append-history ()
+          "Call `eshell-write-history' with the `append' parameter set to `t'."
+          (when eshell-history-ring
+            (let ((newest-cmd-ring (make-ring 1)))
+              (ring-insert newest-cmd-ring (car (ring-elements eshell-history-ring)))
+              (let ((eshell-history-ring newest-cmd-ring))
+                (eshell-write-history eshell-history-file-name t)))))
+
+        (add-hook 'eshell-pre-command-hook #'ds/eshell-append-history))
+    #+END_SRC
+
+    Autosuggest like my zsh setup
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package esh-autosuggest
+        :ensure t
+        :config
+        (defun ds/esh-autosuggest-setup ()
+          (make-variable-buffer-local 'company-require-match)
+          (set-variable 'company-require-match nil)
+          (face-remap-add-relative 'company-preview-common 'ds/esh-autosuggest-face))
+
+        (add-hook 'eshell-mode-hook #'esh-autosuggest-mode)
+        (add-hook 'eshell-mode-hook #'ds/esh-autosuggest-setup))
+    #+END_SRC
+
+    More completions
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package pcmpl-args
+        :ensure t
+        :demand t
+        :config
+
+        ;; ============================================================
+        ;;
+        ;; pacman completion
+        ;;
+        ;; ============================================================
+        (defvar pcomplete-pacman-installed-packages
+          (split-string (shell-command-to-string "pacman -Qq"))
+          "p-completion candidates for `pacman' regarding installed packages")
+
+        (defvar pcomplete-pacman-web-packages
+          (split-string (shell-command-to-string "pacman -Slq"))
+          "p-completion candidates for `pacman' regarding packages on the web")
+
+        (defun pcomplete/pacman ()
+          "Completion rule for the `pacman' command."
+          (pcomplete-opt "DFQRSUilos")
+          (cond ((pcomplete-test "-[DRQ][a-z]*")
+                 (pcomplete-here pcomplete-pacman-installed-packages))
+                ((pcomplete-test "-[FS][a-z]*")
+                 (pcomplete-here pcomplete-pacman-web-packages))
+                (t (pcomplete-here (pcomplete-entries)))))
+
+        ;; ============================================================
+        ;;
+        ;; pacaur completion
+        ;;
+        ;; ============================================================
+        (defvar pcomplete-pacaur-installed-packages
+          (split-string (shell-command-to-string "pacaur -Qq"))
+          "p-completion candidates for `pacaur' regarding installed packages")
+
+        (defvar pcomplete-pacaur-web-packages
+          (split-string (shell-command-to-string "pacaur -Slq"))
+          "p-completion candidates for `pacaur' regarding packages on the web")
+
+        (defun pcomplete/pacaur ()
+          "Completion rule for the `pacaur' command."
+          (pcomplete-opt "DFQRSUilos")
+          (cond ((pcomplete-test "-[DRQ][a-z]*")
+                 (pcomplete-here pcomplete-pacaur-installed-packages))
+                ((pcomplete-test "-[FS][a-z]*")
+                 (let ((search (pcomplete-arg)))
+                   (message search)
+                   (if (< (length search) 3)
+                       (pcomplete-here pcomplete-pacaur-web-packages)
+                     (pcomplete-here (append (split-string
+                                              (shell-command-to-string (concat "pacaur -sq " search)))
+                                             pcomplete-pacaur-web-packages)))))
+                (t (pcomplete-here (pcomplete-entries)))))
+
+        ;; ============================================================
+        ;;
+        ;; systemctl completion
+        ;;
+        ;; ============================================================
+        (defcustom pcomplete-systemctl-commands
+          '("disable" "enable" "status" "start" "restart" "stop" "daemon-reload")
+          "p-completion candidates for `systemctl' main commands"
+          :type '(repeat (string :tag "systemctl command"))
+          :group 'pcomplete)
+
+        (defvar pcomplete-systemd-units
+          (split-string
+           (shell-command-to-string
+            "(systemctl list-units --all --full --no-legend;systemctl list-unit-files --full --no-legend)|while read -r a b; do echo \" $a\";done;"))
+          "p-completion candidates for all `systemd' units")
+
+        (defvar pcomplete-systemd-user-units
+          (split-string
+           (shell-command-to-string
+            "(systemctl list-units --user --all --full --no-legend;systemctl list-unit-files --user --full --no-legend)|while read -r a b;do echo \" $a\";done;"))
+          "p-completion candidates for all `systemd' user units")
+
+        (defun pcomplete/systemctl ()
+          "Completion rules for the `systemctl' command."
+          (pcomplete-here (append pcomplete-systemctl-commands '("--user")))
+          (cond ((pcomplete-test "--user")
+                 (pcomplete-here pcomplete-systemctl-commands)
+                 (pcomplete-here pcomplete-systemd-user-units))
+                ((pcomplete-test "daemon-reload")
+                 (pcomplete-here))
+                (t (pcomplete-here pcomplete-systemd-units)))))
     #+END_SRC
 
     Prompt setup for eshell
@@ -291,11 +468,15 @@
     #+BEGIN_SRC emacs-lisp
       (use-package dash
         :ensure t
+        :demand t
         :config
         (use-package s
           :ensure t
+          :demand t
           :config
           (use-package eshell
+            :commands (eshell/pwd)
+            :demand t
             :init
 
             (defvar ds/eshell-sep " | "
@@ -430,6 +611,22 @@
             )))
     #+END_SRC
 
+*** Ansi Term
+    
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/ansi-term-handle-close ()
+        "Close current term buffer when `exit' from term buffer."
+        (when (ignore-errors (get-buffer-process (current-buffer)))
+          (set-process-sentinel (get-buffer-process (current-buffer))
+                                (lambda (proc change)
+                                  (when (string-match "\\(finished\\|exited\\)" change)
+                                    (kill-buffer (process-buffer proc))
+                                    (if (not (= (length (window-list)) 1))
+                                        (delete-window)))))))
+
+      (add-hook 'term-mode-hook #'ds/ansi-term-handle-close)
+    #+END_SRC
+    
 *** Shell Highlighting
 
     Add this to highlight more stuff in ~sh-mode~
@@ -458,6 +655,16 @@
 
       (add-hook 'sh-mode-hook 'sh-script-extra-font-lock-activate)
     #+END_SRC
+    
+    Use shell mode for various files
+
+    #+BEGIN_SRC emacs-lisp
+      (add-to-list 'auto-mode-alist '("PKGBUILD$" . sh-mode))
+      (add-to-list 'auto-mode-alist '("zshrc$" . sh-mode))
+      (add-to-list 'auto-mode-alist '("zshenv$" . sh-mode))
+      (add-to-list 'auto-mode-alist '("zprofile$" . sh-mode))
+
+    #+END_SRC
 
 *** Set mark for accidental ~M-v~ press
 
@@ -465,13 +672,29 @@
       (add-function :before (symbol-function 'scroll-down-command) #'push-mark)
     #+END_SRC
 
+*** Tramp
+
+    #+BEGIN_SRC emacs-lisp
+      (setq tramp-ssh-controlmaster-options
+                      (concat
+                        "-o ControlPath=/tmp/ssh-ControlPath-%%r@%%h:%%p "
+                        "-o ControlMaster=auto -o ControlPersist=yes"))
+    #+END_SRC
+
+*** Electric Pairs
+
+    #+BEGIN_SRC emacs-lisp
+      (add-hook 'prog-mode-hook #'electric-pair-local-mode)
+    #+END_SRC
+
 ** Utility Functions
+*** Recursive files
 
-   A function to get files in a directory recursively, this is used in
-   the ~org-agenda~ config to add all the files in ~$HOME/org/agenda~
-   and it's subfolders
+    A function to get files in a directory recursively, this is used in
+    the ~org-agenda~ config to add all the files in ~$HOME/org/agenda~
+    and it's subfolders
 
-   #+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
      (defun directory-files-recursive(directory &optional match)
        "Get all files in DIRECTORY recursivley.
      There are three optional arguments:
@@ -505,12 +728,13 @@
                (setq file-list (cons file-name file-list)))))
            (setq current-dir-list (cdr current-dir-list)))
          file-list))
-   #+END_SRC
+    #+END_SRC
 
+*** Full Buffer Indent
 
-   A function to indent the entire buffer, bound to ~C-\~
+    A function to indent the entire buffer, bound to ~C-\~
 
-   #+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
 
      (defun ds/indent-buffer ()
        "Indent entire buffer using `indent-according-to-mode'."
@@ -533,13 +757,15 @@
          (indent-region (region-beginning) (region-end))))
 
      (global-set-key (kbd "C-c \\") 'ds/indent-buffer)
-   #+END_SRC
+    #+END_SRC
 
-   A function that makes a variable local to the buffer and sets it's
-   value in one step
+*** Local Variables
+
+    A function that makes a variable local to the buffer and sets it's
+    value in one step
 
 
-   #+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
      (defun set-local-variable (varname value)
        "Make a variable VARNAME local to the buffer if needed, then set to VALUE."
        (interactive "vVariable Name: \nsNew Value: ")
@@ -548,12 +774,14 @@
          (if (and (= 0 number) (not (string-equal "0" value)))
              (set-variable varname value)
            (set-variable varname number))))
-   #+END_SRC
+    #+END_SRC
 
-   A function to toggle a serif font for a buffer, but still keep
-   "code" in that buffer monospaced
+*** Serif Toggle
+
+    A function to toggle a serif font for a buffer, but still keep
+    "code" in that buffer monospaced
    
-   #+BEGIN_SRC emacs-lisp
+    #+BEGIN_SRC emacs-lisp
      (defvar ds/serif-preserve-default-list nil
        "A list holding the faces that preserve the default family and height when TOGGLE-SERIF is used.")
      (defvar ds/preserve-default-cookies-list nil
@@ -623,23 +851,170 @@
                     (setq ds/default-cookie nil)
                     (setq ds/preserve-default-cookies-list nil)
                     (message "Restored default fonts."))))))
-   #+END_SRC
+    #+END_SRC
 
-   A function to get an eslint executable for linting javascript. This
-   should use the local instance installed in ~node_modules~ over any
-   globally installed eslint package
+*** Project Eslint Finder
 
-   #+BEGIN_SRC emacs-lisp
-     (defun ds/use-eslint-from-node-modules ()
-       (let* ((root (locate-dominating-file
-                     (or (buffer-file-name) default-directory)
-                     "node_modules"))
-              (eslint (and root
-                           (expand-file-name "node_modules/eslint/bin/eslint.js"
-                                             root))))
-         (when (and eslint (file-executable-p eslint))
-           (setq-local flycheck-javascript-eslint-executable eslint))))
-   #+END_SRC
+    A function to get an eslint executable for linting javascript. This
+    should use the local instance installed in ~node_modules~ over any
+    globally installed eslint package
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/find-eslint-executable ()
+        (let* ((root (locate-dominating-file
+                      (or (buffer-file-name) default-directory)
+                      "node_modules"))
+               (eslint-local (and root
+                                  (expand-file-name "node_modules/eslint/bin/eslint.js"
+                                                    root)))
+               (eslint-system (executable-find "eslint")))
+          (if (and (stringp eslint-local)
+                   (file-executable-p eslint-local))
+              eslint-local
+            eslint-system)))
+    #+END_SRC
+
+*** Set Window Size
+
+    Set a window's width in pixels
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/set-window-pixel-width (pixel-width &optional window)
+        "Set the WINDOW to PIXEL-WIDTH pixels wide"
+        (interactive "nNew Pixel Width: ")
+        (let* ((win (or window (selected-window)))
+               (current-width (window-pixel-width win))
+               (wanted-delta (- pixel-width current-width))
+               (delta (window-resizable win wanted-delta t nil t)))
+          (window-resize win delta t nil t)))
+    #+END_SRC
+
+    Set window width in columns
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/set-window-column-width (column-width &optional window)
+        "Set the WINDOW to COLUMN-WIDTH columns wide"
+        (interactive "nNew Column Width: ")
+        (let* ((win (or window (selected-window)))
+               (current-width (window-width win))
+               (wanted-delta (- column-width current-width))
+               (delta (window-resizable win wanted-delta t)))
+          (message "%s %d -> %d (%d)" win current-width column-width delta)
+          (window-resize win delta t)))
+    #+END_SRC
+
+    Set a window's height in pixels
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/set-window-pixel-height (pixel-height &optional window)
+        "Set the WINDOW to PIXEL-HEIGHT pixels wide"
+        (interactive "nNew Pixel Height: ")
+        (let* ((win (or window (selected-window)))
+               (current-height (window-pixel-height win))
+               (wanted-delta (- pixel-height current-height))
+               (delta (window-resizable win wanted-delta nil nil t)))
+          (window-resize win delta nil nil t)))
+    #+END_SRC
+
+    Set window height in columns
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/set-window-column-height (column-height &optional window)
+        "Set the WINDOW to COLUMN-HEIGHT columns wide"
+        (interactive "nNew Column Height: ")
+        (let* ((win (or window (selected-window)))
+               (current-height (window-height win))
+               (wanted-delta (- column-height current-height))
+               (delta (window-resizable win wanted-delta)))
+          (message "%s %d -> %d (%d)" win current-height column-height delta)
+          (window-resize win delta)))
+    #+END_SRC
+
+    Set a window's ratio
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/set-window-ratio (&optional win width height horizontal)
+        "Set WIN size ratio in pixels based on WIDTH and HEIGHT, optionally resize HORIZONTAL."
+        (interactive "i\nnWidth: \nnHeight: \nSHorizontal: ")
+        (let* ((padding 19)
+               (win (or win (selected-window)))
+               (w (float (or width 16)))
+               (h (float (or height 9)))
+               (ratio (/ w h))
+               (original-size (if horizontal
+                                  (window-width win t)
+                                (- (window-pixel-height win) padding)))
+               (reference-size (if horizontal
+                                   (- (window-pixel-height win) padding)
+                                 (window-width win t)))
+               (new-size (if horizontal
+                             (truncate (* reference-size ratio))
+                           (truncate (* reference-size (/ 1 ratio)))))
+               (delta (- new-size original-size)))
+          (message "%s %f reference: %d current: %d -> new: %d (delta: %d)" horizontal ratio reference-size original-size new-size delta)
+          (if horizontal
+              (ds/set-window-pixel-width new-size win)
+            (ds/set-window-pixel-height (+ new-size padding) win))))
+    #+END_SRC
+
+*** Clear the minibuffer
+
+    "Clear" the minibuffer
+
+    #+BEGIN_SRC emacs-lisp
+     (defun ds/clear-minibuffer (&rest _)
+       (message nil))
+    #+END_SRC
+
+*** Bitcoin
+    
+    Get blockchain sync status printerd in minibuffer
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/blockchain-sync-status ()
+        (interactive)
+        (with-temp-buffer
+          (call-process "bitcoin-cli" nil t t "getblockchaininfo")
+          (let* ((json (json-read-from-string (buffer-string)))
+                 (blocks (alist-get 'blocks json))
+                 (total-blocks (alist-get 'headers json))
+                 (completion (truncate (* 100 (/ (float blocks) (float total-blocks))))))
+            (message "%s%% completed (%s/%s)" completion blocks total-blocks))))
+    #+END_SRC
+
+*** Alignment
+
+    #+BEGIN_SRC emacs-lisp
+      (defun align-repeat (start end regexp)
+          "Repeat alignment with respect to 
+           the given regular expression."
+          (interactive "r\nsAlign regexp: ")
+          (align-regexp start end 
+              (concat "\\(\\s-*\\)" regexp) 1 1 t))
+    #+END_SRC
+
+*** Case Toggle
+
+    #+BEGIN_SRC emacs-lisp
+      (defun ds/toggle-camelcase-underscores ()
+        "Toggle between camelcase and underscore notation for the symbol at point."
+        (interactive)
+        (save-excursion
+          (let* ((bounds (bounds-of-thing-at-point 'symbol))
+                 (start (car bounds))
+                 (end (cdr bounds))
+                 (currently-using-underscores-p (progn (goto-char start)
+                                                       (re-search-forward "_" end t))))
+            (if currently-using-underscores-p
+                (progn
+                  (upcase-initials-region start end)
+                  (replace-string "_" "" nil start end)
+                  (downcase-region start (1+ start)))
+              (replace-regexp "\\([A-Z]\\)" "_\\1" nil (1+ start) end)
+              (downcase-region start (cdr (bounds-of-thing-at-point 'symbol)))))))
+
+      (global-set-key (kbd "C-c _") 'ds/toggle-camelcase-underscores)
+    #+END_SRC
 
 ** Fence Edit
 
@@ -971,11 +1346,12 @@
    #+BEGIN_SRC emacs-lisp
      (use-package zenburn-theme
        :ensure t
-       :demand
+       :demand t
        :init
        (defvar zenburn-colors-alist
          '(("zenburn-fg+1"     . "#FFFFEF")
            ("zenburn-fg"       . "#DCDCCC")
+           ("zenburn-fg-05"    . "#989888")
            ("zenburn-fg-1"     . "#656555")
            ("zenburn-bg-2"     . "#000000")
            ("zenburn-bg-1"     . "#0C0C0C")
@@ -1024,30 +1400,26 @@
        :config
        (load-theme 'zenburn t)
 
+       (make-face 'ds/esh-autosuggest-face)
 
        ;; default face customizations
        (zenburn-with-color-variables
          ;; darker region selection
-         (set-face-attribute 'region nil :background zenburn-bg-2)
+         (set-face-attribute 'region nil :background "#3c3c45" :inverse-video t)
          ;; flat mode and header lines
          (set-face-attribute 'header-line nil :background zenburn-bg+1 :box nil)
          (set-face-attribute 'mode-line nil :background zenburn-bg+1 :box nil)
-         (set-face-attribute 'mode-line-inactive nil :foreground zenburn-bg+3 :background zenburn-bg+05 :box nil)
+         (set-face-attribute 'mode-line-inactive nil :foreground zenburn-bg+3 :background zenburn-bg+1 :box nil)
          (set-face-attribute 'fringe nil :background zenburn-bg+1)
          ;; italic comments
          (set-face-attribute 'font-lock-comment-face nil :slant 'italic)
          ;; eldoc function face
          (set-face-attribute 'eldoc-highlight-function-argument nil :foreground zenburn-blue-1)
          ;; set the verticle border color
-         (set-face-attribute 'vertical-border nil :foreground zenburn-bg-1))
-
-       ;; powerline colors
-       (with-eval-after-load 'powerline
-         (zenburn-with-color-variables
-           (set-face-attribute 'powerline-active1 nil :background zenburn-bg+05 :foreground zenburn-green+1)
-           (set-face-attribute 'powerline-active2 nil :background zenburn-bg+1 :foreground zenburn-green+1)
-           (set-face-attribute 'powerline-inactive1 nil :background zenburn-bg+05 :foreground zenburn-bg+3)
-           (set-face-attribute 'powerline-inactive2 nil :background zenburn-bg+05 :foreground zenburn-bg+3)))
+         (set-face-attribute 'vertical-border nil :foreground zenburn-bg-1)
+         (set-face-attribute 'ds/esh-autosuggest-face nil
+                                :foreground zenburn-fg-1
+                                :background zenburn-bg))
 
        ;; flycheck use straight underline instead of wave
        (with-eval-after-load 'flycheck
@@ -1093,27 +1465,296 @@
        (with-eval-after-load 'avy
          (zenburn-with-color-variables
            (set-face-attribute 'avy-background-face nil :foreground zenburn-fg-1 :background zenburn-bg-1)
-           (set-face-attribute 'avy-lead-face-0 nil :foreground zenburn-fg+1 :background zenburn-blue-5)
-           (set-face-attribute 'avy-lead-face-1 nil :foreground zenburn-fg+1 :background zenburn-bg-2)
-           (set-face-attribute 'avy-lead-face-2 nil :foreground zenburn-fg+1 :background zenburn-blue-4)
-           (set-face-attribute 'avy-lead-face nil :foreground zenburn-fg+1 :background zenburn-red-4)))
+           (set-face-attribute 'avy-lead-face-0 nil :foreground zenburn-blue-1 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight 'normal :slant 'italic)
+           (set-face-attribute 'avy-lead-face-1 nil :foreground zenburn-green-2 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight 'normal :slant 'italic)
+           (set-face-attribute 'avy-lead-face-2 nil :foreground zenburn-yellow-4 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight 'normal :slant 'italic)
+           (set-face-attribute 'avy-lead-face nil :foreground zenburn-red-1 :background zenburn-bg :box `(:line-width -2 :color ,zenburn-fg) :weight 'normal :slant 'italic)))
 
        (with-eval-after-load 'ivy
          (zenburn-with-color-variables
-           (set-face-attribute 'ivy-current-match nil :foreground zenburn-fg+1 :background zenburn-bg+3 :box zenburn-blue :underline nil)
            (set-face-attribute 'ivy-subdir nil :foreground zenburn-blue-1 :background nil :weight 'bold)
+           (set-face-attribute 'ivy-remote nil :foreground zenburn-red-1 :background nil :weight 'bold)
+           (set-face-attribute 'ivy-current-match nil :foreground nil :background zenburn-bg+3 :box zenburn-blue :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-1 nil :background nil :box zenburn-green-1 :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-2 nil :background nil :box zenburn-green-1 :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-3 nil :background nil :box zenburn-red-1 :underline nil)
            (set-face-attribute 'ivy-minibuffer-match-face-4 nil :background nil :box zenburn-yellow-1 :underline nil))))
    #+END_SRC
 
+** Powerline
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package powerline
+       :ensure t
+       :demand t
+       :after zenburn-theme
+       :init
+       (defmacro ds/powerline-sep (TYPE DIR FACE1 FACE2)
+         `(,(intern (format "powerline-%s-%s" TYPE DIR)) ,FACE1 ,FACE2 powerline-height))
+
+       (defmacro ds/powerline-widget (SEP FACE FUNC &optional DIRS PADDING &rest ARGS)
+         (let* ((dir-left (cond ((equal DIRS 'left) 'left)
+                                ((equal DIRS 'right) 'right)
+                                (DIRS 'right)
+                                (t 'left)))
+                (dir-right (cond ((equal DIRS 'left) 'left)
+                                 ((equal DIRS 'right) 'right)
+                                 (DIRS 'left)
+                                 (t 'right)))
+                (sep-left `(ds/powerline-sep ,SEP ,dir-left 'mode-line ,FACE))
+                (sep-right `(ds/powerline-sep ,SEP ,dir-right ,FACE 'mode-line))
+                (widget ()))
+           (if PADDING
+               (push `(powerline-raw " " 'mode-line) widget))
+           (push sep-right widget)
+           (if ARGS
+               (push `(,FUNC ,@ARGS ,FACE) widget)
+             (push `(,FUNC ,FACE) widget))
+           (push sep-left widget)
+           (if PADDING
+               (push `(powerline-raw " " 'mode-line) widget))
+           `(list ,@widget)))
+
+       (defmacro ds/powerline-tab (FACE FUNC &rest ARGS)
+         `(ds/powerline-widget chamfer ,FACE ,FUNC t nil ,@ARGS))
+
+       (defmacro ds/powerline-button (FACE FUNC &rest ARGS)
+         `(ds/powerline-widget bar ,FACE ,FUNC t t ,@ARGS))
+
+       (defmacro ds/powerline-tag (SEP DIR FACE FUNC &rest ARGS)
+         `(ds/powerline-widget ,SEP ,FACE ,FUNC ,DIR nil ,@ARGS))
+
+
+
+       (defmacro ds/powerline-section (SEP DIR &rest PARTS)
+         (let* ((section '())
+                (last-face 'mode-line)
+                (last-was-tag))
+           (dolist (part PARTS)
+             (let ((face (car part))
+                   (face-section ())
+                   (is-tag (member ':tag (cdr part))))
+               ;; if this is a tag, add a buffer of modeline face around this
+               (if is-tag
+                   (progn
+                     ;; if the last section was not a tag, add in the initial separator
+                     (if (not last-was-tag)
+                         (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,last-face 'mode-line)))))
+                     ;; always put in a sep from modeline to tag face
+                     (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR 'mode-line ,face)))))
+                 ;; if this is not a tag, pu in a sep that goes from the last face to this face
+                 (setq face-section `(,@face-section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,last-face ,face)))))
+               (dolist (thing (cdr part))
+                 (when (and thing (listp thing))
+                   (let* ((has-test (plist-member thing ':cond))
+                          (prefix (or (plist-get thing ':prefix) " "))
+                          (prefix (if (equal "" prefix) nil prefix))
+                          (suffix (plist-get thing ':suffix))
+                          (test (plist-get thing ':cond))
+                          (cmd (or (plist-get thing ':cmd) 'powerline-raw))
+                          (args (plist-get thing ':args)))
+                     (when (or (not has-test) (eval test))
+                       (if prefix (setq face-section `(,@face-section ,(if has-test `(if ,test (powerline-raw ,prefix ,face)) `(powerline-raw ,prefix ,face)))))
+                       (setq face-section `(,@face-section ,(if has-test `(if ,test (,cmd ,@args ,face)) `(,cmd ,@args ,face))))
+                       (if suffix (setq face-section `(,@face-section ,(if has-test `(if ,test (powerline-raw ,suffix ,face)) `(powerline-raw ,suffix ,face)))))))))
+               (when (> (length face-section) (if is-tag (if last-was-tag 2 3) 1))
+                 (setq section `(,@section ,@face-section (powerline-raw " " ,face)))
+                 (if is-tag
+                     (setq section `(,@section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,face 'mode-line)))))
+                 (setq last-face (if is-tag 'mode-line face)))
+               (setq last-was-tag is-tag)))
+           (setq section `(,@section ,(macroexpand `(ds/powerline-sep ,SEP ,DIR ,last-face 'mode-line))))
+           `(list ,@section)))
+
+       (defvar ds/powerline-breakpoint-small 820
+         "Small breakpoint for powerline.")
+       (defvar ds/powerline-breakpoint-medium 1080
+         "Small breakpoint for powerline.")
+
+       (zenburn-with-color-variables
+         (defface ds/powerline-green
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-green-2 :inherit mode-line)))
+           "Powerline Green."
+           :group 'powerline)
+         (defface ds/powerline-blue
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-blue-5 :inherit mode-line)))
+           "Powerline Blue."
+           :group 'powerline)
+         (defface ds/powerline-red
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-red-4 :inherit mode-line)))
+           "Powerline Red."
+           :group 'powerline)
+         (defface ds/powerline-yellow
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-yellow-4 :inherit mode-line)))
+           "Powerline Yellow."
+           :group 'powerline)
+         (defface ds/powerline-orange
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-orange :inherit mode-line)))
+           "Powerline Orange."
+           :group 'powerline)
+         (defface ds/powerline-cyan
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-cyan :inherit mode-line)))
+           "Powerline Cyan."
+           :group 'powerline)
+         (defface ds/powerline-magenta
+           `((t (:foreground ,zenburn-bg-2 :background ,zenburn-magenta :inherit mode-line)))
+           "Powerline Magenta."
+           :group 'powerline)
+         (defface ds/powerline-gray
+           `((t (:foreground ,zenburn-fg-05 :background ,zenburn-bg+2 :inherit mode-line)))
+           "Powerline Gray."
+           :group 'powerline)
+         (defface ds/powerline-light-gray
+           `((t (:foreground ,zenburn-fg :background ,zenburn-bg+3 :inherit mode-line)))
+           "Powerline Light Gray."
+           :group 'powerline)
+         (defface ds/powerline-inactive
+           `((t (:foreground ,zenburn-bg+3 :background ,zenburn-bg+1 :italic :inherit mode-line-inactive)))
+           "Powerline Inacive."
+           :group 'powerline))
+
+       (defun powerline-flycheck-face ()
+         "Function to select appropriate face based on `flycheck-has-current-errors-p'."
+         (if (bound-and-true-p flycheck-mode)
+             (let* ((face (cond ((flycheck-has-current-errors-p 'error)
+                                 'ds/powerline-red)
+                                ((flycheck-has-current-errors-p 'warning)
+                                 'ds/powerline-yellow)
+                                ((flycheck-has-current-errors-p 'info)
+                                 'ds/powerline-blue))))
+               (if (facep face) face
+                 (if (> (length flycheck-enabled-checkers) 0)
+                     'ds/powerline-green
+                   'ds/powerline-light-gray)))
+           'ds/powerline-light-gray))
+
+       (defun ds/extract-tramp-target (conn-type &optional part)
+       (save-match-data
+         (let ((dirname (eshell/pwd)))
+           (and (string-match (concat conn-type ":\\([^@|:]+\\)@?\\([^@|:]*\\)") dirname)
+                (let ((user (match-string 1 dirname))
+                      (host (match-string 2 dirname)))
+                  (cond ((equal part 'user) user)
+                        ((equal part 'host) host)
+                        ((equal part 'all) (concat user "@" host))))))))
+
+       :config
+
+       (defun ds/powerline-theme ()
+         "Setup the default mode-line."
+         (interactive)
+         (setq-default mode-line-format
+                       '("%e"
+                         (:eval
+                          (let* (;; size info
+                                 (width (window-pixel-width))
+                                 (is-small (< width ds/powerline-breakpoint-small))
+                                 (is-medium (and (>= width ds/powerline-breakpoint-small)
+                                                 (< width ds/powerline-breakpoint-medium)))
+                                 (is-large (>= (window-pixel-width) ds/powerline-breakpoint-medium))
+                                 ;; window status
+                                 (active (powerline-selected-window-active))
+                                 (is-exwm-window (equal major-mode 'exwm-mode))
+                                 ;; faces
+                                 (mode-line (if active 'mode-line 'mode-line-inactive))
+                                 (inner-face (if active 'ds/powerline-gray 'ds/powerline-inactive))
+                                 (flycheck-face (if active (powerline-flycheck-face) 'ds/powerline-inactive))
+                                 (notification-face (if active 'ds/powerline-blue 'ds/powerline-inactive))
+                                 (tramp-ssh-face (if active
+                                                     (if (equal "root" (ds/extract-tramp-target "ssh" 'user))
+                                                         'ds/powerline-yellow
+                                                       'ds/powerline-green)
+                                                   'ds/powerline-inactive))
+                                 (tramp-su-face (if active 'ds/powerline-yellow 'ds/powerline-inactive))
+                                 (tramp-sudo-face (if active 'ds/powerline-red 'ds/powerline-inactive))
+                                 ;; tramp detection
+                                 (tramp-ssh (string-match "ssh:" (eshell/pwd)))
+                                 (tramp-sudo (string-match "sudo:" (eshell/pwd)))
+                                 (tramp-su (string-match "su:" (eshell/pwd)))
+                                 (is-tramp (or tramp-ssh tramp-sudo tramp-su))
+                                 ;; mode filtering
+                                 (active-modes (mapc (lambda (mode)
+                                                       (condition-case nil
+                                                           (if (and (symbolp mode) (symbol-value mode))
+                                                               (add-to-list 'active-modes mode))
+                                                         (error nil) ))
+                                                     minor-mode-list))
+                                 ;; left side
+                                 (lhs (ds/powerline-section
+                                        arrow left
+                                        (mode-line
+                                         (:args (" ") :prefix "")
+                                         (:cond (not is-exwm-window) :args ("%*") :prefix "")
+                                         (:cond (and (not is-exwm-window)
+                                                     is-large)
+                                                :cmd powerline-buffer-size)
+                                         (:cond (and (not is-exwm-window)
+                                                     is-large)
+                                                :args (mode-line-mule-info)))
+                                        (tramp-ssh-face
+                                         :tag
+                                         (:cond tramp-ssh :args ((concat
+                                                                  "SSH "
+                                                                  (ds/extract-tramp-target "ssh" 'all)))))
+                                        (tramp-su-face
+                                         :tag
+                                         (:cond tramp-su :args ((concat
+                                                                 "SU "
+                                                                 (ds/extract-tramp-target "su" 'user)))))
+                                        (tramp-sudo-face
+                                         :tag
+                                         (:cond tramp-sudo :args ((concat
+                                                                   "SUDO "
+                                                                   (ds/extract-tramp-target "sudo" 'user)))))
+                                        (flycheck-face
+                                         (:cmd powerline-buffer-id :prefix "")
+                                         (:cond (and (boundp 'which-function-mode)
+                                                     which-function-mode
+                                                     is-large)
+                                                :args (which-func-format)
+                                                :prefix " / "))
+                                        (inner-face
+                                         (:cond (and (boundp 'erc-modified-channels-object) is-large)
+                                                :args (erc-modified-channels-object)
+                                                :prefix "")
+                                         (:cmd powerline-major-mode)
+                                         (:cond is-large :cmd powerline-process)
+                                         (:cond (or is-large is-medium) :cmd powerline-minor-modes)
+                                         (:cond is-large :cmd powerline-narrow))
+                                        (mode-line
+                                         (:cond (or is-large is-medium) :cmd powerline-vc :prefix ""))))
+                                 ;; right side
+                                 (rhs (ds/powerline-section
+                                       arrow right
+                                       (inner-face
+                                        (:cond (and (or (> (length global-mode-string) 1)
+                                                        (> (length (car global-mode-string)) 0))
+                                                    is-large)
+                                               :args (global-mode-string)))
+                                       (notification-face
+                                        (:cond eosd-notification-list :args ((format " %d" (length eosd-notification-list)))))
+                                       (flycheck-face
+                                        (:cond (not is-exwm-window) :args ("%l %c")))
+                                       (mode-line
+                                        (:cond (not is-exwm-window) :args ("%p"))
+                                        (:args (" ") :prefix "")))))
+                                 (concat (powerline-render lhs)
+                                         (powerline-fill mode-line (powerline-width rhs))
+                                         (powerline-render rhs)))))))
+
+       (defun ds/powerline-set-height ()
+         (setq powerline-height (frame-char-size)))
+
+       (add-hook 'after-init-hook #'ds/powerline-set-height)
+
+       (ds/powerline-theme))
+   #+END_SRC
+
 ** Try
 
    #+BEGIN_SRC emacs-lisp
      (use-package try
-       :ensure t
-       :pin melpa-stable)
+       :ensure t)
    #+END_SRC
 
 ** Fontawesome
@@ -1204,7 +1845,7 @@
        :pin melpa-stable
        :bind (("C-x l" . linum-relative-toggle))
        :diminish linum-relative-mode
-       :demand
+       :demand t
        :init
        (defvar linum-relative-current-symbol "")
        (defvar linum-relative-format "%3s "))
@@ -1251,7 +1892,7 @@
            (define-key map (kbd "C-g") 'magit-status)
            (define-key map "l" 'magit-list-repositories)
            (define-key map "f" 'magit-fetch-current)
-           (define-key map "!" 'magit-blame-mode)
+           (define-key map "!" 'magit-blame)
            (define-key map "c" 'magit-checkout)
            (define-key map (kbd "C-r") 'magit-rebase-step)
            (define-key map (kbd "C-f") 'magit-pull)
@@ -1265,8 +1906,15 @@
 
        (define-key global-map (kbd "C-c g") my-git-command-map)
        (define-key global-map (kbd "C-c C-g") my-git-command-map)
+  
+       (define-key magit-mode-map [remap previous-line] 'magit-previous-line)
+       (define-key magit-mode-map [remap next-line] 'magit-next-line)
 
-       (setq global-magit-file-mode t)
+
+       (setq global-magit-file-mode        t
+             magit-log-highlight-keywords  t
+             magit-diff-highlight-keywords t)
+  
        (add-hook 'magit-popup-mode-hook
                  (lambda()
                    (fit-window-to-buffer))))
@@ -1279,6 +1927,13 @@
      (use-package git-timemachine
        :ensure t
        :pin melpa-stable)
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package gl-conf-mode
+       :ensure t
+       :pin melpa
+       :defer t)
    #+END_SRC
 
 ** Window Purpose
@@ -1296,7 +1951,8 @@
 
    #+BEGIN_SRC emacs-lisp
      (use-package hyperbole
-       :ensure t)
+       :ensure t
+       :disabled)
    #+END_SRC
 
 ** Org
@@ -1305,6 +1961,7 @@
      (use-package org
        :ensure org-plus-contrib
        :mode (("\\.org$" . org-mode))
+       :demand t
        :pin org
        :init
        (defvar org-directory "~/org" "Directory for org files.")
@@ -1335,11 +1992,16 @@
        (setq org-catch-invisible-edits t)
 
        (setq org-clock-idle-time 15)
-       (setq org-clock-mode-line-total 'today)
+       (setq org-clock-mode-line-total 'current)
+       (message "setting org clock face")
+       (add-hook 'org-clock-in-prepare-hook
+                 (lambda ()
+                   (set-face-attribute 'org-mode-line-clock nil :foreground nil :background nil :underline nil :box nil)))
+       (message "set org clock face")
        (setq org-log-into-drawer "LOGBOOK")
        (setq org-clock-into-drawer "LOGBOOK")
        (setq org-duration-format '(("h" . t) (special . 2)))
-       (setq org-src-window-setup 'reorganize-frame)
+       (setq org-src-window-setup 'current-window)
 
        ;; Resume clocking task when emacs is restarted
        (org-clock-persistence-insinuate)
@@ -1414,6 +2076,7 @@
    #+BEGIN_SRC emacs-lisp
      (use-package projectile
        :ensure t
+       ; :delight '(:eval (concat " " (projectile-project-name)))
        :pin melpa-stable
        :init
        (defvar projectile-remember-window-configs t)
@@ -1455,17 +2118,43 @@
      (use-package ace-window
        :ensure t
        :pin melpa-stable
-       :bind (("C-x o" . ace-window)))
+       :disabled
+       :bind (("C-x o" . ace-window))
+       :config
+       (setq aw-scope 'frame))
    #+END_SRC
    
+** Switch Window
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package switch-window
+       :ensure t
+       :init
+       (defun ds/switch-window (arg)
+         (interactive "P")
+         (if arg (switch-window-then-swap-buffer 0)
+           (switch-window)))
+       :bind (("C-x o" . ds/switch-window))
+       :config
+       (setq switch-window-threshold 6)
+       (setq switch-window-increase 4)
+       ;(setq switch-window-input-style 'minibuffer)
+       )
+   #+END_SRC
+
 ** Exec Path from Shell
 
    #+BEGIN_SRC emacs-lisp
      (use-package exec-path-from-shell
        :ensure t
-       :pin melpa-stable
+       :demand
        :config
-       (exec-path-from-shell-initialize))
+       (progn
+         (message "setting up exec path")
+         (exec-path-from-shell-initialize)
+         (exec-path-from-shell-copy-env "PATH")
+         (message "set up exec path")))
+
    #+END_SRC
 
 ** Flx
@@ -1502,9 +2191,12 @@
      (use-package avy
        :ensure t
        :pin melpa-stable
-       :bind (("C-c j j" . avy-goto-line)
+       :bind (("C-c j j" . avy-goto-char-in-line)
+              ("C-c j l" . avy-goto-line)
               ("C-c j w" . avy-goto-word-or-subword-1)
-              ("C-c j c" . avy-goto-char)))
+              ("C-c j c" . avy-goto-char))
+       :config
+       (setq avy-keys '(?t ?n ?s ?e)))
    #+END_SRC
 
 ** Smex
@@ -1520,12 +2212,13 @@
    #+BEGIN_SRC emacs-lisp
      (use-package ivy
        :ensure t
-       :demand
+       :demand t
        :pin melpa-stable
        :diminish (ivy-mode . "")
        :bind (("C-x C-b" . ivy-switch-buffer)
               :map ivy-minibuffer-map
-              ("C-'" . ivy-avy))
+              ("C-'" . ivy-avy)
+              ("C-e" . ivy-alt-done))
        :config
        (ivy-mode 1)
        ;; add ‘recentf-mode’ and bookmarks to ‘ivy-switch-buffer’.
@@ -1543,7 +2236,16 @@
        ;; configure regexp engine.
        (setq ivy-re-builders-alist
              ;; allow input not in order
-             '((t . ivy--regex-fuzzy))))
+             '((t . ivy--regex-fuzzy)))
+
+       (add-hook
+        'ivy-mode-hook
+        (lambda ()
+          (zenburn-with-color-variables
+            (set-face-attribute 'ivy-subdir nil :foreground zenburn-blue-1 :background nil :weight 'bold)
+            (set-face-attribute 'ivy-remote nil :foreground zenburn-red-1 :background nil :weight 'bold)
+            (set-face-attribute 'ivy-current-match nil :foreground nil :background zenburn-bg+3 :box zenburn-blue :underline nil))))
+       )
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
@@ -1557,11 +2259,21 @@
    #+BEGIN_SRC emacs-lisp
      (use-package counsel
        :ensure t
-       :pin melpa-stable
        :bind (("M-x" . counsel-M-x)
               ("C-x C-f" . counsel-find-file)
               :map read-expression-map
-              ("C-r" . counsel-minibuffer-history)))
+              ("C-r" . counsel-minibuffer-history))
+       :config
+       (push (concat (getenv "HOME") "/.local/share/applications/") counsel-linux-apps-directories)
+       (defun ds/counsel-linux-app-format-function (name comment exec)
+         "Default Linux application name formatter.
+     NAME is the name of the application, COMMENT its comment and EXEC
+     the command to launch it."
+         (format "% -45s %s"
+                 (propertize name 'face 'font-lock-builtin-face)
+                 (or comment "")))
+  
+       (setq counsel-linux-app-format-function #'ds/counsel-linux-app-format-function))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
@@ -1592,14 +2304,58 @@
                    (toggle-truncate-lines t))))
    #+END_SRC
 
+** Nginx
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package nginx-mode
+       :ensure t)
+   #+END_SRC
+
+** Direnv
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package direnv
+       :ensure
+       :config
+       (direnv-mode)
+       (add-hook 'eshell-directory-change-hook #'direnv-update-directory-environment))
+   #+END_SRC
+
 
 * Programming Packages
+
+** LSP
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package lsp-mode
+       :ensure t
+       :config
+
+       ;(require 'lsp-flycheck)
+
+       (use-package markdown-mode
+         :ensure t
+         :config
+         (use-package lsp-ui-flycheck
+           :ensure lsp-ui
+           :disabled
+           :config
+           (add-hook 'lsp-after-open-hook (lambda () (lsp-ui-flycheck-enable 1)))))
+
+       (use-package company-lsp
+         :disabled
+         :ensure t
+         :pin melpa
+         :config
+         (push 'company-lsp company-backends)))
+   #+END_SRC
 
 ** Flycheck
 
    #+BEGIN_SRC emacs-lisp
      (use-package flycheck
        :ensure t
+       :demand t
        :init
        (defun ds/toggle-flycheck-errors ()
          (interactive)
@@ -1616,65 +2372,42 @@
                      (append flycheck-disabled-checkers
                              '(javascript-jshint)))
        (setq flycheck-display-errors-delay 0.4)
+  
+       (defun ds/use-eslint-from-node-modules ()
+         (setq-local flycheck-javascript-eslint-executable (ds/find-eslint-executable)))
+
        (add-hook 'flycheck-mode-hook #'ds/use-eslint-from-node-modules)
 
-       (add-to-list 'display-buffer-alist
-                    `(,(rx bos "*Flycheck errors*" eos)
-                      (display-buffer-reuse-window
-                       display-buffer-in-side-window)
-                      (side            . bottom)
-                      (reusable-frames . visible)
-                      (window-height   . 0.1)))
-
-       (defun ds/flycheck-status-line ()
-         "Set status line color based on flycheck errors"
-         (copy-face 'mode-line 'ds/face/mode-line)
-         (if (/= (length flycheck-current-errors) 0)
-             (zenburn-with-color-variables
-               (set-face-attribute 'ds/face/mode-line nil :background zenburn-red-4))
-           (zenburn-with-color-variables
-             (set-face-attribute 'ds/face/mode-line nil :background zenburn-bg+1)))
-         (face-remap-add-relative 'mode-line '(ds/face/mode-line)))
+       (defun ds/kill-flycheck-popup ()
+         (if (get-buffer flycheck-error-list-buffer)
+             (kill-buffer flycheck-error-list-buffer)))
 
        (defun ds/flycheck-popup ()
-         (let ((errors (seq-filter
-                        (lambda (val) (eq (flycheck-error-level val) 'error))
-                        flycheck-current-errors)))
-           (if errors (flycheck-list-errors)
-             ;; if there are no errors, hide the flycheck popup buffer
-             (ds/kill-flycheck-popup))))
+         (if (and (bound-and-true-p flycheck-mode)
+                  flycheck-enabled-checkers)
+             (let ((errors (seq-filter
+                            (lambda (val) (eq (flycheck-error-level val) 'error))
+                            flycheck-current-errors)))
+               (if errors (flycheck-list-errors)
+                 ;; if there are no errors, hide the flycheck popup buffer
+                 (ds/kill-flycheck-popup)))))
+
 
        (defun ds/flycheck-close-unused-list (&rest _)
-         (if (or (and (not flycheck-enabled-checkers)
-                      (bufferp flycheck-error-list-buffer))
-                 (not (bound-and-true-p flycheck-mode)))
+         (if (and (not (equal (buffer-name) flycheck-error-list-buffer))
+                  (not (bound-and-true-p flycheck-mode)))
              (ds/kill-flycheck-popup)))
 
-       (add-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-popup)
-       ;; (remove-hook 'flycheck-after-syntax-check-hook #'ds/flycheck-status-line)
        )
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
-     (use-package flycheck-popup-tip
+     (use-package flycheck-pos-tip
        :ensure t
+       :after flycheck
        :config
-       (custom-set-variables
-        '(flycheck-popup-tip-error-prefix "> "))
-       (with-eval-after-load 'flycheck
-         (flycheck-popup-tip-mode)))
-   #+END_SRC
+       (flycheck-pos-tip-mode))
 
-   The mode line coloring is disabled for now
-
-   #+BEGIN_SRC emacs-lisp
-     (use-package flycheck-color-mode-line
-       :disabled
-       :ensure t
-       :pin melpa-stable
-       :config
-       (eval-after-load 'flycheck
-         '(add-hook 'flycheck-mode-hook 'flycheck-color-mode-line-mode)))
    #+END_SRC
 
 ** Completion
@@ -1690,43 +2423,7 @@
        (setq company-search-regexp-function #'company-search-flex-regexp)
        (setq company-tooltip-limit 20) ; bigger popup window
        (setq company-idle-delay .4)    ; decrease delay before autocompletion popup shows
-       (setq company-echo-delay 0)    ; remove annoying blinking
-
-       (use-package eshell
-       :init
-       (defvar eshell-history-ring nil)
-       ;; add completion frontends for eshell
-       (defun company-eshell-autosuggest-candidates (prefix)
-         (let* ((history
-                 (delete-dups
-                  (mapcar (lambda (str)
-                            (string-trim (substring-no-properties str)))
-                          (ring-elements eshell-history-ring))))
-                (most-similar (cl-find-if
-                               (lambda (str)
-                                 (string-prefix-p prefix str))
-                               history)))
-           (when most-similar
-             `(,most-similar))))
-
-       (defun company-eshell-autosuggest--prefix ()
-         (let ((prefix
-                (string-trim-left
-                 (buffer-substring-no-properties
-                  (save-excursion
-                    (eshell-bol))
-                  (save-excursion (end-of-line) (point))))))
-           (if (not (string-empty-p prefix))
-               prefix
-             'stop)))
-
-       (defun company-eshell-autosuggest (command &optional arg &rest ignored)
-         (interactive (list 'interactive))
-         (cl-case command
-           (interactive (company-begin-backend 'company-eshell))
-           (prefix (and (eq major-mode 'eshell-mode)
-                        (company-eshell-autosuggest--prefix)))
-           (candidates (company-eshell-autosuggest-candidates arg))))))
+       (setq company-echo-delay 0))    ; remove annoying blinking
    #+END_SRC
    
 ** Commenter
@@ -1775,6 +2472,43 @@
        :bind (:map go-mode-map
                    ("C-c D" . godoc-at-point))
        :config
+       (defun ds/setup-cgo-32 ()
+         "Setup local environment for the buffer so flycheck can still work.
+     This will break go-vet, so you may want to disable it."
+         (interactive)
+         (set (make-local-variable 'process-environment)
+              (append '("CGO_CFLAGS_ALLOW=-m32" "GOBIN=" "CGO_ENABLED=1" "GOARCH=386") process-environment)))
+
+       (defun ds/go-packages-native ()
+         "Return a list of all installed Go packages.
+     It looks for archive files in /pkg/."
+         (sort
+          (delete-dups
+           (cl-mapcan
+            (lambda (pkgdir)
+              (cl-mapcan (lambda (dir)
+                           (mapcar (lambda (file)
+                                     (let ((sub (substring file (length pkgdir) -2)))
+                                       (mapconcat #'identity (cdr (split-string sub "/")) "/")))
+                                   (if (file-directory-p dir)
+                                       (directory-files dir t "\\.a$")
+                                     (if (string-match-p "\\.a$" dir)
+                                         `(,dir)))))
+                         (if (file-directory-p pkgdir)
+                             (append (directory-files pkgdir t "\\.a$") (go--directory-dirs pkgdir)))))
+            (apply 'append
+                   (mapcar (lambda (dir)
+                             (delete nil (let ((pkgdir (concat dir "/pkg")))
+                                           (mapcar (lambda (sub)
+                                                     (unless (or (string-match-p
+                                                                  "\\(dep\\|race\\|dyn\\|shared\\|include\\|obj\\|tool\\)"
+                                                                  sub)
+                                                                 (member sub '("." ".."))) (concat pkgdir "/" sub)))
+                                                   (directory-files pkgdir nil nil t))))) (go-root-and-paths)))))
+          #'string<))
+
+       (setq go-packages-function #'ds/go-packages-native)
+
        (defun ds/go-hook ()
          "Hook for go-mode."
          ;; call gofmt for every save
@@ -1797,7 +2531,14 @@
    
    #+BEGIN_SRC emacs-lisp
      (use-package go-scratch
-       :ensure t)
+       :ensure t
+       :config
+       (defun ds/goscratch-display-output-buffer (&rest _)
+         (let ((scratch-buf (get-buffer go-scratch-outbuf)))
+           (if scratch-buf (display-buffer-below-selected scratch-buf nil))))
+
+       (add-function :after (symbol-function 'go-scratch-eval-buffer) #'ds/goscratch-display-output-buffer)
+       (add-function :after (symbol-function 'go-scratch--run-sentinal) #'ds/clear-minibuffer))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
@@ -1809,6 +2550,14 @@
        (add-hook 'go-mode-hook (lambda ()
                                  (set (make-local-variable 'company-backends) '(company-go))
                                  (company-mode))))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package lsp-go
+       :disabled
+       :ensure t
+       :config
+       (add-hook 'go-mode-hook 'lsp-go-enable))
    #+END_SRC
 
 ** YAML
@@ -1845,17 +2594,38 @@
        (setq-default js2-strict-missing-semi-warning nil))
    #+END_SRC
 
+   LSP (still not working...)
+
    #+BEGIN_SRC emacs-lisp
-     (use-package eslint-fix
+     (use-package lsp-javascript-typescript
+       :disabled
        :ensure t
-       :pin melpa-stable
+       :config
+       (add-hook 'js-mode-hook #'lsp-javascript-typescript-enable))
+   #+END_SRC
+
+   #+BEGIN_SRC emacs-lisp
+     (defun eslint-fix ()
+       "Format the current file with ESLint."
+       (interactive)
+       (let ((eslint (ds/find-eslint-executable)))
+         (if eslint
+             (progn (call-process eslint nil "*ESLint Errors*" nil "--fix" buffer-file-name)
+                    (revert-buffer t t t))
+           (message "ESLint not found."))))
+
+     (use-package js
        :config
        (add-hook 'js-mode-hook
-                  (lambda ()
-                    (add-hook 'after-save-hook 'eslint-fix nil t)))
+                 (lambda ()
+                   (add-hook 'after-save-hook 'eslint-fix nil t)))
+       (add-hook 'web-mode-hook
+                 (lambda ()
+                   (add-hook 'after-save-hook 'eslint-fix nil t)))
        (add-hook 'vue-mode-hook
-                  (lambda ()
-                    (add-hook 'after-save-hook 'eslint-fix nil t))))
+                 (lambda ()
+                   (add-hook 'after-save-hook 'eslint-fix nil t))))
+
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
@@ -1883,13 +2653,14 @@
                (:type style :name less :mode less-css-mode)
                (:type style :name scss :mode css-mode)
                (:type style :name sass :mode ssass-mode)))
-       (add-to-list 'auto-mode-alist '("\\.vue\\'" . vue-mode)))
+       (add-to-list 'auto-mode-alist '("\\.vue\\'" . web-mode)))
    #+END_SRC
 
    #+BEGIN_SRC emacs-lisp
      (use-package json-mode
        :ensure t
-       :pin melpa-stable)
+       :config
+       (add-to-list 'auto-mode-alist '("package\\.json\\'" . json-mode)))
    #+END_SRC
 
 ** Web Mode (php+html+javascript)
@@ -1943,7 +2714,27 @@
                         :predicate buffer-file-name)))))
    #+END_SRC
 
-   
+** Elisp
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package srefactor
+       :ensure t
+       :config
+       (use-package srefactor-lisp
+         :bind (:map emacs-lisp-mode-map
+                     ("C-c M-q" . srefactor-lisp-format-sexp)
+                     :map lisp-interaction-mode-map
+                     ("C-c M-q" . srefactor-lisp-format-sexp))))
+   #+END_SRC
+
+   Use electric pairs for this
+
+   #+BEGIN_SRC emacs-lisp
+     (add-hook 'emacs-lisp-mode-hook #'electric-pair-local-mode)
+     (add-hook 'lisp-interaction-mode-hook #'electric-pair-local-mode)
+   #+END_SRC
+
+
 * Applications
 
   Packages that are sort of "apps" on their own or interact with other
@@ -2045,8 +2836,10 @@
    #+BEGIN_SRC emacs-lisp
      (use-package kubernetes
        :ensure t
+       :demand t
        :commands (kubernetes-overview)
        :config
+       (ds/popup-thing-display-settings "*kubernetes logs*" top 0 0.33)
        (setq kubernetes-poll-frequency 5))
    #+END_SRC
 
@@ -2055,11 +2848,738 @@
    #+BEGIN_SRC emacs-lisp
      (use-package pdf-tools
        :ensure t
+       :pin melpa
        :config
        (pdf-tools-install))
    #+END_SRC
 
+** Password Store
 
+   #+BEGIN_SRC emacs-lisp
+     (use-package pass
+       :ensure t
+       :config
+       (use-package password-store-otp
+         :ensure t
+         :init
+
+         (defun ds/password-store-get-otp (record)
+           (interactive (list (password-store--completing-read)))
+           (password-store-otp-token-copy record))
+
+         (defun ds/pass-sentinel (process evt)
+           (message "process %s evt %s" process evt)
+           (with-current-buffer (process-buffer process)
+             (if (equal evt "finished\n")
+                 (let ((password (car (s-lines (s-chomp (buffer-string))))))
+                   (kill-buffer)
+                   (password-store-clear)
+                   (kill-new password)
+                   (setq password-store-kill-ring-pointer kill-ring-yank-pointer)
+                   (message "Copied password to the kill ring. Will clear in %s seconds." (password-store-timeout))
+                   (setq password-store-timeout-timer
+                         (run-at-time (password-store-timeout) nil 'password-store-clear))))
+             (if (string-match-p "^exited abnormally" evt)
+                 (let ((err (s-chomp (buffer-string))))
+                   (kill-buffer)
+                   (error err)))))
+
+         :config
+
+         (defun password-store-copy (entry)
+           "Add password for ENTRY to kill ring.
+
+     Clear previous password from kill ring.  Pointer to kill ring is
+     stored in `password-store-kill-ring-pointer'.  Password is cleared
+     after `password-store-timeout' seconds."
+           (interactive (list (password-store--completing-read)))
+           (make-process
+            :name "pass"
+            :buffer "pass-buffer"
+            :command `(,password-store-executable "show" ,entry)
+            :sentinel 'ds/pass-sentinel))
+
+         (use-package auth-password-store
+           :ensure t
+           :demand t
+           :config
+           (add-to-list 'auth-sources 'password-store t)
+           (auth-source-forget-all-cached))))
+   #+END_SRC
+   
+** REST Client
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package restclient
+       :ensure t
+       :config
+       (ds/popup-thing-display-settings "*HTTP Response*" left 0 0.25))
+   #+END_SRC
+
+
+* EXWM
+
+  Emacs as a window manager
+  
+  #+BEGIN_SRC emacs-lisp
+    (use-package exwm
+      :ensure t
+      :init
+      (defun ds/exwm-set-name ()
+        ;; (message "class: %s, instance: %s, title: %s, state: %s, type: %s" exwm-class-name exwm-instance-name exwm-title exwm-state exwm-window-type)
+        (exwm-workspace-rename-buffer exwm-class-name))
+      :config
+      ;; auto rename new X window buffers
+      (add-hook 'exwm-update-class-hook #'ds/exwm-set-name)
+      ;; hide the mode-line of floating X windows
+      (add-hook 'exwm-floating-setup-hook #'exwm-layout-hide-mode-line)
+      (add-hook 'exwm-floating-exit-hook #'exwm-layout-show-mode-line)
+      ;; 'C-s-n': Rename buffer
+      (exwm-input-set-key (kbd "C-s-n") #'rename-buffer)
+      ;; 'C-s-r': Reset
+      (exwm-input-set-key (kbd "C-s-r") #'exwm-reset)
+      ;; 'C-s-f': Toggle Fullscreen
+      (exwm-input-set-key (kbd "C-s-f") #'exwm-layout-toggle-fullscreen)
+      ;; do xinit stuff
+      (start-process "" nil (concat user-emacs-directory "exwm/bin/xinitscript"))
+      ;; disable flycheck for exwm buffers
+      (add-hook 'exwm-mode-hook (lambda () (flycheck-mode -1))))
+  #+END_SRC
+
+** Popup Macro
+
+   A macro to make a popup function for a specified buffer with
+   instructions to intialize it if it does not exist
+   
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       (defmacro ds/popup-thing (NAME BUFFER &rest BODY)
+         "Make a popup thing with function NAME buffer name BUFFER executing BODY to create."
+         (let* ((delete-func-sym (intern (concat (symbol-name NAME) "--delete"))))
+           `(progn
+              (defun ,delete-func-sym (&rest _)
+                (let ((current-popup (get-buffer-window ,BUFFER)))
+                  (if (and current-popup
+                           (> (length (window-list)) 1))
+                      (delete-window current-popup))))
+              (add-function :before (symbol-function 'exwm-workspace-switch) #',delete-func-sym)
+              (defun ,NAME ()
+                (interactive)
+                (let* ((win (selected-window))
+                       (current-popup (or (get-buffer-window ,BUFFER t)
+                                          (get-buffer-window ,(concat " " BUFFER) t)))
+                       (popup-buf (or (get-buffer ,BUFFER)
+                                      (get-buffer ,(concat " " BUFFER))))
+                       (is-x-window (if popup-buf
+                                        (equal 'exwm-mode (with-current-buffer popup-buf major-mode)))))
+                  (if (equal win current-popup)
+                      (delete-window current-popup)
+                    (if current-popup
+                        (select-window current-popup)
+                      (if popup-buf
+                          (progn
+                            (if is-x-window
+                                (save-window-excursion
+                                  (with-current-buffer popup-buf
+                                    (exwm-workspace-move-window exwm-workspace--current exwm--id))))
+                            (pop-to-buffer popup-buf))
+                        (progn ,@BODY))))))))))
+   #+END_SRC
+
+** Workspaces
+
+   Set up 10 workspaces with keybindings
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :init
+       (defvar ds/exwm-previous-workspace nil
+         "Stores previous workspace when switching in exwm")
+       :config
+       (setq exwm-workspace-number 10)
+       ;; set up bindings to switch to workspaces
+       (dotimes (i 10)
+         (let* ((switch-binding (kbd (format "s-%d" i)))
+                (move-binding (kbd (format "C-s-%d" i))))
+           ;; use s-N to switch to a workspace number
+           (exwm-input-set-key switch-binding
+                               `(lambda ()
+                                  (interactive)
+                                  (exwm-workspace-switch-create ,i)))
+           ;; use C-s-N to move the current window to a workspace
+           (exwm-input-set-key move-binding
+                               `(lambda ()
+                                  (interactive)
+                                  (exwm-workspace-move-window ,i)
+                                  (select-frame-set-input-focus exwm-workspace--current))))))
+   #+END_SRC
+
+   Set up workspace back-and-forth like i3 using ~<s-tab>~
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :init
+       (defvar ds/exwm-previous-workspace nil
+         "Stores previous workspace when switching in exwm")
+       :config
+       (defun ds/exwm-mark-previous (&rest _)
+         "Save the current EXWM workspace index to `ds/exwm-previous-workspace'."
+         (setq ds/exwm-previous-workspace exwm-workspace-current-index))
+
+       (defun ds/exwm-workspace-toggle ()
+         "Switch back to the previously active EXWM workspace."
+         (interactive)
+         (exwm-workspace-switch ds/exwm-previous-workspace))
+       ;; (remove-function (symbol-function 'exwm-workspace-switch) #'ds/exwm-mark-previous)
+       (add-function :before (symbol-function 'exwm-workspace-switch) #'ds/exwm-mark-previous)
+
+       ;; use s-tab to switch workspaces back and forth
+       (exwm-input-set-key (kbd "<s-tab>") #'ds/exwm-workspace-toggle)
+
+       ;; fix magit for this key
+       (with-eval-after-load 'magit
+         (defun ds/exwm-fix-magit-workspace-toggle ()
+           (define-key magit-status-mode-map (kbd "<s-tab>") #'ds/exwm-workspace-toggle))
+         (add-hook 'magit-status-mode-hook #'ds/exwm-fix-magit-workspace-toggle)))
+   #+END_SRC
+
+** Launchers
+
+   Set up launcher
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       ;; 's-SPC': Launch application
+       (exwm-input-set-key (kbd "s-SPC") #'counsel-linux-app)
+       ;; 's-r': Run shell command
+       (exwm-input-set-key (kbd "s-r")
+                           (lambda (command)
+                             (interactive (list (read-shell-command "$ ")))
+                             (start-process-shell-command command nil command))))
+   #+END_SRC
+   
+** Windows
+
+   Set up windmove binding using "vim" keys
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       ;; wrap windows when moving with windmove
+       (setq windmove-wrap-around t)
+
+       ;; s-[arrows] to move windows
+       (exwm-input-set-key (kbd "<s-left>") #'windmove-left)
+       (exwm-input-set-key (kbd "<s-down>") #'windmove-down)
+       (exwm-input-set-key (kbd "<s-up>") #'windmove-up)
+       (exwm-input-set-key (kbd "<s-right>") #'windmove-right)
+
+       ;; s-[<>] to use `winner-mode'
+       (exwm-input-set-key (kbd "s-<") #'winner-undo)
+       (exwm-input-set-key (kbd "s->") #'winner-redo))
+   #+END_SRC
+
+   Set up bindings to resize windows
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :init
+       (defun ds/adjust-window-leading-edge (delta dir)
+         (let ((otherwin (window-in-direction dir))
+               (otherdelta (* -1 delta)))
+           (if otherwin
+               (adjust-window-trailing-edge otherwin otherdelta (equal dir 'left)))))
+
+       (defun ds/adjust-window-trailing-edge (delta dir)
+         (adjust-window-trailing-edge (selected-window) delta (equal dir 'right)))
+
+       (defun ds/exwm-window-resize--get-delta (delta default)
+         (abs (or delta default)))
+
+       (defun ds/exwm-window-grow-above (delta)
+         (interactive "P")
+         (ds/adjust-window-leading-edge (ds/exwm-window-resize--get-delta delta 5) 'above))
+
+       (defun ds/exwm-window-shrink-above (delta)
+         (interactive "P")
+         (ds/adjust-window-leading-edge (* -1 (ds/exwm-window-resize--get-delta delta 5)) 'above))
+
+       (defun ds/exwm-window-grow-below (delta)
+         (interactive "P")
+         (ds/adjust-window-trailing-edge (ds/exwm-window-resize--get-delta delta 5) 'below))
+
+       (defun ds/exwm-window-shrink-below (delta)
+         (interactive "P")
+         (ds/adjust-window-trailing-edge (* -1 (ds/exwm-window-resize--get-delta delta 5)) 'below))
+
+       (defun ds/exwm-window-grow-left (delta)
+         (interactive "P")
+         (ds/adjust-window-leading-edge (ds/exwm-window-resize--get-delta delta 10) 'left))
+
+       (defun ds/exwm-window-shrink-left (delta)
+         (interactive "P")
+         (ds/adjust-window-leading-edge (* -1 (ds/exwm-window-resize--get-delta delta 10)) 'left))
+
+       (defun ds/exwm-window-grow-right (delta)
+         (interactive "P")
+         (ds/adjust-window-trailing-edge (ds/exwm-window-resize--get-delta delta 10) 'right))
+
+       (defun ds/exwm-window-shrink-right (delta)
+         (interactive "P")
+         (ds/adjust-window-trailing-edge (* -1 (ds/exwm-window-resize--get-delta delta 10)) 'right))
+       :config
+       (exwm-input-set-key (kbd "<C-s-up>") #'ds/exwm-window-grow-above)
+       (exwm-input-set-key (kbd "<C-M-s-up>") #'ds/exwm-window-shrink-above)
+
+       (exwm-input-set-key (kbd "<C-s-down>") #'ds/exwm-window-grow-below)
+       (exwm-input-set-key (kbd "<C-M-s-down>") #'ds/exwm-window-shrink-below)
+
+       (exwm-input-set-key (kbd "<C-s-left>") #'ds/exwm-window-grow-left)
+       (exwm-input-set-key (kbd "<C-M-s-left>") #'ds/exwm-window-shrink-left)
+
+       (exwm-input-set-key (kbd "<C-s-right>") #'ds/exwm-window-grow-right)
+       (exwm-input-set-key (kbd "<C-M-s-right>") #'ds/exwm-window-shrink-right)
+
+       ;;resize to ratio
+       (exwm-input-set-key (kbd "s-=") #'ds/set-window-ratio)
+
+       (defun ds/exwm-to-16:9 ()
+         (interactive)
+         (ds/set-window-ratio nil 16 9 t))
+
+       (exwm-input-set-key (kbd "C-s-=") #'ds/exwm-to-16:9))
+   #+END_SRC
+
+   Listing and moving X windows only
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       (defun ds/exwm-list-x-windows ()
+         "Get list if all EXWM managed X windows."
+         (let ((names ()))
+           (dolist (pair exwm--id-buffer-alist)
+             (with-current-buffer (cdr pair)
+               ;; (setq names (append names `(,(replace-regexp-in-string "^ " "" (buffer-name)))))))
+               (setq names (append names `(,(buffer-name))))))
+           names))
+
+       (defun ds/exwm-switch-to-x-window (buffer-or-name)
+         "Switch to EXWM managed X window BUFFER-OR-NAME."
+         (interactive (list (completing-read "Select Window: " (ds/exwm-list-x-windows) nil t)))
+         (exwm-workspace-switch-to-buffer buffer-or-name))
+
+       (defun ds/exwm-bring-window-here (buffer-or-name)
+         "Move an EXWM managed X window BUFFER-OR-NAME to the current workspace."
+         (interactive (list (completing-read "Bring Window: " (ds/exwm-list-x-windows) nil t)))
+         (with-current-buffer buffer-or-name
+           (exwm-workspace-move-window exwm-workspace--current exwm--id)
+           (switch-to-buffer (exwm--id->buffer exwm--id))))
+
+       (exwm-input-set-key (kbd "s-d") #'ds/exwm-switch-to-x-window)
+
+       (exwm-input-set-key (kbd "C-s-d") #'ds/exwm-bring-window-here)
+
+       ;; alias the C-x o binding to s-o
+       (exwm-input-set-key (kbd "s-o") #'ds/switch-window)
+
+       ;; use C-s-o instead of C-u s-o for window swap
+       (exwm-input-set-key (kbd "C-s-o") '(lambda () (interactive) (ds/switch-window t))))
+   #+END_SRC
+
+   Closing windows
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       (defun ds/exwm-quit ()
+         "Close a window in EXWM.
+
+     If it is an X window, then kill the buffer.
+     If it is not an X window, delete the window unless it is the only one."
+         (interactive)
+         (if (equal major-mode 'exwm-mode)
+             (kill-buffer))
+         (if (> (length (window-list)) 1)
+             (delete-window)))
+       (exwm-input-set-key (kbd "C-s-q") #'ds/exwm-quit))
+   #+END_SRC
+
+** Terminals
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       ;; popup eshell
+       (ds/popup-thing ds/exwm-popup-shell "*Popup Shell*"
+                       (let ((eshell-buffer-name "*Popup Shell*"))
+                         (eshell t)))
+       (exwm-input-set-key (kbd "s-m") #'ds/exwm-popup-shell)
+
+       ;; rules for displaying the popup buffer
+       (ds/popup-thing-display-settings "*Popup Shell*" top -1 0.4)
+
+       ;; 's-return': Launch new eshell
+       (exwm-input-set-key (kbd "<s-return>")
+                           (lambda ()
+                             (interactive)
+                             (eshell t)))
+
+       ;; 'C-s-return': Launch new Termite window
+       (exwm-input-set-key (kbd "<C-s-return>")
+                           (lambda ()
+                             (interactive)
+                             (start-process-shell-command "termite" nil "termite"))))
+   #+END_SRC
+
+** Popups
+*** Telegram
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        (ds/popup-thing ds/exwm-popup-telegram "TelegramDesktop"
+                        (start-process-shell-command "telegram" nil "telegram-desktop"))
+
+        (ds/popup-thing-display-settings "TelegramDesktop" right -1 135)
+
+        (exwm-input-set-key (kbd "<s-f1>") #'ds/exwm-popup-telegram))
+    #+END_SRC
+
+*** Mattermost
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        (ds/popup-thing ds/exwm-popup-mattermost "Mattermost"
+                        (start-process-shell-command "mattermost" nil "mattermost-desktop"))
+
+        (ds/popup-thing-display-settings "Mattermost" right 0 135)
+
+        (exwm-input-set-key (kbd "<s-f2>") #'ds/exwm-popup-mattermost))
+    #+END_SRC
+
+*** Pavucontrol
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        (ds/popup-thing ds/exwm-popup-pavucontrol "Pavucontrol"
+                        (start-process-shell-command "pavucontrol" nil "pavucontrol"))
+
+        (ds/popup-thing-display-settings "Pavucontrol" bottom 0 30)
+
+        (exwm-input-set-key (kbd "<s-f3>") #'ds/exwm-popup-pavucontrol))
+    #+END_SRC
+
+*** gnus
+    
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        ;; popup eshell
+        (ds/popup-thing ds/exwm-popup-gnus "*Group*" (gnus))
+        (exwm-input-set-key (kbd "s-g") #'ds/exwm-popup-gnus))
+    #+END_SRC
+    
+*** Flycheck errors
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        ;; popup eshell
+        (ds/popup-thing ds/exwm-popup-flycheck "*Flycheck errors*" (flycheck-list-errors))
+        (ds/popup-thing-display-settings "*Flycheck errors" bottom 0 0.1)
+        (exwm-input-set-key (kbd "s-e") #'ds/exwm-popup-flycheck))
+    #+END_SRC
+
+** Volume Control
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       (exwm-input-set-key (kbd "<XF86AudioRaiseVolume>")
+                           (lambda ()
+                             (interactive)
+                             (start-process "volume-up" nil (executable-find "pulseaudio-ctl") "up")))
+
+       (exwm-input-set-key (kbd "<XF86AudioLowerVolume>")
+                           (lambda ()
+                             (interactive)
+                             (start-process "volume-down" nil (executable-find "pulseaudio-ctl") "down")))
+
+       (exwm-input-set-key (kbd "<XF86AudioMute>")
+                           (lambda ()
+                             (interactive)
+                             (start-process "volume-mute" nil (executable-find "pulseaudio-ctl") "mute"))))
+   #+END_SRC
+
+** Simulation Keys
+
+*** Default
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        (setq exwm-input-simulation-keys
+         '(
+           ;; movement
+           ([?\C-b] . left)
+           ([?\M-b] . C-left)
+           ([?\C-f] . right)
+           ([?\M-f] . C-right)
+           ([?\C-p] . up)
+           ([?\C-n] . down)
+           ([?\C-a] . home)
+           ([?\C-e] . end)
+           ([?\M-v] . prior)
+           ([?\C-v] . next)
+           ([?\C-d] . delete)
+           ([?\C-k] . (S-end ?\C-x))
+           ;; cut/paste.
+           ([?\C-w] . ?\C-x)
+           ([?\M-w] . ?\C-c)
+           ([?\C-y] . ?\C-v)
+           ;; undo/redo
+           ([?\C-/] . ?\C-z)
+           ([?\C-?] . ?\C-\S-z)
+           ;; search
+           ([?\C-s] . ?\C-f))))
+    #+END_SRC
+
+*** Termite
+
+    #+BEGIN_SRC emacs-lisp
+      (use-package exwm
+        :ensure t
+        :config
+        (defun ds/exwm-keyrules-termite ()
+          (if (and exwm-class-name
+                   (string= exwm-class-name "Termite"))
+              (exwm-input-set-local-simulation-keys
+               '(
+                 ([?\C-b] . left)
+                 ([?\M-b] . [?\M-b])
+                 ([?\C-f] . right)
+                 ([?\M-f] . [?\M-f])
+                 ([?\C-p] . up)
+                 ([?\C-n] . down)
+                 ([?\C-a] . [?\C-a])
+                 ([?\C-e] . [?\C-e])
+                 ([?\C-d] . [?\C-d])
+                 ([?\C-w] . [?\C-\S-x])
+                 ([?\M-w] . [?\C-\S-c])
+                 ([?\C-y] . [?\C-\S-v])))))
+
+        (add-hook 'exwm-manage-finish-hook #'ds/exwm-keyrules-termite))
+    #+END_SRC
+
+** RandR
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm-randr
+       :demand t
+       :after exwm
+       :init
+       (defun ds/display-connected-p (name)
+         "Test if display NAME is connected."
+         (let* ((test-string (format "%s connected" name))
+                (shell-cmd (format "xrandr | grep -o '^%s' | tr -d '\n'" test-string)))
+           (equal test-string (shell-command-to-string shell-cmd))))
+
+       (defun ds/list-displays ()
+         "List all displays this machine can handle."
+         (split-string
+          (shell-command-to-string
+           "xrandr | grep -Eo '^[A-Za-z0-9-]+ (dis)?connected' | awk '{print $1}' | tr '\n' ' '")))
+
+       (defun ds/laptop-display-name ()
+         "Get laptop internal display name ."
+         (shell-command-to-string
+          "xrandr | grep -Eo '^eDP[A-Za-z0-9-]+ connected' | awk '{print $1}' | tr -d '\n'"))
+
+       (defun ds/laptop-external-display-name ()
+         "Get laptop external display name ."
+         (shell-command-to-string
+          "xrandr | grep -Eo '^[^e][A-Za-z0-9-]+ connected' | awk '{print $1}' | tr -d '\n'"))
+
+       (defun ds/restart-bar ()
+         "Restart whatever bar is being used."
+         (interactive)
+         (start-process-shell-command
+          "startpanel" nil (expand-file-name (concat user-emacs-directory "exwm/bin/start-bar"))))
+
+       (defun ds/xrandr-other-displays-off (target)
+         "Get a string to run off all displays except for the TARGET."
+         (mapconcat
+          (lambda (d)
+            (concat "--output " d " --off"))
+          (seq-filter
+           (lambda (d)
+             (not (string= d target)))
+           (ds/list-displays))
+          " "))
+
+       (defun ds/connect-laptop-external ()
+         "Connect the laptop to it's external display, no display on laptop screen"
+         (interactive)
+         (start-process-shell-command
+          "xrandr" nil (concat "xrandr --output "
+                               (ds/laptop-external-display-name)
+                               " --primary --auto "
+                               (ds/xrandr-other-displays-off (ds/laptop-external-display-name))))
+         (ds/restart-bar))
+
+       (defun ds/disconnect-laptop-external ()
+         "Connect laptop display, no external display"
+         (interactive)
+         (start-process-shell-command
+          "xrandr" nil (concat "xrandr --output "
+                               (ds/laptop-display-name)
+                               " --primary --auto "
+                               (ds/xrandr-other-displays-off (ds/laptop-display-name))))
+         (ds/restart-bar))
+
+       (defun ds/exwm-auto-screens ()
+         "Detect known display setups and set screens accordingly."
+         (interactive)
+         (let ((laptop-display (ds/display-connected-p (ds/laptop-display-name)))
+               (laptop-display-external (ds/display-connected-p (ds/laptop-external-display-name))))
+           ;; check for laptop external display
+           (if laptop-display
+               (if laptop-display-external
+                   (ds/connect-laptop-external)
+                 (ds/disconnect-laptop-external)))))
+
+       :config
+       (add-hook 'exwm-randr-screen-change-hook #'ds/powerline-set-height)
+       (add-hook 'exwm-randr-screen-change-hook #'ds/exwm-auto-screens)
+       (exwm-randr-enable))
+   #+END_SRC
+
+** Passwords
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :init
+       :config
+       (exwm-input-set-key (kbd "s-p") #'password-store-copy)
+       (exwm-input-set-key (kbd "C-s-p") #'ds/password-store-get-otp))
+   #+END_SRC
+
+** Notifications
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :init
+       (defun ds/exwm-refresh-notification-buffer (&rest _)
+         (if (get-buffer-window (get-buffer "*notifications*"))
+             (eosd-mode-create-or-update-buffer)))
+
+       (defun ds/exwm-notification-autopop (&rest _)
+         "Popup the notification buffer without taking focus from the current window."
+         (let ((currentbuffer (buffer-name)))
+           (if (equal currentbuffer "*notifications*")
+               (ds/exwm-refresh-notification-buffer)
+             (progn (ds/exwm-eosd)
+                    (with-current-buffer currentbuffer
+                      (select-window (get-buffer-window (buffer-name)) t))))))
+       ;; load eosd
+       (add-to-list 'load-path "~/.emacs.d/eosd/")
+       (require 'eosd)
+       ;; customize notification faces
+       (eval-after-load 'zenburn-theme
+         (zenburn-with-color-variables
+           (set-face-attribute 'eosd-heading-face nil :foreground zenburn-fg-1)
+           (set-face-attribute 'eosd-title-face nil :foreground zenburn-green)
+           (set-face-attribute 'eosd-datetime-face nil :foreground zenburn-blue)
+           (set-face-attribute 'eosd-action-link-face nil :foreground zenburn-blue :background zenburn-bg+1 :box zenburn-blue :underline nil)
+           (set-face-attribute 'eosd-delete-link-face nil :foreground zenburn-red :background zenburn-bg+1 :box zenburn-red :underline nil)
+           (set-face-attribute 'eosd-text-mark-face nil :foreground zenburn-fg-1)))
+       ;; start the notification service
+       (eosd-start)
+       :config
+       ;; show notifications in side window
+       (ds/popup-thing ds/exwm-eosd "*notifications*"
+                       (eosd))
+       (ds/popup-thing-display-settings "*notifications*" right 1)
+
+       (exwm-input-set-key (kbd "s-n") #'ds/exwm-eosd)
+
+       ;; auto refresh and auto popup notifications
+       (add-function :after (symbol-function 'ds/exwm-eosd) #'ds/exwm-refresh-notification-buffer))
+   #+END_SRC
+
+** Screen Lock
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :init
+       (defun ds/lock-screen (&rest _)
+         (interactive)
+         (start-process "" nil "slock"))
+       :config
+       (exwm-input-set-key (kbd "C-M-S-s-l") #'ds/lock-screen)
+       (define-key global-map (kbd "C-x C-z") #'ds/lock-screen)
+       (define-key global-map (kbd "C-z") #'ds/lock-screen))
+   #+END_SRC
+
+** System Tray
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm-systemtray
+       :demand t
+       :config
+       (exwm-systemtray-enable))
+   #+END_SRC
+
+** Compositor
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm-cm
+       :demand t
+       :disabled
+       :config
+       (setq window-system-default-frame-alist '((x . ((alpha . 93)))))
+       (setq exwm-cm-opacity 99)
+       (exwm-cm-enable))
+   #+END_SRC
+
+** Start
+
+   #+BEGIN_SRC emacs-lisp
+     (use-package exwm
+       :ensure t
+       :config
+       ;; enable pinentry
+       (pinentry-start t)
+       (setq pinentry-popup-prompt-window nil)
+       ;; start exwm
+       (exwm-enable))
+   #+END_SRC
+
+  
 * Local Config 
 
   Load in a local config file if it exists
