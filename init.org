@@ -339,6 +339,7 @@
                     (add-to-list 'eshell-visual-commands "tail")
                     (add-to-list 'eshell-visual-commands "top")
                     (add-to-list 'eshell-visual-commands "htop")
+                    (setq eshell-path-env (getenv "PATH"))
                     (zenburn-with-color-variables
                       (set-face-attribute 'eshell-prompt-face nil :foreground zenburn-fg :weight 'normal))))
 
@@ -376,7 +377,6 @@
     #+BEGIN_SRC emacs-lisp
       (use-package pcmpl-args
         :ensure t
-        :demand t
         :config
 
         ;; ============================================================
@@ -468,15 +468,12 @@
     #+BEGIN_SRC emacs-lisp
       (use-package dash
         :ensure t
-        :demand t
         :config
         (use-package s
           :ensure t
-          :demand t
           :config
           (use-package eshell
             :commands (eshell/pwd)
-            :demand t
             :init
 
             (defvar ds/eshell-sep " | "
@@ -2152,7 +2149,6 @@
        (progn
          (message "setting up exec path")
          (exec-path-from-shell-initialize)
-         (exec-path-from-shell-copy-env "PATH")
          (message "set up exec path")))
 
    #+END_SRC

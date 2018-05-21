@@ -204,6 +204,7 @@ See also `newline-and-indent'."
               (add-to-list 'eshell-visual-commands "tail")
               (add-to-list 'eshell-visual-commands "top")
               (add-to-list 'eshell-visual-commands "htop")
+              (setq eshell-path-env (getenv "PATH"))
               (zenburn-with-color-variables
                 (set-face-attribute 'eshell-prompt-face nil :foreground zenburn-fg :weight 'normal))))
 
@@ -233,7 +234,6 @@ See also `newline-and-indent'."
 
 (use-package pcmpl-args
   :ensure t
-  :demand t
   :config
 
   ;; ============================================================
@@ -321,15 +321,12 @@ See also `newline-and-indent'."
 
 (use-package dash
   :ensure t
-  :demand t
   :config
   (use-package s
     :ensure t
-    :demand t
     :config
     (use-package eshell
       :commands (eshell/pwd)
-      :demand t
       :init
 
       (defvar ds/eshell-sep " | "
@@ -1768,7 +1765,6 @@ Special commands:
   (progn
     (message "setting up exec path")
     (exec-path-from-shell-initialize)
-    (exec-path-from-shell-copy-env "PATH")
     (message "set up exec path")))
 
 (use-package flx
