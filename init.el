@@ -1684,7 +1684,7 @@ Special commands:
   (setq org-ditaa-jar-path "/usr/share/java/ditaa/ditaa-0_10.jar")
   (org-babel-do-load-languages
    'org-babel-load-languages
-   '((sh . t)
+   '((shell . t)
      (ditaa . t)))
 
   ;; expand logbook on org all expand
